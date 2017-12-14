@@ -37,6 +37,13 @@ public class TechnicalService {
      * @return
      */
     public int AddOrUpdateTechnicalType(TechnicalType technicalType) {
+
+        //新增
+        if(technicalType.getId().equals("")){
+            UUID uuid=UUID.randomUUID();
+            String guid=uuid.toString();
+            technicalType.setId(guid);
+        }
         return technicalDao.AddOrUpdateTechnicalType(technicalType);
     }
 
@@ -91,15 +98,7 @@ public class TechnicalService {
                     conditions.put("FiledTimeStart", condition.getValue());
                 } else if (condition.getKey().equals("FiledTimeEnd")) {
                     conditions.put("FiledTimeEnd", condition.getValue());
-                } else if (condition.getKey().equals("State")) {
-                    conditions.put("State", condition.getValue());
-                } else if (condition.getKey().equals("organization")) {
-                    conditions.put("organization", condition.getValue());
-                } else if (condition.getKey().equals("MaterialTmeStart")) {
-                    conditions.put("MaterialTmeStart", condition.getValue());
-                } else if (condition.getKey().equals("MaterialTmeEnd")) {
-                    conditions.put("MaterialTmeEnd", condition.getValue());
-                } else if (condition.getKey().equals("TreeValue")) {
+                }  else if (condition.getKey().equals("TreeValue")) {
                     ids =new ArrayList<>();
                     TechnicalType tecSelf = new TechnicalType();
                     tecSelf.setId(condition.getValue());
@@ -108,8 +107,6 @@ public class TechnicalService {
                     conditions.put("TreeValue",ids );
                 }else if (condition.getKey().equals("KeyWords")){
                     conditions.put("KeyWords", condition.getValue());
-                }else if(condition.getKey().equals("ApproveStatus")){
-                    conditions.put("ApproveStatus", condition.getValue());
                 }
 
             }
@@ -144,20 +141,25 @@ public class TechnicalService {
 
     /**
      * 新增法规标准
-     * @param technicalType
+     * @param technical
      * @return
      */
     @Transactional
-    public int SaveOrUpdateTechnical(TechnicalType technicalType){
+    public int SaveOrUpdateTechnical(Technical technical){
 
-        if(technicalType.getId()==null||technicalType.getId().equals("")){
+        if(technical.getId()==null||technical.getId().equals("")){
             UUID uuid=UUID.randomUUID();
             String guid=uuid.toString();
-            technicalType.setId(guid);
+            technical.setId(guid);
         }
 
-        int num = technicalDao.SaveOrUpdateTechnical(technicalType);
-        technicalDao.SaveOrUpdateTecAndType(technicalType);
+        int num = technicalDao.SaveOrUpdateTechnical(technical);
+        technicalDao.SaveOrUpdateTecAndType(technical);
+
+        //建立与附件的关系
+        if(technical.getFileids().size()>0){
+            technicalDao.SaveFileLink(technical);
+        }
 
 
         return num;

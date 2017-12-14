@@ -56,7 +56,7 @@ public class TechnicalController {
     }
 
     /**
-     * 获取法规标准列表
+     * 获取技术文件列表
      * @param page
      * @return
      */
@@ -68,34 +68,34 @@ public class TechnicalController {
 
 
     /**
-     * 删除法规标准
+     * 删除技术文件
      * @return
      */
     @RequestMapping(value = "/DeleteTechnicalById", method = RequestMethod.POST)
     @ResponseBody
-    public int  DeleteTechnicalById(@RequestBody TechnicalType technicalType){
-        return technicalService.DeleteTechnicalById(technicalType.getId());
+    public int  DeleteTechnicalById(@RequestBody Technical technical){
+        return technicalService.DeleteTechnicalById(technical.getId());
     }
     /**
-     * 新增和编辑法规标准
+     * 新增和编辑技术文件
      * @return
      */
     @RequestMapping(value = "/SaveOrUpdateTechnical", method = RequestMethod.POST)
     @ResponseBody
-    public int SaveOrUpdateTechnical(@RequestBody TechnicalType technicalType){
+    public int SaveOrUpdateTechnical(@RequestBody Technical technical){
 
-        return technicalService.SaveOrUpdateTechnical(technicalType);
+        return technicalService.SaveOrUpdateTechnical(technical);
     }
 
     /**
      * 查看
      * @return
      */
-    @RequestMapping(value = "/getLawstandardById", method = RequestMethod.POST)
+    @RequestMapping(value = "/getTechnicalById", method = RequestMethod.POST)
     @ResponseBody
-    public Technical getTechnicalById(@RequestBody Technical technicalType){
+    public Technical getTechnicalById(@RequestBody Technical technical){
 
-        return technicalService.getTechnicalById(technicalType.getId());
+        return technicalService.getTechnicalById(technical.getId());
     }
 
 }

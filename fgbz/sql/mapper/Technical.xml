@@ -55,7 +55,7 @@
         FROM
         m_bs_tech t
         LEFT JOIN m_bs_tech_type m ON m.SID = t.id
-        LEFT JOIN m_bs_techtype n ON n.id = m.LAWSTYPEID
+        LEFT JOIN m_bs_techtype n ON n.id = m.LAWSTYPEID where 1=1
         <include refid="queryTechnical"></include>
         ORDER BY
         t.RELEASEDATE DESC
@@ -82,11 +82,8 @@
         <if test="FiledTimeEnd != null and FiledTimeEnd != ''">
             and Date(t.RELEASEDATE) <![CDATA[  <=  ]]> #{FiledTimeEnd}
         </if>
-        <if test="State != null and State != ''">
-            and t.`STATUS` = #{State}
-        </if>
         <if test="TreeValue !=null and TreeValue!=''" >
-            and t.id in (select lt.SID from m_bs_lawstandard_type lt where lt.LAWSTYPEID in
+            and t.id in (select lt.SID from m_bs_tech_type lt where lt.LAWSTYPEID in
             <foreach collection="TreeValue" item="item" open="(" close=")" separator=",">
                 #{item.id}
             </foreach>
@@ -146,12 +143,6 @@
                 <if test="summaryinfo != null">
                     SUMMARYINFO,
                 </if>
-                <if test="statusname != null">
-                    STATUSNAME,
-                </if>
-                <if test="status != null">
-                    STATUS,
-                </if>
             </trim>
             <trim prefix="values (" suffix=")" suffixOverrides=",">
                 <if test="id != null">
@@ -192,9 +183,6 @@
                 </if>
                 <if test="summaryinfo != null">
                     #{summaryinfo,jdbcType=VARCHAR},
-                </if>
-                <if test="status != null">
-                    #{status,jdbcType=VARCHAR},
                 </if>
             </trim>
 
@@ -251,7 +239,7 @@
     </insert>
 
     <!--删除技术文件-->
-    <delete id="deleteLawstandardById" parameterType="String">
+    <delete id="DeleteTechnicalById" parameterType="String">
         DELETE from m_bs_tech WHERE  ID = #{id}
     </delete>
 
@@ -298,5 +286,13 @@
         where t.id =#{id}
 
     </select>
+
+    <!--更新附件与技术文件关系-->
+    <update id="SaveFileLink" parameterType="Technical">
+        update m_sa_fileinfo t set t.REFID = #{id} where t.id IN
+        <foreach collection="fileids" item="item" open="(" close=")" separator=",">
+            #{item}
+        </foreach>
+    </update>
 
 </mapper>

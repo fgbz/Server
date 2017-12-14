@@ -22,6 +22,8 @@ public interface TechnicalDao {
      */
     int  AddOrUpdateTechnicalType(TechnicalType technicalType);
 
+    int SaveFileLink(Technical technical);
+
     /**
      * 删除技术文件类别
      * @param technicalType
@@ -52,10 +54,10 @@ public interface TechnicalDao {
 
     /**
      * 新增或编辑技术文件
-     * @param technicalType
+     * @param technical
      * @return
      */
-    int SaveOrUpdateTechnical(TechnicalType technicalType);
+    int SaveOrUpdateTechnical(Technical technical);
 
     /**
      * 通过id删除技术文件
@@ -66,10 +68,10 @@ public interface TechnicalDao {
 
     /**
      * 保存技术文件与类别关联
-     * @param technicalType
+     * @param technical
      * @return
      */
-    int SaveOrUpdateTecAndType(TechnicalType technicalType);
+    int SaveOrUpdateTecAndType(Technical technical);
 
     /**
      * 删除技术文件与类别关联

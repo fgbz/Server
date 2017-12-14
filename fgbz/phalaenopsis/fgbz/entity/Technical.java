@@ -1,6 +1,7 @@
 package phalaenopsis.fgbz.entity;
 
 import java.util.Date;
+import java.util.List;
 
 public class Technical {
     /**
@@ -79,15 +80,19 @@ public class Technical {
 
     private String status;
 
-    private String count;
+    private int count;
 
     private String typename;
 
-    public String getCount() {
+    private String tectype;
+
+    private List<String> fileids;
+
+    public int getCount() {
         return count;
     }
 
-    public void setCount(String count) {
+    public void setCount(int count) {
         this.count = count;
     }
 
@@ -217,5 +222,21 @@ public class Technical {
 
     public void setTypename(String typename) {
         this.typename = typename;
+    }
+
+    public String getTectype() {
+        return tectype;
+    }
+
+    public void setTectype(String tectype) {
+        this.tectype = tectype;
+    }
+
+    public List<String> getFileids() {
+        return fileids;
+    }
+
+    public void setFileids(List<String> fileids) {
+        this.fileids = fileids;
     }
 }

@@ -51,6 +51,8 @@ public class TechnicalType {
      */
     private String iscandelete;
 
+    private int count;
+
 
     public String getId() {
         return id;
@@ -130,5 +132,13 @@ public class TechnicalType {
 
     public void setIscandelete(String iscandelete) {
         this.iscandelete = iscandelete;
+    }
+
+    public int getCount() {
+        return count;
+    }
+
+    public void setCount(int count) {
+        this.count = count;
     }
 }
