@@ -1,0 +1,1246 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="phalaenopsis.allWeather.dao.IallWeatherdao">
+
+
+    <resultMap type="HandleProgress" id="HandleProgressmap">
+        <result column="state" property="state"/>
+        <result column="regionName" property="regionName"/>
+        <result column="regionId" property="regionId"/>
+        <result column="denominator" property="denominator"/>
+        <result column="numerator" property="numerator"/>
+    </resultMap>
+
+    <sql id="queryMark">
+        <if test="mark != null and mark != '' ">
+            and t.mark like '%'||#{mark}||'%'
+        </if>
+    </sql>
+
+    <sql id="queryAllMark">
+			and t.mark = #{mark, jdbcType=VARCHAR}
+	</sql>
+
+    <!-- 获取区县处理进度 -->
+    <select id="getCountyProgress" parameterType="HandleProgress"
+            resultMap="HandleProgressmap">
+        select
+        (select t.TYPE from sw_log t where t.region = #{id}
+        and
+        t.year=#{year} and t.period=#{period}
+        <if test="mark != null and mark != '' ">
+            and mark = #{mark, jdbcType=VARCHAR}
+        </if>
+
+        <if test="mark == null">
+            and mark is null
+        </if>
+        ) as
+        state,
+        (select t.regionname
+        from ss_region t where t.regionid =
+        #{id}) as
+        regionName,
+        #{id} as
+        regionId,
+        (select count(*)
+        from sw_mapspot t where t.county = #{id} and nvl(t.ISDELETE,0) <![CDATA[<]]> <![CDATA[>]]> 1
+        and
+        t.year=#{year} and t.checkperiod=#{period}
+        <include refid="queryMark"/>
+        ) as denominator,
+        (
+        select
+        count(*)
+        from sw_mapspot t
+        where t.county = #{id} and nvl(t.ISDELETE,0) <![CDATA[<]]> <![CDATA[>]]> 1 and t.year=#{year} and
+        t.checkperiod=#{period}
+        and t.node
+        is not null
+        and t.node <![CDATA[<]]> <![CDATA[>]]>
+        0 and t.node <![CDATA[<]]> <![CDATA[>]]>
+        2 and t.node <![CDATA[<]]> <![CDATA[>]]>
+        3
+        <include refid="queryMark"/>
+        ) as numerator
+        from dual
+    </select>
+
+
+    <!-- 保存或更新上报信息 -->
+    <insert id="saveOrUpdateSwLog" parameterType="SwLog">
+        <selectKey keyProperty="count" resultType="int" order="BEFORE">
+            select count(*) from SW_LOG t where t.REGION = #{region} and t.YEAR=#{year} and t.PERIOD=#{period}
+            <if test="mark != null and mark != '' ">
+                and mark = #{mark, jdbcType=VARCHAR}
+            </if>
+
+            <if test="mark == null">
+                and mark is null
+            </if>
+
+            <!--<include refid="queryMark"/>-->
+        </selectKey>
+        <if test="count==0">
+            insert into SW_LOG(
+            <if test="id!=null and id !=''">
+                ID
+            </if>
+            <if test="description!=null and description !=''">
+                ,DESCRIPTION,
+            </if>
+            <if test="year!=null and year !=''">
+                ,YEAR
+            </if>
+            <if test="region!=null and region !=''">
+                ,REGION
+            </if>
+            <if test="backtime!=null and backtime !=''">
+                ,BACKTIME
+            </if>
+            <if test="type!=null and type !=''">
+                ,TYPE
+            </if>
+            <if test="operationtime!=null and operationtime !=''">
+                ,OPERATIONTIME
+            </if>
+            <if test="organization!=null and organization !=''">
+                ,ORGANIZATION
+            </if>
+            <if test="operatername!=null and operatername !=''">
+                ,OPERATERNAME
+            </if>
+            <if test="operater!=null and operater !=''">
+                ,OPERATER
+            </if>
+            <if test="period!=null and period !=''">
+                ,PERIOD
+            </if>
+            <if test="regionParent!=null and regionParent!=''">
+                ,regionParent
+            </if>
+            <if test="mark!=null and mark!=''">
+                ,mark
+            </if>
+            )
+            values (
+            <if test="id!=null and id !=''">
+                #{id}
+            </if>
+            <if test="description!=null and description !=''">
+                ,#{description}
+            </if>
+            <if test="year!=null and year !=''">
+                ,#{year}
+            </if>
+            <if test="region!=null and region !=''">
+                ,#{region}
+            </if>
+            <if test="backtime!=null and backtime !=''">
+                ,#{backtime}
+            </if>
+            <if test="type!=null and type !=''">
+                ,#{type}
+            </if>
+            <if test="operationtime!=null and operationtime !=''">
+                ,#{operationtime}
+            </if>
+            <if test="organization!=null and organization !=''">
+                ,#{organization}
+            </if>
+            <if test="operatername!=null and operatername !=''">
+                ,#{operatername}
+            </if>
+            <if test="operater!=null and operater !=''">
+                ,#{operater}
+            </if>
+            <if test="period!=null and period !=''">
+                ,#{period}
+            </if>
+            <if test="regionParent!=null and regionParent!=''">
+                ,#{regionParent}
+            </if>
+            <if test="mark!=null and mark!=''">
+                ,#{mark}
+            </if>
+            )
+        </if>
+        <if test="count==1">
+            update SW_LOG set
+            <if test="region !=null and region !=''">
+                region=#{region}
+            </if>
+            <if test="description!=null and description !=''">
+                ,DESCRIPTION=#{description}
+            </if>
+            <if test="backtime!=null and backtime !=''">
+                ,BACKTIME=#{backtime}
+            </if>
+            <if test="type!=null and type !=''">
+                ,TYPE=#{type}
+            </if>
+            <if test="operationtime!=null and operationtime !=''">
+                ,OPERATIONTIME=#{operationtime}
+            </if>
+            <if test="organization!=null and organization !=''">
+                ,ORGANIZATION=#{organization}
+            </if>
+            <if test="operatername!=null and operatername !=''">
+                ,OPERATERNAME=#{operatername}
+            </if>
+            <if test="operater!=null and operater !=''">
+                ,OPERATER=#{operater}
+            </if>
+            where REGION = #{region} and YEAR=#{year} and PERIOD=#{period}
+
+            <if test="mark != null and mark != '' ">
+                and mark = #{mark, jdbcType=VARCHAR}
+            </if>
+
+            <if test="mark == null">
+                and mark is null
+            </if>
+        </if>
+    </insert>
+
+
+    <!-- 更新SW_mapSpot数据 -->
+    <update id="updateSwMapSpot" parameterType="SwMapspot">
+        update SW_MAPSPOT set
+        <!-- <if test="expertid!=null and expertid !=''"> -->
+        EXPERTID=#{expertid, jdbcType=NUMERIC},
+        <!-- </if> -->
+        <if test="checkperiod!=null and checkperiod !=''">
+            CHECKPERIOD=#{checkperiod},
+        </if>
+        <!-- <if test="notnewRemarks!=null and notnewRemarks !=''"> -->
+        NOTNEW_REMARKS=#{notnewRemarks, jdbcType=VARCHAR},
+        <!-- </if> -->
+        <!-- <if test="notnewSpotclassification!=null and notnewSpotclassification
+            !=''"> -->
+        NOTNEW_SPOTCLASSIFICATION=#{notnewSpotclassification,
+        jdbcType=NUMERIC},
+        <!-- </if> -->
+        <!-- <if test="otherApprovalname!=null and otherApprovalname !=''"> -->
+        OTHER_APPROVALNAME=#{otherApprovalname, jdbcType=VARCHAR},
+        <!-- </if> -->
+        <!-- <if test="otherRemarks!=null and otherRemarks !=''"> -->
+        OTHER_REMARKS=#{otherRemarks, jdbcType=VARCHAR},
+        <!-- </if> -->
+        <!-- <if test="otherApprovalarea!=null and otherApprovalarea !=''"> -->
+        OTHER_APPROVALAREA=#{otherApprovalarea, jdbcType=NUMERIC},
+        <!-- </if> -->
+        <!-- <if test="otherApprovaltime!=null and otherApprovaltime !=''"> -->
+        OTHER_APPROVALTIME=#{otherApprovaltime, jdbcType=TIMESTAMP},
+        <!-- </if> -->
+        <!-- <if test="otherApprovalnumber!=null and otherApprovalnumber !=''"> -->
+        OTHER_APPROVALNUMBER=#{otherApprovalnumber, jdbcType=VARCHAR},
+        <!-- </if> -->
+        <!-- <if test="otherApprovallevel!=null and otherApprovallevel !=''"> -->
+        OTHER_APPROVALLEVEL=#{otherApprovallevel, jdbcType=VARCHAR},
+        <!-- </if> -->
+        <!-- <if test="otherProjectname!=null and otherProjectname !=''"> -->
+        OTHER_PROJECTNAME=#{otherProjectname, jdbcType=VARCHAR},
+        <!-- </if> -->
+        <!-- <if test="otherSpottype!=null and otherSpottype !=''"> -->
+        OTHER_SPOTTYPE=#{otherSpottype, jdbcType=NUMERIC},
+        <!-- </if> -->
+        <!-- <if test="zjgRemarks!=null and zjgRemarks !=''"> -->
+        ZJG_REMARKS=#{zjgRemarks, jdbcType=VARCHAR},
+        <!-- </if> -->
+        <!-- <if test="zjgNewblockarea!=null and zjgNewblockarea !=''"> -->
+        ZJG_NEWBLOCKAREA=#{zjgNewblockarea, jdbcType=NUMERIC},
+        <!-- </if> -->
+        <!-- <if test="zjgNewblockname!=null and zjgNewblockname !=''"> -->
+        ZJG_NEWBLOCKNAME=#{zjgNewblockname, jdbcType=VARCHAR},
+        <!-- </if> -->
+        <!-- <if test="zjgProjectnumber!=null and zjgProjectnumber !=''"> -->
+        ZJG_PROJECTNUMBER=#{zjgProjectnumber, jdbcType=VARCHAR},
+        <!-- </if> -->
+        <!-- <if test="zjgProjectname!=null and zjgProjectname !=''"> -->
+        ZJG_PROJECTNAME=#{zjgProjectname, jdbcType=VARCHAR},
+        <!-- </if> -->
+        <!-- <if test="zjgIsnestedsuccess!=null and zjgIsnestedsuccess !=''"> -->
+        ZJG_ISNESTEDSUCCESS=#{zjgIsnestedsuccess, jdbcType=NUMERIC},
+        <!-- </if> -->
+        <!-- <if test="legalprooftype!=null and legalprooftype !=''"> -->
+        LEGALPROOFTYPE=#{legalprooftype, jdbcType=NUMERIC},
+        <!-- </if> -->
+        <if test="node!=null and node !=''">
+            NODE=#{node},
+        </if>
+        <if test="instanceid!=null and instanceid !=''">
+            INSTANCEID=#{instanceid},
+        </if>
+        <if test="prespotnumber!=null and prespotnumber !=''">
+            PRESPOTNUMBER=#{prespotnumber},
+        </if>
+        <if test="province!=null and province !=''">
+            PROVINCE=#{province},
+        </if>
+        <if test="city!=null and city !=''">
+            CITY=#{city},
+        </if>
+        <if test="countyname!=null and countyname !=''">
+            COUNTYNAME=#{countyname},
+        </if>
+        <if test="county!=null and county !=''">
+            COUNTY=#{county},
+        </if>
+        <if test="districtcountyname!=null and districtcountyname !=''">
+            DISTRICTCOUNTYNAME=#{districtcountyname},
+        </if>
+        <if test="districtcounty!=null and districtcounty !=''">
+            DISTRICTCOUNTY=#{districtcounty},
+        </if>
+        <if test="mapratio!=null and mapratio !=''">
+            MAPRATIO=#{mapratio},
+        </if>
+        <if test="bzX!=null and bzX !=''">
+            BZ_X=#{bzX},
+        </if>
+        <if test="spotnature!=null and spotnature !=''">
+            SPOTNATURE=#{spotnature},
+        </if>
+        <if test="remark!=null and remark !=''">
+            REMARK=#{remark},
+        </if>
+        <if test="protectfailarea!=null and protectfailarea !=''">
+            PROTECTFAILAREA=#{protectfailarea},
+        </if>
+        <if test="protectpassarea!=null and protectpassarea !=''">
+            PROTECTPASSAREA=#{protectpassarea},
+        </if>
+        <if test="protectname!=null and protectname !=''">
+            PROTECTNAME=#{protectname},
+        </if>
+        <if test="xhdjbntarea!=null and xhdjbntarea !=''">
+            XHDJBNTAREA=#{xhdjbntarea},
+        </if>
+        <if test="jbntarea!=null and jbntarea !=''">
+            JBNTAREA=#{jbntarea},
+        </if>
+        <if test="cityborderarea!=null and cityborderarea !=''">
+            CITYBORDERAREA=#{cityborderarea},
+        </if>
+        <if test="doubtillegalarea!=null and doubtillegalarea !=''">
+            DOUBTILLEGALAREA=#{doubtillegalarea},
+        </if>
+        <if test="arealevel!=null and arealevel !=''">
+            AREALEVEL=#{arealevel},
+        </if>
+        <if test="spotarea!=null and spotarea !=''">
+            SPOTAREA=#{spotarea},
+        </if>
+        <if test="coordinateY!=null and coordinateY !=''">
+            COORDINATE_Y=#{coordinateY},
+        </if>
+        <if test="coordinateX!=null and coordinateX !=''">
+            COORDINATE_X=#{coordinateX},
+        </if>
+        <if test="aftertime!=null and aftertime !=''">
+            AFTERTIME=#{aftertime},
+        </if>
+        <if test="beforetime!=null and beforetime !=''">
+            BEFORETIME=#{beforetime},
+        </if>
+        <if test="datasource!=null and datasource !=''">
+            DATASOURCE=#{datasource},
+        </if>
+        <if test="tz!=null and tz !=''">
+            TZ=#{tz},
+        </if>
+        <if test="spottype!=null and spottype !=''">
+            SPOTTYPE=#{spottype},
+        </if>
+        <if test="spotnumber!=null and spotnumber !=''">
+            SPOTNUMBER=#{spotnumber},
+        </if>
+        <if test="timing != null and  timing != ''">
+            TIMING = sysdate,
+        </if>
+
+        <if test="proveuserId != null  and proveuserId !='' ">
+            PROVEUSERID = #{proveuserId},
+        </if>
+
+        <!-- 后加字段 -->
+        <!-- <if test="oilIssuednumber != null and oilIssuednumber != ''"> -->
+        OIL_ISSUEDNUMBER = #{oilIssuednumber, jdbcType=VARCHAR},
+        <!-- </if> -->
+        <!-- <if test="oilIssuedtime != null and oilIssuedtime != ''"> -->
+        OIL_ISSUEDTIME = #{oilIssuedtime, jdbcType=DATE},
+        <!-- </if> -->
+        <!-- <if test="oilProjectname != null and oilProjectname != ''"> -->
+        OIL_PROJECTNAME = #{oilProjectname, jdbcType=VARCHAR},
+        <!-- </if> -->
+        <!-- <if test="villageRoadwidth != null and villageRoadwidth != ''"> -->
+        VILLAGE_ROADWIDTH = #{villageRoadwidth, jdbcType=DOUBLE},
+        <!-- </if> -->
+        <!-- <if test="villageIsharden != null and villageIsharden != ''"> -->
+        VILLAGE_ISHARDEN = #{villageIsharden, jdbcType=NUMERIC},
+        <!-- </if> -->
+        <!-- <if test="tempArea != null and tempArea != ''"> -->
+        TEMP_AREA = #{tempArea, jdbcType=NUMERIC},
+        <!-- </if> -->
+        <!-- <if test="tempUsetype != null and tempUsetype != ''"> -->
+        TEMP_USETYPE = #{tempUsetype, jdbcType=VARCHAR},
+        <!-- </if> -->
+        <!-- <if test="tempApprovalusetype != null and tempApprovalusetype != ''"> -->
+        TEMP_APPROVALUSETYPE = #{tempApprovalusetype, jdbcType=VARCHAR},
+        <!-- </if> -->
+        <!-- <if test="tempApprovalnumber != null and tempApprovalnumber != ''"> -->
+        TEMP_APPROVALNUMBER = #{tempApprovalnumber, jdbcType=VARCHAR},
+        <!-- </if> -->
+        <!-- <if test="tempApprovaltime != null and tempApprovaltime != ''"> -->
+        TEMP_APPROVALTIME = #{tempApprovaltime, jdbcType=DATE},
+        <!-- </if> -->
+        <!-- <if test="tempProjectName != null and tempProjectName != ''"> -->
+        TEMP_PROJECTNAME = #{tempProjectName, jdbcType=VARCHAR},
+        <!-- </if> -->
+        <!-- <if test="ssnydUsetype != null and ssnydUsetype != ''"> -->
+        SSNYD_USETYPE = #{ssnydUsetype, jdbcType=VARCHAR},
+        <!-- </if> -->
+        <!-- <if test="ssnydApprovalusetype != null and ssnydApprovalusetype !=
+            ''"> -->
+        SSNYD_APPROVALUSETYPE = #{ssnydApprovalusetype, jdbcType=VARCHAR},
+        <!-- </if> -->
+        <!-- <if test="ssnydApprovalarea != null and ssnydApprovalarea != ''"> -->
+        SSNYD_APPROVALAREA = #{ssnydApprovalarea, jdbcType=DOUBLE},
+        <!-- </if> -->
+        <!-- <if test="ssnydApprovaltime != null and ssnydApprovaltime != ''"> -->
+        SSNYD_APPROVALTIME = #{ssnydApprovaltime, jdbcType=DATE},
+        <!-- </if> -->
+        <!-- <if test="ssnydApprovalnumber != null and ssnydApprovalnumber != ''"> -->
+        SSNYD_APPROVALNUMBER = #{ssnydApprovalnumber, jdbcType=VARCHAR},
+        <!-- </if> -->
+        <!-- <if test="ssnydBackupnumber != null and ssnydBackupnumber != ''"> -->
+        SSNYD_BACKUPNUMBER = #{ssnydBackupnumber, jdbcType=VARCHAR},
+        <!-- </if> -->
+        <!-- <if test="ssnydProjectName != null and ssnydProjectName != ''"> -->
+        SSNYD_PROJECTNAME = #{ssnydProjectName, jdbcType=VARCHAR},
+        <!-- </if> -->
+        <!-- 后加字段 -->
+
+        LASTUPDATE = sysdate
+        where id = #{id}
+    </update>
+
+    <update id="updateSpotNode" parameterType="SwMapspot">
+        update SW_MAPSPOT t set
+        <if test="timing != null and  timing != ''">
+            TIMING = sysdate, lastupdate = sysdate,
+        </if>
+        t.node = #{node} where id =
+        #{id}
+    </update>
+
+    <!-- <select id="selectSwMapSpot" resultMap="SwMapspotMap"> select <include
+        refid="SwMapspotColumn"></include> from SW_MAPSPOT where COUNTY = 370282
+        </select> -->
+
+    <sql id="querylistCondition">
+        <if test="node == 'Import' ">  <!-- 待办 -->
+            and (node is null or node = 0)
+        </if>
+
+        <if test="node == 'Proofing' ">  <!-- 举证中 -->
+            and (node = 2 or node = 3)
+        </if>
+
+        <if test="node == 'ProofingLegalSpot' ">  <!-- 举证中-合法- -->
+            and node = 2
+        </if>
+
+        <if test="node == 'ProofingNotNewSpot' ">  <!-- 举证中-非新增- -->
+            and node = 3
+        </if>
+
+        <if test="node == 'Proofed' ">   <!-- 已举证 -->
+            and (node = 4 or node = 5 or node = 6 or node = 7 or node = 8 or node
+            = 9 )
+        </if>
+
+        <if test="node == 'ProofedLegalSpot' ">  <!-- 已举证-合法- -->
+            and (node = 4 or node = 6 or node = 8 )
+        </if>
+
+        <if test="node == 'ProofedNotNewSpot' ">  <!-- 已举证-非新增- -->
+            and (node = 5 or node = 7 or node = 9 )
+        </if>
+
+        <if test="node == 'Handled' ">   <!-- 已处理 -->
+            and ( node = 1 or node = 10 or node = 11 )
+
+            <if test="nodeType == 'Illegal'">  <!-- 违法 -->
+                and node = 1
+            </if>
+
+            <if test="nodeType == 'legal'">   <!-- 合法 -->
+                and node = 10
+            </if>
+
+            <if test="nodeType == 'notNew'">   <!-- 非新增 -->
+                and node = 11
+            </if>
+        </if>
+
+        <if test="spotnumber != null and  spotnumber != '' ">
+            and spotnumber like '%'||#{spotnumber}||'%'
+        </if>
+
+        <if test="legalprooftype != null and  legalprooftype != '' ">
+            and LEGALPROOFTYPE = #{legalprooftype}
+        </if>
+
+        <if
+                test="notnewSpotclassification != null and  notnewSpotclassification != '' ">
+            and NOTNEW_SPOTCLASSIFICATION = #{notnewSpotclassification}
+        </if>
+
+        and nvl(ISDELETE,0) <![CDATA[<]]> <![CDATA[>]]> 1
+
+        <include refid="queryMark"/>
+    </sql>
+
+    <select id="getMapspotCount" parameterType="map" resultType="int">
+        select count(1) from SW_MAPSPOT t
+        where t.county=#{regionId} and
+        t.year=#{year} and t.checkperiod=#{period}
+        <include refid="querylistCondition"></include>
+    </select>
+
+    <select id="getMapspotList" parameterType="map" resultType="SwMapspot">
+        select * from (select rownum rn,m.* from (select t.* , rownum num from SW_MAPSPOT t where
+        t.county=#{regionId} and t.year=#{year} and t.checkperiod=#{period}
+        <include refid="querylistCondition"></include>
+        order by t.Districtcounty asc,
+        <if test="sort == 'desc'">
+            case when t.spotnumber like '%-%' then to_number(replace(t.spotnumber,'-','.'))
+            else to_number(t.spotnumber) end desc
+        </if>
+        <if test="sort == 'asc'">
+            case when t.spotnumber like '%-%' then to_number(replace(t.spotnumber,'-','.'))
+            else to_number(t.spotnumber) end asc
+        </if>
+        ) m) n where n.rn between #{startNum} and #{endNum}
+    </select>
+
+    <!-- 保存或更新核查信息 -->
+    <insert id="saveOrUpdateSwExpert" parameterType="SwExpert">
+        <selectKey keyProperty="count" resultType="int" order="BEFORE">
+            select count(1) from SW_EXPERT where id =#{id}
+        </selectKey>
+        <if test="count == 0">
+            insert into SW_EXPERT(
+            <if test="id!=null and id !=''">
+                ID
+            </if>
+            <if test="approvalarea!=null and approvalarea !=''">
+                ,APPROVALAREA
+            </if>
+            <if test="approvaltime!=null and approvaltime !=''">
+                ,APPROVALTIME
+            </if>
+            <if test="iscityborder!=null and iscityborder !=''">
+                ,ISCITYBORDER
+            </if>
+            <if test="isjbnt!=null and isjbnt !=''">
+                ,ISJBNT
+            </if>
+            <if test="iswpjg!=null and iswpjg !=''">
+                ,ISWPJG
+            </if>
+            <if test="issupply!=null and issupply !=''">
+                ,ISSUPPLY
+            </if>
+            <if test="isillegal!=null and isillegal !=''">
+                ,ISILLEGAL
+            </if>
+            <if test="isapprove!=null and isapprove !=''">
+                ,ISAPPROVE
+            </if>
+            <if test="isnewbuild!=null and isnewbuild !=''">
+                ,ISNEWBUILD
+            </if>
+            <if test="landuseage!=null and landuseage !=''">
+                ,LANDUSEAGE
+            </if>
+            <if test="buildstatus!=null and buildstatus !=''">
+                ,BUILDSTATUS
+            </if>
+            <if test="landarea!=null and landarea !=''">
+                ,LANDAREA
+            </if>
+            <if test="landusetime!=null and landusetime !=''">
+                ,LANDUSETIME
+            </if>
+            <if test="landuser!=null and landuser !=''">
+                ,LANDUSER
+            </if>
+            <if test="projectname!=null and projectname !=''">
+                ,PROJECTNAME
+            </if>
+            <if test="location!=null and location !=''">
+                ,LOCATION
+            </if>
+            <if test="spotsituation!=null and spotsituation !=''">
+                ,SPOTSITUATION
+            </if>
+            <if test="cityborderarea!=null and cityborderarea !=''">
+                ,CITYBORDERAREA
+            </if>
+            <if test="jbntarea!=null and jbntarea !=''">
+                ,JBNTAREA
+            </if>
+
+            <if test="supplyarea!=null and supplyarea !=''">
+                ,SUPPLYAREA
+            </if>
+            <if test="approvalnumber!=null and approvalnumber !=''">
+                ,APPROVALNUMBER
+            </if>
+            <if test="illegaltype!=null and illegaltype !=''">
+                ,ILLEGALTYPE
+            </if>
+            <if test="illegalarea!=null and illegalarea !=''">
+                ,ILLEGALAREA
+            </if>
+            <if test="timing!=null and timing !=''">
+                ,TIMING
+            </if>
+            )
+            values (
+            <if test="id!=null and id !=''">
+                #{id}
+            </if>
+            <if test="approvalarea!=null and approvalarea !=''">
+                ,#{approvalarea}
+            </if>
+            <if test="approvaltime!=null and approvaltime !=''">
+                ,#{approvaltime}
+            </if>
+            <if test="iscityborder!=null and iscityborder !=''">
+                ,#{iscityborder}
+            </if>
+            <if test="isjbnt!=null and isjbnt !=''">
+                ,#{isjbnt}
+            </if>
+            <if test="iswpjg!=null and iswpjg !=''">
+                ,#{iswpjg}
+            </if>
+            <if test="issupply!=null and issupply !=''">
+                ,#{issupply}
+            </if>
+            <if test="isillegal!=null and isillegal !=''">
+                ,#{isillegal}
+            </if>
+            <if test="isapprove!=null and isapprove !=''">
+                ,#{isapprove}
+            </if>
+            <if test="isnewbuild!=null and isnewbuild !=''">
+                ,#{isnewbuild}
+            </if>
+            <if test="landuseage!=null and landuseage !=''">
+                ,#{landuseage}
+            </if>
+            <if test="buildstatus!=null and buildstatus !=''">
+                ,#{buildstatus}
+            </if>
+            <if test="landarea!=null and landarea !=''">
+                ,#{landarea}
+            </if>
+            <if test="landusetime!=null and landusetime !=''">
+                ,#{landusetime}
+            </if>
+            <if test="landuser!=null and landuser !=''">
+                ,#{landuser}
+            </if>
+            <if test="projectname!=null and projectname !=''">
+                ,#{projectname}
+            </if>
+            <if test="location!=null and location !=''">
+                ,#{location}
+            </if>
+            <if test="spotsituation!=null and spotsituation !=''">
+                ,#{spotsituation}
+            </if>
+            <if test="cityborderarea!=null and cityborderarea !=''">
+                ,#{cityborderarea}
+            </if>
+            <if test="jbntarea!=null and jbntarea !=''">
+                ,#{jbntarea}
+            </if>
+
+            <if test="supplyarea!=null and supplyarea !=''">
+                ,#{supplyarea}
+            </if>
+            <if test="approvalnumber!=null and approvalnumber !=''">
+                ,#{approvalnumber}
+            </if>
+            <if test="illegaltype!=null and illegaltype !=''">
+                ,#{illegaltype}
+            </if>
+            <if test="illegalarea!=null and illegalarea !=''">
+                ,#{illegalarea}
+            </if>
+            <if test="timing!=null and timing !=''">
+                ,#{timing}
+            </if>
+            )
+
+        </if>
+        <if test="count != 0">
+            update SW_EXPERT set
+            id = #{id}
+            ,APPROVALAREA=#{approvalarea, jdbcType=DOUBLE}
+            <if test="approvaltime!=null and approvaltime !=''">
+                ,APPROVALTIME=#{approvaltime}
+            </if>
+            ,ISCITYBORDER=#{iscityborder, jdbcType=NUMERIC}
+            ,ISJBNT=#{isjbnt,
+            jdbcType=NUMERIC}
+            ,ISWPJG=#{iswpjg, jdbcType=NUMERIC}
+            ,ISSUPPLY=#{issupply, jdbcType=NUMERIC}
+            ,ISILLEGAL=#{isillegal,
+            jdbcType=NUMERIC}
+            ,ISAPPROVE=#{isapprove, jdbcType=NUMERIC}
+            ,ISNEWBUILD=#{isnewbuild, jdbcType=NUMERIC}
+            ,LANDUSEAGE=#{landuseage, jdbcType=NUMERIC}
+            ,BUILDSTATUS=#{buildstatus, jdbcType=NUMERIC}
+            ,LANDAREA=#{landarea,
+            jdbcType=DOUBLE}
+            ,LANDUSETIME=#{landusetime,jdbcType=TIMESTAMP}
+            ,LANDUSER=#{landuser,
+            jdbcType=VARCHAR}
+            ,PROJECTNAME=#{projectname, jdbcType=VARCHAR}
+            ,LOCATION=#{location, jdbcType=VARCHAR}
+            ,SPOTSITUATION=#{spotsituation, jdbcType=VARCHAR}
+            ,CITYBORDERAREA=#{cityborderarea, jdbcType=DOUBLE}
+            ,JBNTAREA=#{jbntarea, jdbcType=DOUBLE}
+            ,SUPPLYAREA=#{supplyarea, jdbcType=DOUBLE}
+            ,APPROVALNUMBER=#{approvalnumber, jdbcType=NUMERIC}
+            ,ILLEGALTYPE=#{illegaltype, jdbcType=NUMERIC}
+            ,ILLEGALAREA=#{illegalarea, jdbcType=DOUBLE}
+            <if test="timing!=null and timing !=''">
+                ,TIMING=#{timing}
+            </if>
+            where id = #{id}
+        </if>
+    </insert>
+
+    <!-- 获取图斑实体 -->
+    <select id="getSwMapspot" parameterType="Long" resultType="SwMapspot">
+		select t.*,
+		(select u.account from SYS_USER u where u.id =
+		t.proveuserid) as
+		proveuserAccount,
+		(select u.name from SYS_USER u where
+		u.id = t.proveuserid) as proveuserName
+		from Sw_Mapspot t where id =
+		#{id}
+	</select>
+
+    <!-- 获取核查信息 -->
+    <select id="getSwExpert" parameterType="Long" resultType="SwExpert">
+		select
+		* from SW_EXPERT where id = #{id}
+	</select>
+
+    <select id="geBackInfo" resultType="SwLog">
+        select * from SW_LOG t where
+        t.region = #{regionId} and t.year=#{year} and t.period=#{period}
+
+        <if test="mark != null and mark != '' ">
+            and t.mark = #{mark, jdbcType=VARCHAR}
+        </if>
+
+        <if test="mark == null">
+            and t.mark is null
+        </if>
+
+    </select>
+
+    <select id="getSwSde" parameterType="String" resultType="SwSde">
+        select s.mid, s.shape, t.node,
+        t.spotnumber from sw_mapspot t
+        inner join
+        SW_SDE s on s.mid = t.id
+        where 1=1 and nvl(t.ISDELETE,0) <![CDATA[<]]> <![CDATA[>]]> 1
+        <if test="county != null and county != ''">
+            and t.county = #{county}
+        </if>
+        <if test="spotNumber != null and spotNumber != ''">
+            and s.mid like '%'||#{spotNumber}||'%'
+        </if>
+        and t.year = #{year} and t.checkperiod = #{period}
+        and t.node in (3, 5)
+    </select>
+
+    <select id="getSwSdeById" parameterType="long" resultType="String">
+		select
+		shape from SW_SDE where mid = #{id}
+	</select>
+
+    <!-- 更新图斑状态为市级 -->
+    <update id="updateNodeCityState" parameterType="int">
+        update SW_MAPSPOT
+        t set t.node = t.node+ 2 ,
+        t.cityauditispass =null, t.cityauditremarks
+        = null, t.cityaudittime = null,
+        t.cityauditpersonname = null,
+        t.cityauditpersonid = null,
+        t.iscityaudit = null
+        where
+        t.county =
+        #{regionId}
+        and t.year=#{year} and t.checkperiod=#{period} and node
+        in(4,5)
+        <include refid="queryMark"/>
+    </update>
+
+    <update id="updateMapSpotLevel" parameterType="int">
+        update SW_MAPSPOT
+        t set
+        t.MAPSPOTLEVEL= 2
+        where
+        t.county =
+        #{regionId}
+        and t.year=#{year} and t.checkperiod=#{period} and t.MAPSPOTLEVEL = 1
+        <include refid="queryMark"/>
+    </update>
+
+    <!-- 获取期数 -->
+    <select id="getCurrentPeriod" resultType="string">
+-- 		select * from(select
+-- 		distinct t.year||'-'||t.checkperiod as yearPeriod from
+-- 		sw_mapspot t )
+-- 		order by yearPeriod desc
+	</select>
+    <!-- 获取年份 -->
+    <select id="getCurrentYear" resultType="int">
+		select max(t.year) from
+		sw_mapspot t
+	</select>
+    <select id="getSpotNode" parameterType="Long" resultType="int">
+		select
+		node from SW_MAPSPOT where id = #{id}
+	</select>
+
+    <!-- 图斑还原 -->
+    <update id="restore" parameterType="map">
+		update SW_MAPSPOT set node =
+		0 , timing = sysdate, lastupdate = sysdate  where id = #{id}
+		and year = #{year} and checkperiod = #{period}
+	</update>
+
+    <!-- 删除外业核查信息 -->
+    <delete id="deleteSpotExpert" parameterType="Long">
+		delete SW_EXPERT t
+		where t.id = (select t.expertid from sw_mapspot t where t.id = #{id})
+	</delete>
+
+    <select id="getMapspotListBlur" parameterType="map" resultType="SwMapspot">
+		select * from sw_mapspot t where t.spotnumber like  #{spotnumber}||'-%' and t.county = #{regionId} and nvl(t.ISDELETE,0) <![CDATA[<]]> <![CDATA[>]]> 1
+       	and t.year = #{year} and t.checkperiod = #{checkPeriod} and ( t.node is null or t.node = 0 )
+       	<if test="mapratio != null">
+            and t.mapratio = #{mapratio}
+        </if>
+        <if test="period != null">
+            and t.period = #{period}
+        </if>
+	</select>
+
+    <select id="getCityList" parameterType="map" resultType="MapSpotStatistics">
+        select * from (select temp.* , rownum num from ( select city as cityId,county as countyId ,countyname as
+        countyName from SW_MAPSPOT t where 1 = 1
+        <include refid="CityList"></include>
+        group by city,county,countyname
+        order by county
+        ) temp
+        ) where num between #{startNum} and #{endNum}
+    </select>
+
+    <select id="searchMapSpotNum" parameterType="MapSpotStatistics" resultType="MapSpotStatistics">
+        select city as cityId,county as countyId,countyname as countyName,
+        (select regionname from SS_REGION t where regionid = #{cityId}) as cityName ,
+        (select count(*) from SW_MAPSPOT where 
+		        nvl(ISDELETE,0)<![CDATA[<]]><![CDATA[>]]> 1 
+		        and city = #{cityId} and
+		        county=#{countyId} 
+		        <if test="period!=null and period!=''">
+		            and checkperiod = #{period}
+		        </if>
+		        <if test="year!=null and year!=''">
+		            and year=#{year}
+		        </if>
+		        <if test="mark!=null and mark!=''">
+		        and mark like '%'||#{mark}||'%'
+		        </if>
+        ) as mapspotnum ,
+        (select count(*) from SW_MAPSPOT where 
+        	(node = 0 or node is null) 
+        	and nvl(ISDELETE,0)<![CDATA[<]]><![CDATA[>]]>1
+        	and city = #{cityId} and county=#{countyId}
+        	<if test="mark!=null and mark!=''">
+        		and mark like '%'||#{mark}||'%'
+        	</if>
+        	<if test="period!=null and period!=''">
+		        and checkperiod = #{period}
+		    </if>
+		    <if test="year!=null and year!=''">
+		        and year=#{year}
+		    </if>
+        ) as unLegalproofNum,
+        (select count(*) from SW_MAPSPOT where node = 1 and nvl(ISDELETE,0)<![CDATA[<]]><![CDATA[>]]> 1 and city =
+        #{cityId} and county=#{countyId} 
+	        <if test="mark!=null and mark!=''"> and mark like '%'||#{mark}||'%' </if>
+	        <if test="period!=null and period!=''">and checkperiod = #{period}</if>
+			<if test="year!=null and year!=''"> and year=#{year}</if>
+       	) as illegalNum,
+        (select count(*) from SW_MAPSPOT where node in(2,4,6,8,10) and nvl(ISDELETE,0)<![CDATA[<]]><![CDATA[>]]> 1 and
+        city = #{cityId} and county=#{countyId}
+	        <if test="mark!=null and mark!=''"> and mark like '%'||#{mark}||'%' </if>
+	        <if test="period!=null and period!=''">and checkperiod = #{period}</if>
+			<if test="year!=null and year!=''"> and year=#{year}</if>
+        ) as legitimateNum,
+        (select count(*) from SW_MAPSPOT where node in(3,5,7,9,11) and nvl(ISDELETE,0)<![CDATA[<]]><![CDATA[>]]> 1 and
+        city = #{cityId} and county=#{countyId} 
+	        <if test="mark!=null and mark!=''"> and mark like '%'||#{mark}||'%' </if>
+	        <if test="period!=null and period!=''">and checkperiod = #{period}</if>
+			<if test="year!=null and year!=''"> and year=#{year}</if>
+        ) as notNewMapSpotNum,
+        (select count(*) from SW_MAPSPOT where node = 3 and nvl(ISDELETE,0)<![CDATA[<]]><![CDATA[>]]> 1 and city =
+        #{cityId} and county=#{countyId} 
+        	<if test="mark!=null and mark!=''"> and mark like '%'||#{mark}||'%' </if>
+        	<if test="period!=null and period!=''">and checkperiod = #{period}</if>
+			<if test="year!=null and year!=''"> and year=#{year}</if>
+        ) as notNewLegalproofingNum,
+        (select count(*) from SW_MAPSPOT where node in(5,7,9,11) and nvl(ISDELETE,0)<![CDATA[<]]><![CDATA[>]]> 1 and
+        city = #{cityId} and county=#{countyId}  
+	        <if test="mark!=null and mark!=''"> and mark like '%'||#{mark}||'%' </if>
+	        <if test="period!=null and period!=''">and checkperiod = #{period}</if>
+			<if test="year!=null and year!=''"> and year=#{year}</if>
+        ) as notNewLegalproofedNum,
+        (select count(*) from SW_MAPSPOT where node in(6,7,8,9,10,11) and nvl(ISDELETE,0)<![CDATA[<]]><![CDATA[>]]> 1
+	        and county in(select region from sw_log where type = 1 
+	        <if test="period!=null and period!=''">
+	            and period = #{period}
+	        </if>
+	        <if test="year!=null and year!=''">
+	            and year=#{year}
+	        </if>
+	        )
+	        <if test="countyId!=null and countyId!=''">
+	            and county = #{countyId}
+	        </if>
+	        <if test="cityId!=null and cityId!=''">
+	            and city=#{cityId}
+	        </if>
+	        <if test="period!=null and period!=''">
+	            and checkperiod = #{period}
+	        </if>
+	        <if test="mark!=null and mark!=''">
+	        	and mark like '%'||#{mark}||'%'
+	        </if>) as toCity,
+        (select count(*) from SW_MAPSPOT where node in(8,9,10,11) and nvl(ISDELETE,0)<![CDATA[<]]><![CDATA[>]]> 1 and
+        city in(select region from sw_log where type = 1 and regionparent = '370000'
+        <if test="period!=null and period!=''">
+            and period = #{period}
+        </if>
+        <if test="year!=null and year!=''">
+            and year=#{year}
+        </if>
+        )
+        <if test="countyId!=null and countyId!=''">
+            and county = #{countyId}
+        </if>
+        <if test="cityId!=null and cityId!=''">
+            and city=#{cityId}
+        </if>
+        <if test="period!=null and period!=''">
+	            and checkperiod = #{period}
+	    </if>
+        <if test="mark!=null and mark!=''">
+        	and mark like '%'||#{mark}||'%'
+        </if>) as toProvince
+        from SW_MAPSPOT where rownum <![CDATA[<=]]> 1 
+        and city = #{cityId}
+        and county=#{countyId}
+        <if test="mark!=null and mark!=''"> and mark like '%'||#{mark}||'%' </if>
+        <if test="period!=null and period!=''">and checkperiod = #{period}</if>
+		<if test="year!=null and year!=''"> and year=#{year}</if>
+        and nvl(ISDELETE,0)
+        <![CDATA[<]]><![CDATA[>]]> 1
+    </select>
+
+    <select id="searchMapSpotSum" parameterType="map" resultType="MapSpotStatistics">
+        select
+        (select count(*) from SW_MAPSPOT where 1=1 <include refid="CityList"></include> ) as mapspotnum ,
+        (select count(*) from SW_MAPSPOT where (node = 0 or node is null) <include refid="CityList"></include> ) as
+        unLegalproofNum,
+        (select count(*) from SW_MAPSPOT where node = 1 <include refid="CityList"></include> ) as illegalNum,
+        (select count(*) from SW_MAPSPOT where node in(2,4,6,8,10) <include refid="CityList"></include> ) as
+        legitimateNum,
+        (select count(*) from SW_MAPSPOT where node in(3,5,7,9,11) <include refid="CityList"></include> ) as
+        notNewMapSpotNum,
+        (select count(*) from SW_MAPSPOT where node = 3 <include refid="CityList"></include> ) as
+        notNewLegalproofingNum,
+        (select count(*) from SW_MAPSPOT where node in(5,7,9,11) <include refid="CityList"></include> ) as
+        notNewLegalproofedNum,
+        (select count(*) from SW_MAPSPOT where node in(6,7,8,9,10,11) and nvl(ISDELETE,0)<![CDATA[<]]><![CDATA[>]]> 1
+	        and county in(select region from sw_log where type = 1 
+	        <if test="period!=null and period!=''">
+	            and period = #{period}
+	        </if>
+	        <if test="year!=null and year!=''">
+	            and year=#{year}
+	        </if>
+	        )
+	        <if test="county!=null and county!=''">
+	            and county = #{county}
+	        </if>
+	        <if test="city!=null and city!=''">
+	            and city=#{city}
+	        </if>
+	        <if test="period!=null and period!=''">
+	            and checkperiod = #{period}
+	        </if>
+	        <if test="mark!=null and mark!=''">
+	        	and mark like '%'||#{mark}||'%'
+	        </if>
+        ) as toCity,
+        (select count(*) from SW_MAPSPOT where node in(8,9,10,11) and nvl(ISDELETE,0)<![CDATA[<]]><![CDATA[>]]> 1 and
+        city in(select region from sw_log where type = 1 and regionparent = '370000'
+        <if test="period!=null and period!=''">
+            and period = #{period}
+        </if>
+        <if test="year!=null and year!=''">
+            and year=#{year}
+        </if>
+        )
+        <if test="county!=null and county!=''">
+            and county = #{county}
+        </if>
+        <if test="city!=null and city!=''">
+            and city=#{city}
+        </if>
+        <if test="period!=null and period!=''">
+	            and checkperiod = #{period}
+	    </if>
+        <if test="mark!=null and mark!=''">
+        	and mark like '%'||#{mark}||'%'
+        </if>
+        ) as toProvince
+        from SW_MAPSPOT where 1=1
+        <include refid="CityList"></include>
+        and rownum <![CDATA[<=]]> 1
+    </select>
+
+    <select id="getCityListCount" parameterType="map" resultType="int">
+        select count(*) from (select temp.* , rownum num from ( select city as cityId,county as countyId ,countyname as
+        countyName from SW_MAPSPOT t where 1 = 1
+        <include refid="CityList"></include>
+        group by city,county,countyname) temp
+        )
+    </select>
+
+    <select id="getCityNameById" parameterType="String" resultType="String">
+		select regionname from SS_REGION t where regionid = #{string}
+	</select>
+
+    <sql id="CityList">
+        <if test="period!=null and period!=''">
+            and checkperiod = #{period}
+        </if>
+        <if test="city!=null and city!=''">
+            and city = #{city}
+        </if>
+        <if test="county!=null and county!=''">
+            and county=#{county}
+        </if>
+        <if test="year!=null and year!=''">
+            and year=#{year}
+        </if>
+        <if test="mark!=null and mark!=''">
+        	and mark like '%'||#{mark}||'%' 
+        </if>
+        and nvl(ISDELETE,0)<![CDATA[<]]><![CDATA[>]]> 1
+    </sql>
+
+
+    <update id="updateMarkMapSpot">
+        update sw_mapspot t set t.mark = #{mark, jdbcType=VARCHAR} where t.id = #{id, jdbcType=NUMERIC}
+    </update>
+
+
+    <sql id="queryMapSpotMark">
+        <if test="year != null">
+            and t.year = #{year}
+        </if>
+        <if test="period != null">
+            and t.checkperiod = #{period}
+        </if>
+        <if test="cityid != null and  cityid != '' ">
+            and t.city = #{cityid}
+        </if>
+        <if test="countyid != null and countyid !='' and regionCategory == 1">
+            and t.county = #{countyid}
+        </if>
+        <if test="countyid != null and countyid != '' and regionCategory == 2">
+            and t.districtcounty = #{countyid}
+        </if>
+        <if test="markCategory != null and markCategory != '' and markCategory == '1000' ">
+            and replace(t.mark,',','') = #{markCategory}
+        </if>
+        <if test="markCategory != null and markCategory != '' and markCategory != '1000' ">
+            and t.mark like '%'||#{markCategory}||'%'
+        </if>
+        <if test="spotNumber != null and spotNumber != '' ">
+            and t.spotnumber like '%'||#{spotNumber}||'%'
+        </if>
+        <if test="spotArea != null and spotArea != '' ">
+            <if test="spotAreaCompare == 2">
+                and t.spotArea <![CDATA[>]]> #{spotArea}
+            </if>
+            <if test="spotAreaCompare == 1">
+                and t.spotArea <![CDATA[>]]>= #{spotArea}
+            </if>
+            <if test="spotAreaCompare == 0">
+                and t.spotArea = #{spotArea}
+            </if>
+            <if test="spotAreaCompare == -1">
+                and t.spotArea <![CDATA[<]]>= #{spotArea}
+            </if>
+            <if test="spotAreaCompare == -2">
+                and t.spotArea <![CDATA[<]]> #{spotArea}
+            </if>
+        </if>
+        <if test="unPlaningArea != null and unPlaningArea != '' ">
+            <if test="unPlaningAreaCompare == 2">
+                and t.unPlaningArea <![CDATA[>]]> #{unPlaningArea}
+            </if>
+            <if test="unPlaningAreaCompare == 1">
+                and t.unPlaningArea <![CDATA[>]]>= #{unPlaningArea}
+            </if>
+            <if test="unPlaningAreaCompare == 0">
+                and t.unPlaningArea = #{unPlaningArea}
+            </if>
+            <if test="unPlaningAreaCompare == -1">
+                and t.unPlaningArea <![CDATA[<]]>= #{unPlaningArea}
+            </if>
+            <if test="unPlaningAreaCompare == -2">
+                and t.unPlaningArea <![CDATA[<]]> #{unPlaningArea}
+            </if>
+        </if>
+        <if test="arableAcreage != null and arableAcreage!= '' ">
+            <if test="arableAcreageCompare == 2">
+                and t.arableAcreage <![CDATA[>]]> #{arableAcreage}
+            </if>
+            <if test="arableAcreageCompare == 1">
+                and t.arableAcreage <![CDATA[>]]>= #{arableAcreage}
+            </if>
+            <if test="arableAcreageCompare == 0">
+                and t.arableAcreage = #{arableAcreage}
+            </if>
+            <if test="arableAcreageCompare == -1">
+                and t.arableAcreage <![CDATA[<]]>= #{arableAcreage}
+            </if>
+            <if test="arableAcreageCompare == -2">
+                and t.arableAcreage <![CDATA[<]]> #{arableAcreage}
+            </if>
+        </if>
+        <if test="adjustablearea != null and adjustablearea!= '' ">
+            <if test="adjustableareaCompare == 2">
+                and t.adjustablearea <![CDATA[>]]> #{adjustablearea}
+            </if>
+            <if test="adjustableareaCompare == 1">
+                and t.adjustablearea <![CDATA[>]]>= #{adjustablearea}
+            </if>
+            <if test="adjustableareaCompare == 0">
+                and t.adjustablearea = #{adjustablearea}
+            </if>
+            <if test="adjustableareaCompare == -1">
+                and t.adjustablearea <![CDATA[<]]>= #{adjustablearea}
+            </if>
+            <if test="adjustableareaCompare == -2">
+                and t.adjustablearea <![CDATA[<]]> #{adjustablearea}
+            </if>
+        </if>
+        <if test="sumArea != null and sumArea!= '' ">
+            <if test="sumAreaCompare == 2">
+                and nvl(t.arableacreage,0) + nvl(t.adjustablearea,0) <![CDATA[>]]> #{sumArea}
+            </if>
+            <if test="sumAreaCompare == 1">
+                and nvl(t.arableacreage,0) + nvl(t.adjustablearea,0) <![CDATA[>]]>= #{sumArea}
+            </if>
+            <if test="sumAreaCompare == 0">
+                and nvl(t.arableacreage,0) + nvl(t.adjustablearea,0) = #{sumArea}
+            </if>
+            <if test="sumAreaCompare == -1">
+                and nvl(t.arableacreage,0) + nvl(t.adjustablearea,0) <![CDATA[<]]>= #{sumArea}
+            </if>
+            <if test="sumAreaCompare == -2">
+                and nvl(t.arableacreage,0) + nvl(t.adjustablearea,0) <![CDATA[<]]> #{sumArea}
+            </if>
+        </if>
+        and nvl(t.isdelete,0) = 0
+    </sql>
+
+    <select id="listMapSpotMark" parameterType="map" resultType="SwMapspot">
+        select * from ( select t.*, rownum num from sw_mapspot t where 1= 1
+        <include refid="queryMapSpotMark"/>
+        )
+        where num between #{startNum} and #{endNum}
+    </select>
+
+    <select id="countMapSpotMark" parameterType="map" resultType="int">
+        select count(*) from sw_mapspot t where 1=1
+        <include refid="queryMapSpotMark"/>
+    </select>
+
+    <delete id="deleteMapSpot" >
+        update  sw_mapspot t set t.ISDELETE = 1 , t.timing= sysdate where t.id in
+        <foreach collection="array" item="item" separator="," open="("
+                 close=")">
+            #{item}
+        </foreach>
+    </delete>
+
+    <update id="markMapSpotList" parameterType="map">
+        <if test="markOperate == 0 "> <!--取消标记-->
+            <if test="visible == 0 " > <!--取消区县不可见-->
+                update sw_mapspot t set t.mark = replace(t.mark, #{markType},'')  where instr(t.mark, #{markType})>0
+                <include refid="queryMapSpotMark"/>
+            </if>
+            <if test="visible == 1 ">  <!--取消区县可见-->
+                <!-- update sw_mapspot t set t.mark = replace(t.mark, #{markType} ,1000)  where instr(t.mark, #{markType})>0 -->
+                update sw_mapspot t set t.mark =
+                (case
+                (select count(*) from ss_datadictionary d where d.type='Focus' and  instr(d.remarks,'"report":1')>0 and instr(t.mark, d.value)>0 )
+                when 1 then replace(t.mark,#{markType},1000) else replace(t.mark,#{markType},'') end)
+                where instr(t.mark, #{markType})>0
+                <include refid="queryMapSpotMark"/>
+            </if>
+        </if>
+
+        <if test="markOperate == 1"> <!--添加标记-->
+            <if test="visible == 0 " > <!--添加区县不可见-->
+                update sw_mapspot t set t.mark = t.mark||','||#{markType} where instr(t.mark, #{markType})=0
+                <include refid="queryMapSpotMark"/>
+            </if>
+            <if test="visible == 1 ">  <!--添加区县可见-->
+                update  sw_mapspot t set t.mark =
+                (case instr(t.mark,1000) when 0 then t.mark||','||#{markType} else  replace(t.mark, 1000, #{markType}) end)
+                where instr(t.mark, #{markType})=0
+                <include refid="queryMapSpotMark"/>
+            </if>
+
+        </if>
+    </update>
+
+    
+</mapper>
+  

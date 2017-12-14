@@ -1,0 +1,9 @@
+<!DOCTYPE suite SYSTEM "http://testng.org/testng-1.0.dtd" >
+<suite name="Suitetest" parallel="false">
+  <test name="AllWeatherTest">
+    <classes>
+      <class name="com.kotei.testng.service.PatrolServiceTest"/>
+      <class name="com.kotei.testng.service.PatrolTrackServiceTest"/>
+    </classes>
+  </test>
+</suite> <!-- Suite -->

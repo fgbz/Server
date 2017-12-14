@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper  
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"  
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="mapService">
+
+	<select id="getMapLayerCollection" parameterType="int"
+		resultType="phalaenopsis.common.entity.MapLayer">
+		select
+		ID,LayerName,LayerID,LayerType,LayerUrl,MapedUrl,LayerOrder,GroupOrder,IsBaseMap
+		,IsChecked,Opacity,LayerBelong,FatherLayerID,Tag,MinX,MinY,MaxX,MaxY,ServicesVersions,
+		Wkid from SS_MapLayer
+		<if test="_parameter  == 1">  <!-- Borwser -->
+			where LayerBelong = 123 or LayerBelong = 1 or LayerBelong = 12 or
+			LayerBelong = 13
+		</if>
+		<if test="_parameter  == 3">  <!-- Phone -->
+			where LayerBelong = 123 or LayerBelong = 23 or LayerBelong = 13 or
+			LayerBelong = 3
+		</if>
+		<if test="_parameter  == 2">  <!-- Pad -->
+			where LayerBelong = 123 or LayerBelong = 23 or LayerBelong = 12 or
+			LayerBelong = 2
+		</if>
+	</select>
+
+	<resultMap type="phalaenopsis.common.entity.MapLayer"  id="MapLayerid">
+		<id  column="id"  property="ID"/>
+	    <result column="layerid"  property="LayerID"/>
+	    <result column="LayerUrl"  property="LayerUrl"/>
+	    <result column="MapedUrl" property="MapedUrl"/>
+		<collection property="identifyFields"  ofType="phalaenopsis.common.entity.Identity.IdentifyField">
+			<result column="did"  property="ID"/>
+			<result column="name"  property="Name"/>
+			<result column="alias"  property="Alias"/>
+			<result column="displayorder"  property="DisplayOrder"/>
+			<!-- <result column="id"  property="id"  jdbcType="NUMERIC"  typeHandler="phalaenopsis.common.method.Enum.IntEnumTypeHandler"/> -->
+			<result column="usetype"  property="UseType"  jdbcType="NUMERIC"  typeHandler="phalaenopsis.common.method.Enum.IntEnumTypeHandler"/> <!-- 枚举 -->
+			<result column="iskeyvalue"  property="IsKeyValue"/>
+		</collection>
+	</resultMap>
+
+	<select id="getIdentifyFields"  resultMap="MapLayerid">
+			select  s.id,s.layerid, s.LayerUrl,s.MapedUrl, i.id as did, i.name, i.alias, i.displayorder, i.maplayer_id, i.usetype, i.iskeyvalue
+			from (select * from  SS_MapLayer  where layerid in
+			<foreach collection="layers"   item="item"  index="index" open="("  separator=","  close=")">
+			#{item.LayerID}
+		</foreach> 
+			 )s
+			left join (select * from ss_identifyfield where  usetype in (<choose>
+			<when test="terminalType.name() == 'Borwser' ">
+				'${@phalaenopsis.common.entity.Identity.FieldUseType@IdentifyInAll.getIntValue()}',
+				'${@phalaenopsis.common.entity.Identity.FieldUseType@IdentifyInBrowser.getIntValue()}',
+				'${@phalaenopsis.common.entity.Identity.FieldUseType@IdentifyInBrowserAndPad.getIntValue()}',
+				'${@phalaenopsis.common.entity.Identity.FieldUseType@IdentifyInBrowserAndPhone.getIntValue()}'
+			</when>
+			<when test="terminalType.name() == 'Phone' ">
+				'${@phalaenopsis.common.entity.Identity.FieldUseType@IdentifyInAll.getIntValue()}',
+				'${@phalaenopsis.common.entity.Identity.FieldUseType@IdentifyInBrowserAndPad.getIntValue()}',
+				'${@phalaenopsis.common.entity.Identity.FieldUseType@IdentifyInMobile.getIntValue()}',
+				'${@phalaenopsis.common.entity.Identity.FieldUseType@IdentifyInPad.getIntValue()}'
+			</when>
+			<when test="terminalType.name() == 'Pad' ">
+				'${@phalaenopsis.common.entity.Identity.FieldUseType@IdentifyInAll.getIntValue()}',
+				'${@phalaenopsis.common.entity.Identity.FieldUseType@IdentifyInBrowserAndPhone.getIntValue()}',
+				'${@phalaenopsis.common.entity.Identity.FieldUseType@IdentifyInMobile.getIntValue()}',
+				'${@phalaenopsis.common.entity.Identity.FieldUseType@IdentifyInPhone.getIntValue()}'
+			</when>
+		</choose>)) i
+ 			on i.maplayer_id = s.id
+		order by 	i.DisplayOrder
+	</select>
+
+	<!--得到经纬度坐标点与平面坐标点的偏移量-->
+	<select id="getPointShift" parameterType="map" resultType="map">
+		 select t.x_shift as shiftX, t.y_shift as shiftY from sys_region t where sdo_geom.relate( t.shape,'ANYINTERACT', sdo_geometry
+		(2001,---2001代表单点
+		#{GeoWKID},
+		sdo_point_type
+		(
+		#{x},
+		#{y},
+		null),
+		null,
+		null
+		) , 0.5) = 'TRUE'
+	</select>
+
+
+</mapper>

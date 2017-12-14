@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:p="http://www.springframework.org/schema/p"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans 
+						http://www.springframework.org/schema/beans/spring-beans-4.0.xsd">
+						
+	<bean id="sqlSessionFactory" name="sqlSessionFactory"
+		class="phalaenopsis.common.method.PackagesSqlSessionFactoryBean"
+		scope="prototype">
+		<property name="dataSource" ref="koteidb" />
+		<property name="configLocation" value="classpath:sql/mybatis-config.xml" />
+		<property name="mapperLocations" value="classpath:sql/mapper/*.xml" />
+		<property name="typeAliasesPackage" value="phalaenopsis.*.entity" />
+		<property name="plugins">
+            <array>
+                <bean class="com.github.pagehelper.PageHelper">
+                    <property name="properties">
+                        <value>
+                            dialect=mysql
+						</value>
+                    </property>
+                </bean>
+            </array>
+        </property>
+        
+	</bean>
+	
+	<!-- <bean id="sqlSessionFactory" name="sqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean" 
+		scope="prototype"> <property name="dataSource" ref="koteidb" /> <property 
+		name="configLocation" value="classpath:sql/mybatis-config.xml" /> <property 
+		name="mapperLocations" value="classpath:sql/mapper/*.xml" /> <property name="typeAliasesPackage" 
+		value="phalaenopsis.satellitegraph.entity; phalaenopsis.common.entity; phalaenopsis.lawcaseevaluation.entity;phalaenopsis.illegalclue.entity;phalaenopsis.lawcase.entity;" 
+		/> </bean> -->
+
+	<!--mybatis与Spring整合 开始 -->
+	<bean id="sqlSession" class="org.mybatis.spring.SqlSessionTemplate">
+		<constructor-arg index="0" ref="sqlSessionFactory" />
+	</bean>
+
+	<!-- 自动扫描mapper接口 -->
+	<bean class="org.mybatis.spring.mapper.MapperScannerConfigurer"
+		p:basePackage="phalaenopsis.*.dao" p:sqlSessionFactoryBeanName="sqlSessionFactory" />
+
+
+	<!-- <bean id="sqlSessionFactory" name="sqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean"> 
+		<property name="configLocation" value="classpath:conf/core/sqlMapConfig.xml" 
+		/> <property name="dataSource" ref="dynamicDataSource" /> </bean> -->
+</beans>

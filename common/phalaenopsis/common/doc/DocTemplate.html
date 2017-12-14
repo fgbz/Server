@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <style type="text/css">
+        body, table {
+            color: #333;
+            font-family: Arial, sans-serif;
+            font-size: 14px;
+            line-height: 1.42857142857143;
+            color: #333;
+        }
+
+        strong, b {
+            font-weight: bold;
+        }
+
+        li {
+            display: list-item;
+            text-align: -webkit-match-parent;
+            list-style-type: disc;
+        }
+
+        table {
+            display: table;
+            border-collapse: separate;
+            border-spacing: 2px;
+            border-color: grey;
+        }
+
+        thead {
+            display: table-header-group;
+            vertical-align: middle;
+            border-color: inherit;
+        }
+
+        tr {
+            display: table-row;
+            vertical-align: inherit;
+            border-color: inherit;
+        }
+
+        table.tablesorter > thead > tr > th {
+            background: #F0F0F0 center right no-repeat;
+            padding-right: 15px;
+            cursor: pointer;
+        }
+
+        .wiki-content .tablesorter-header-inner, table.confluenceTable th.confluenceTh {
+            color: #333333;
+        }
+
+        .confluenceTable {
+            border-collapse: collapse;
+        }
+
+        .confluenceTable:first-child {
+            margin-top: 0;
+        }
+
+        .confluenceTable, .table-wrap {
+            margin: 10px 0 0 0;
+            overflow-x: auto;
+        }
+
+        .confluenceTh, .confluenceTd {
+            border: 1px solid #ddd;
+            padding: 7px 10px;
+            vertical-align: top;
+            text-align: left;
+        }
+
+    </style>
+
+</head>
+<body>
+<ul>
+    <li>
+        <strong>功能描述</strong>
+        <br/>
+        $funcDescribe
+        <br/>
+        <br/>
+    </li>
+    <li>
+        <strong>接口信息</strong>
+        <br/>
+        1,请求方式：$requestMethod
+        <br/>
+        2,服务地址：$requestUrl
+        <br/>
+        3,请求参数类型：Json
+        <br/>
+        4,返回参数类型：Json
+        <br/>
+        <br/>
+    </li>
+    <li>
+        <p>
+            <strong>接口参数</strong>
+            <br/>
+            $inInfo
+        </p>
+        $inTable
+        <br/>
+    </li>
+
+    <li>
+        <p>
+            <strong>返回值</strong>
+            <br/>
+            $returnInfo
+        </p>
+        $returnTable
+    </li>
+
+</ul>
+</body>
+</html>

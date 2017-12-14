@@ -1,0 +1,306 @@
+<?xml version="1.0" encoding="UTF-8" ?>  
+<!DOCTYPE mapper  
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"  
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="satellitegraphservice">
+
+	<select id="getSpotStatus" parameterType="String" resultType="int">
+		${value}
+	</select>
+
+
+	<select id="getSpotShadowByShadowID" parameterType="long"
+		resultType="MapSpotShadow">
+		select SHADOWID, MAPSPOTID, SHADOWTYPE, ISLEAF, BIZTYPE
+		from sg_SpotShadow where SHADOWID = #{id}
+	</select>
+
+	<select id="getMapSpotRelation" parameterType="MapSpotShadow"
+		resultType="MapSpotRelation">
+		select ID, SHADOW1, SHADOW2 from SG_SPOTRELATION where
+		Shadow1 = #{ShadowID} or Shadow2 =#{ShadowID}
+	</select>
+
+	<insert id="insertMapSpotRelation" parameterType="MapSpotRelation">
+		insert into
+		sg_SpotRelation(ID, SHADOW1, SHADOW2) values (#{id}, #{shadow1},
+		#{shadow2})
+	</insert>
+
+	<select id="selectMapSpotBackup" parameterType="MapSpotShadow"
+		resultType="MapSpotBackup">
+		select ID, MAPSPOTID, BIZTYPE, ENTITY, SHAPE as strShape
+		from SG_SPOTBACKUP where mapSpotID=#{mapSpotID} and BizType
+		=#{bizType}
+	</select>
+	
+
+	<insert id="insertOperationLog" parameterType="OperationLog">
+		insert into
+		sg_log(ID,Description,Operater,OperaterName,Organization,OperationTime,Type,BackTime,Region,Year)
+		values(#{ID},
+		#{Description,jdbcType=VARCHAR},
+		#{Operater,jdbcType=VARCHAR},
+		#{OperaterName,jdbcType=VARCHAR},
+		#{Organization,jdbcType=VARCHAR},
+		#{OperationTime,jdbcType=DATE},
+		#{Type,jdbcType=VARCHAR},
+		#{BackTime,jdbcType=DATE},
+		#{Region,jdbcType=NUMERIC},
+		#{Year,jdbcType=NUMERIC})
+	</insert>
+
+
+	<!-- 添加MapSpot2016数据 -->
+	<insert id="insertMapSpot2016" parameterType="phalaenopsis.satellitegraph.entity.MapSpot2016">
+		insert into
+		SG_MAPSPOT (ID,PROVINCE,CITY,COUNTY,CONSTRUCTIONACREAGE,ARABLEACREAGE,INSTANCEID,NODE,SPOTNUMBER,
+		LEGALPROOFTYPE,HIS_ISNESTEDSUCCESS,HIS_ISCONFIRMPLANNING,HIS_APPROVALLEVEL,HIS_APPROVALNUMBER,HIS_APPROVALTIME,
+		HIS_APPROVALAREA,HIS_PROVINCIALAUDIT,HIS_REMARKS,MAJ_APPROVALLEVEL,MAJ_APPROVALNUMBER,MAJ_APPROVALTIME,
+		MAJ_APPROVALAREA,MAJ_REMARKS,OIL_ISSUEDNUMBER,OIL_ISSUEDTIME,OIL_PROJECTNAME,OIL_REMARKS,
+<!-- 		ZJG_ISNESTEDSUCCESS,-->
+		ZJG_PROJECTNAME,ZJG_PROJECTNUMBER,ZJG_NEWBLOCKNAME,ZJG_NEWBLOCKAREA,ZJG_REMARKS,OTHER_SPOTTYPE,OTHER_PROJECTNAME,
+		OTHER_APPROVALLEVEL,OTHER_APPROVALNUMBER,OTHER_APPROVALTIME,OTHER_APPROVALAREA,OTHER_REMARKS,NOTNEW_SPOTCLASSIFICATION,
+		NOTNEW_REMARKS,YEAR,HASCUT,SOURCETYPE,DISTRICTCOUNTY,MAJ_PROJECTNAME,COUNTYNAME,SPOTTYPE,TZ,BEFORETIME,
+		AFTERTIME,COORDINATE_X,COORDINATE_Y,SPOTAREA,CHANGEDLANDTYPE,CHANGEDRANGE,NOTCHANGEDLANDTYPE,
+		REMARKS,DISTRICTCOUNTYNAME,HIS_CONFORMAREA,HIS_NOTCONFORMAREA,MAYBENEWSOURCE,HIS_APPROVALNAME,
+		MAJ_APPROVALNAME,OTHER_APPROVALNAME,LASTUPDATE,ISFILLREPORT,SPOTKIND )
+		values (
+		#{id,jdbcType=NUMERIC},
+		#{province,jdbcType=NUMERIC},
+		#{city,jdbcType=NUMERIC},
+		#{county,jdbcType=NUMERIC},
+		#{constructionAcreage,jdbcType=NUMERIC},
+		#{arableAcreage,jdbcType=NUMERIC},
+		#{instanceID,jdbcType=VARCHAR},
+		#{node,jdbcType=VARCHAR},
+		#{spotNumber,jdbcType=VARCHAR},
+		#{legalProofType,jdbcType=NUMERIC},
+		#{hisIsNestedSuccess,jdbcType=NUMERIC},
+		#{hisIsConfirmPlanning,jdbcType=NUMERIC},
+		#{hisApprovalLevel,jdbcType=VARCHAR},
+		#{hisApprovalNumber,jdbcType=VARCHAR},
+		#{hisApprovalTime,jdbcType=DATE},
+		#{hisApprovalArea,jdbcType=NUMERIC},
+		#{hisProvincialAudit,jdbcType=NUMERIC},
+		#{hisRemarks,jdbcType=VARCHAR},
+		#{majApprovalLevel,jdbcType=VARCHAR},
+		#{majApprovalNumber,jdbcType=VARCHAR},
+		#{majApprovalTime,jdbcType=DATE},
+		#{majApprovalArea,jdbcType=NUMERIC},
+		#{majRemarks,jdbcType=VARCHAR},
+		#{oilIssuedNumber,jdbcType=VARCHAR},
+		#{oilIssuedTime,jdbcType=DATE},
+		#{oilProjectName,jdbcType=VARCHAR},
+		#{oilRemarks,jdbcType=VARCHAR},
+<!-- 		#{ZJG_ISNESTEDSUCCESS,jdbcType=NUMERIC}, -->
+		#{zJGProjectName,jdbcType=VARCHAR},
+		#{zJGProjectNumber,jdbcType=VARCHAR},
+		#{zJGNewBlockName,jdbcType=VARCHAR},
+		#{zJGNewBlockArea,jdbcType=NUMERIC},
+		#{zJGRemarks,jdbcType=VARCHAR},
+		#{otherSpotType,jdbcType=NUMERIC},
+		#{otherProjectName,jdbcType=VARCHAR },
+		#{otherApprovalLevel,jdbcType=VARCHAR},
+		#{otherApprovalNumber,jdbcType=VARCHAR},
+		#{otherApprovalTime,jdbcType=DATE},
+		#{otherApprovalArea,jdbcType=NUMERIC},
+		#{otherRemarks,jdbcType=VARCHAR},
+		#{notNewSpotClassification,jdbcType=NUMERIC},
+		#{notNewRemarks,jdbcType=VARCHAR},
+		#{year,jdbcType=NUMERIC},
+		#{hasCut,jdbcType=NUMERIC},
+		#{sourceType,jdbcType=NUMERIC},
+		#{districtCounty,jdbcType=NUMERIC},
+		#{majProjectName,jdbcType=VARCHAR},
+		#{countyName,jdbcType=VARCHAR},
+		#{spotType,jdbcType=VARCHAR},
+		#{tZ,jdbcType=VARCHAR},
+		#{beforeTime,jdbcType=VARCHAR},
+		#{afterTime,jdbcType=VARCHAR},
+		#{coordinateX,jdbcType=NUMERIC},
+		#{coordinateY,jdbcType=NUMERIC},
+		#{spotArea,jdbcType=NUMERIC},
+		#{changedLandType,jdbcType=VARCHAR},
+		#{changedRange,jdbcType=VARCHAR},
+		#{notChangedLandType,jdbcType=VARCHAR},
+		#{remarks,jdbcType=VARCHAR},
+		#{districtCountyName,jdbcType=VARCHAR},
+		#{hisConformArea,jdbcType=NUMERIC},
+		#{hisNotConformArea,jdbcType=NUMERIC},
+		#{maybeNewSource,jdbcType=NUMERIC},
+		#{hisApprovalName,jdbcType=VARCHAR},
+		#{majApprovalName,jdbcType=VARCHAR},
+		#{otherApprovalName,jdbcType=VARCHAR},
+		#{LastUpdate,jdbcType=DATE},
+		#{isFillReport,jdbcType=NUMERIC},
+		#{spotKind,jdbcType=VARCHAR}
+		)
+	</insert>
+
+	<!-- 添加图斑分宗、并宗的所有过程影像点的数据 -->
+	<insert id="insertMapSpotShadow" parameterType="MapSpotShadow">
+		insert into
+		sg_SpotShadow(SHADOWID, MAPSPOTID, SHADOWTYPE, ISLEAF, BIZTYPE)
+		values(#{shadowID,jdbcType=NUMERIC},
+		#{mapSpotID,jdbcType=NUMERIC},
+		#{shadowType,jdbcType=NUMERIC},
+		#{isLeaf,jdbcType=NUMERIC},
+		#{bizType,jdbcType=VARCHAR})
+	</insert>
+
+	<insert id="insertMapSpotBackup" parameterType="MapSpotBackup">
+		insert into
+		sg_SpotBackup(ID, MAPSPOTID, BIZTYPE, ENTITY, Shape)
+		values(#{id,jdbcType=NUMERIC},
+		#{mapSpotID,jdbcType=NUMERIC},
+		#{bizType,jdbcType=VARCHAR},
+		#{entity,jdbcType=CLOB}, 
+		#{strShape,jdbcType=CLOB})
+	</insert>
+
+	<!-- 更新图斑分宗、并宗的所有过程影像点的数据 -->
+	<update id="updateMapSpotShadow" parameterType="MapSpotShadow">
+		update
+		sg_SpotShadow set 
+		MAPSPOTID=#{mapSpotID,jdbcType=NUMERIC}, 
+		SHADOWTYPE = #{shadowType,jdbcType=NUMERIC},
+		ISLEAF = #{isLeaf,jdbcType=NUMERIC}, 
+		BIZTYPE=#{bizType,jdbcType=VARCHAR}
+		where SHADOWID = #{shadowID}
+	</update>
+
+	<!-- 对应卫片列表查询卫片数量 -->
+	<select id="queryCount" parameterType="String" resultType="int">
+		${value}
+	</select>
+
+	<!-- 对应卫片列表查询卫片 -->
+	<select id="queryList" resultType="MapSpot2016">
+		${value}
+	</select>
+
+	<!-- 对应卫片列表查询操作日志 -->
+	<select id="getOperationLog" parameterType="map" resultType="OperationLog">
+		select * from (select * from sg_log where Region = #{RegionID} and
+		Year = #{Year} order by ID desc) where rownum = 1
+	</select>
+
+	<!-- 分宗、并宗中批量删除卫片 -->
+	<delete id="deleteMapSpot2016s" parameterType="long">
+		delete from sg_mapspot where id in
+		<foreach collection="list" item="item" separator="," open="("
+			close=")">
+			#{item}
+		</foreach>
+	</delete>
+
+	<!-- 根据卫片Id查询卫片 -->
+	<select id="selectOneMapSpot2016" resultType="MapSpot2016">
+		select
+		t.*,
+		p.id "theAuditSpot.id",
+		p.mapSpotId "theAuditSpot.mapSpotId",
+		p.cityAuditIsPass "theAuditSpot.cityAuditIsPass",
+		p.cityAuditRemarks "theAuditSpot.cityAuditRemarks",
+		p.cityAuditTime "theAuditSpot.cityAuditTime",
+		p.cityAuditPersonName "theAuditSpot.cityAuditPersonName",
+		p.cityAuditPersonID "theAuditSpot.cityAuditPersonID",
+		p.provinceAuditIsPass "theAuditSpot.provinceAuditIsPass",
+		p.provinceAuditRemarks "theAuditSpot.provinceAuditRemarks",
+		p.provinceAuditTime "theAuditSpot.provinceAuditTime",
+		p.provinceAuditPersonName "theAuditSpot.provinceAuditPersonName",
+		p.ProvinceAuditPersonID "theAuditSpot.provinceAuditPersonID",
+		p.isCityAudit "theAuditSpot.isCityAudit"
+		from
+		sg_mapspot t
+		left join sg_auditspot p on t.id = p.mapspotid
+		where t.id = '32740313464832'
+	</select>
+
+	<!-- 根据卫片Id查询卫片 -->
+	<select id="selectMapSpot2016" parameterType="map" resultType="MapSpot2016">
+	    select * from sg_mapspot where id = #{id} and year = #{year}
+	</select>
+	<!-- 根据图斑id查询审核信息 -->
+	<select id="queryAuditSpot" parameterType="long" resultType="phalaenopsis.satellitegraph.entity.AuditSpot">
+		select * from sg_auditspot where mapspotid = #{id}
+	</select>
+	
+
+	<!-- 查询列表 -->
+	<select id="getMapSpot2016sByConditions" parameterType="map"
+		resultType="MapSpot2016">
+		select * from sg_mapspot where 1=1
+		<if test="County!=null and County!=''">
+			and county = #{County}
+		</if>
+		<if test="City!=null and City!=''">
+			and City = #{City}
+		</if>
+		<if test="County!=null and County!=''">
+			and County = #{County}
+		</if>
+		and node in
+		<foreach collection="Array" item="item" separator="," open="("
+			close=")">
+			#{item}
+		</foreach>
+
+	</select>
+
+	<!--  枚举测试栗子
+	<insert id="testEnumInsert" parameterType="phalaenopsis.satellitegraph.dao.Test">
+		insert into CE_PCBZ(Id)
+		values(#{id,jdbcType=NUMERIC,typeHandler=phalaenopsis.common.method.Enum.IntEnumTypeHandler})
+	</insert>
+	
+	<resultMap type="phalaenopsis.satellitegraph.dao.Test" id="aaaaaa">
+		<result column="id"  property="id"  jdbcType="NUMERIC"  typeHandler="phalaenopsis.common.method.Enum.IntEnumTypeHandler"/>
+	</resultMap>
+
+	<select id="testEnumSelect"  resultMap="aaaaaa" >
+		select id from CE_PCBZ where id = 1
+	</select>
+	 -->
+
+	<!-- 卫片填报查询总数量 -->
+	<select id="satelliteReportQueryCount" parameterType="String"
+		resultType="int">
+		${value}
+	</select>
+	<!-- 卫片填报查询列表 -->
+	<select id="satelliteReportQueryList" parameterType="String"
+		resultType="MapSpot2016">
+		${value}
+	</select>
+	
+	<select id="getSpotShadowBySport" parameterType="phalaenopsis.satellitegraph.entity.MapSpot"
+		resultType="MapSpotShadow">
+		select SHADOWID, MAPSPOTID, SHADOWTYPE, ISLEAF, BIZTYPE
+		from sg_SpotShadow where MAPSPOTID = #{id} and BIZTYPE = #{bizType}
+	</select>
+	
+	<!-- 图斑还原查询MapSpotRelation -->
+	<select id="getMapSpotRelations" parameterType="phalaenopsis.satellitegraph.entity.MapSpotShadow"
+		resultType="phalaenopsis.satellitegraph.entity.MapSpotRelation">
+		select ID, SHADOW1, SHADOW2 from sg_SpotRelation 
+		where SHADOW1 = #{shadowID} or SHADOW2 = #{shadowID}
+	</select>
+	
+	<!-- 图斑还原删除sg_SpotRelation -->
+	<delete id="deleteSpotRelation" parameterType="phalaenopsis.satellitegraph.entity.MapSpotShadow">
+		delete from sg_SpotRelation where 
+		 Shadow1 = #{shadowID} or Shadow2 = #{shadowID}
+	</delete>
+	<!-- 图斑还原删除备份图斑 -->
+	<delete id="deleteSpotBackup" parameterType="phalaenopsis.satellitegraph.entity.MapSpotShadow">
+		delete from sg_SpotBackup where 
+		MapSpotID = #{mapSpotID} and BizType = #{bizType}
+	</delete>
+	<!-- 图斑还原删除MapSpotShadow -->
+	<delete id="deleteMapSpotShadow" parameterType="phalaenopsis.satellitegraph.entity.MapSpotShadow">
+		delete from sg_SpotShadow where shadowID = #{shadowID} 
+	</delete>
+	
+</mapper>

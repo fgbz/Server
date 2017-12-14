@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE generatorConfiguration PUBLIC "-//mybatis.org//DTD MyBatis Generator Configuration 1.0//EN" "http://mybatis.org/dtd/mybatis-generator-config_1_0.dtd" >
+<generatorConfiguration>
+	<!-- 1,数据库驱动位置 -->
+	<classPathEntry
+		location="D:\Java\apache-maven-3.3.9\repository\com\oracle\ojdbc6\11.1.0.7.0\ojdbc6-11.1.0.7.0.jar" />
+	<context id="DB2Tables" targetRuntime="MyBatis3">
+
+		<property name="javaFileEncoding" value="UTF-8" />
+
+		<commentGenerator type="phalaenopsis.common.util.MyCommentGenerator">
+			<!-- 抑制警告 <property name="suppressTypeWarnings" value="true" /> -->
+			<!-- 是否去除自动生成的注释 true：是 ： false:否 -->
+			<!-- 生成文件的编码 (eclipse插件的时候这里并没有什么卵用，需要在eclipse根目录的eclipse.ini最后添加 -Dfile.encoding=UTF-8 
+				) -->
+			<property name="javaFileEncoding" value="UTF-8" />
+			<!-- 是否取消注释 -->
+			<property name="suppressAllComments" value="false" />
+			<property name="addRemarkComments" value="false" />
+			<!-- 是否生成注释代时间戳 -->
+			<property name="suppressDate" value="true" />
+			<!-- 当表名或者字段名为SQL关键字的时候，可以设置该属性为true，MBG会自动给表名或字段名添加**分隔符**  -->    
+        <property name="autoDelimitKeywords" value="true"></property>
+         <!-- 由于beginningDelimiter和endingDelimiter的默认值为双引号(")，在Mysql中不能这么写，所以还要将这两个默认值改为**反单引号(`)** -->
+        <property name="beginningDelimiter" value="`"/>
+        <property name="endingDelimiter" value="`"/>  
+		</commentGenerator>
+
+
+
+		<!--数据库连接的信息：驱动类、连接地址、用户名、密码 -->
+		<jdbcConnection driverClass="oracle.jdbc.driver.OracleDriver"
+			connectionURL=" jdbc:oracle:thin:@192.168.5.15:1521/orcl" userId="PHALAENOPSISjava"
+			password="8888888">
+			<!-- 针对oracle数据库 -->
+			<property name="remarksReporting" value="true"></property>
+			<!-- 针对mysql数据库 <property name="useInformationSchema" value="true"></property> -->
+		</jdbcConnection>
+
+
+		<javaModelGenerator targetPackage="phalaenopsis.allWeather.entity"
+			targetProject="Phalaenopsis/allweather">
+			<property name="enableSubPackages" value="false" />
+			<property name="trimStrings" value="true" />
+		</javaModelGenerator>
+
+		<sqlMapGenerator targetPackage="sql.mapper"  
+			targetProject="Phalaenopsis/allweather">
+			<property name="enableSubPackages" value="true" />
+			<property name="suppressAllComments" value="true" />
+			<property name="addRemarkComments" value="true" />
+		</sqlMapGenerator>
+
+		<javaClientGenerator targetPackage="phalaenopsis.allWeather.dao"
+			targetProject="Phalaenopsis/allweather" type="XMLMAPPER" />
+
+		<table tableName="SW_MAPSPOT" domainObjectName="SwMapSpot"
+			enableCountByExample="false" enableUpdateByExample="false"
+			enableDeleteByExample="false" enableSelectByExample="false"
+			selectByExampleQueryId="false"  mapperName="StoreDao">
+			<!-- domain字段的命名规则，false:默认为驼峰命名 true:按数据库真实命名 -->
+			<property name="useActualColumnNames" value="false" />
+			<!-- 忽略列，不生成bean 字段 -->
+			<!-- <ignoreColumn column="FRED" /> -->
+			<!-- 指定列的java数据类型 -->
+			<!-- <columnOverride column="LONG_VARCHAR_FIELD" jdbcType="VARCHAR" /> -->
+		</table>
+	</context>
+</generatorConfiguration>

@@ -1,0 +1,43 @@
+package ${package.Mapper};
+
+import ${package.Entity}.${entity};
+import ${superMapperClassPackage};
+
+/**
+ * <p>
+ * Mapper接口
+ * </p>
+ *
+ * @author ${author}
+ * @since ${date}
+ */
+ @Repository("${table.mapperName}")
+public interface ${table.mapperName} {
+
+	@Resource
+	private SqlSession sqlSession;
+	
+	/**
+	 * 增加
+	 */
+	public int add${entity}(${entity} t) {
+		int result=sqlSession.insert("${entity}.save${entity}", t);
+		return result;
+	}
+
+	/**
+	 * 修改
+	 */
+	public int update${entity}(${entity} t) {
+	       int result=sqlSession.update("${entity}.update${entity}",t);
+			return result;
+	}
+
+	/**
+	 * 删除
+	 */
+	public int delete${entity}(${entity} t) {
+		int result = sqlSession.delete("${entity}.delete${entity}", t);
+		return result;
+	}
+}

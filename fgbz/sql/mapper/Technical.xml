@@ -1,0 +1,302 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="phalaenopsis.fgbz.dao.TechnicalDao" >
+
+    <!--查询技术标准类别 -->
+    <select id="SelectTechnicalType" resultType="TechnicalType">
+        SELECT
+        t.ID,
+        t.TYPENAME,
+        t.PARENTID,
+        CASE
+        WHEN (
+        SELECT
+        count(1)
+        FROM
+        m_bs_tech_type link
+        WHERE
+        link.LAWSTYPEID = t.id) = 0 then 'candelete' else 'unabledelete' end as iscandelete
+        FROM
+        m_bs_techtype t
+    </select>
+
+    <!--删除技术标准类别-->
+    <delete id="DeleteTechnicalType" parameterType="TechnicalType">
+        DELETE from m_bs_techtype where id = #{id}
+    </delete>
+
+    <!--新增或修改法规标准类别-->
+    <insert id="AddOrUpdateTechnicalType" parameterType="TechnicalType">
+        <selectKey keyProperty="count" resultType="int" order="BEFORE">
+            select count(1) from m_bs_techtype t where t.ID=#{id}
+        </selectKey>
+
+        <if test="count==0">
+            INSERT into m_bs_techtype  (ID,TYPENAME, PARENTID ) VALUES (#{id},#{typename},#{parentid});
+        </if>
+        <if test="count==1">
+            UPDATE  m_bs_techtype t  SET t.TYPENAME = #{typename,jdbcType=VARCHAR} where t.ID = #{id}
+        </if>
+    </insert>
+
+    <!--获取子节点-->
+    <select id="getChildNode" parameterType="String" resultType="TechnicalType">
+        select t.id,t.TYPENAME from m_bs_techtype t where t.PARENTID=#{id}
+    </select>
+
+    <!--查询技术文件列表-->
+    <select id="getTechnicalList" parameterType="map" resultType="Technical">
+        SELECT
+        t.ID,
+        t.`CODE`,
+        t.CHINESENAME,
+        t.RELEASEDATE,
+        n.TYPENAME
+        FROM
+        m_bs_tech t
+        LEFT JOIN m_bs_tech_type m ON m.SID = t.id
+        LEFT JOIN m_bs_techtype n ON n.id = m.LAWSTYPEID
+        <include refid="queryTechnical"></include>
+        ORDER BY
+        t.RELEASEDATE DESC
+        LIMIT #{startRow},#{endRow}
+    </select>
+
+    <!-- 查询列表的总数 -->
+    <select id="getTechnicalListCount" resultType="int">
+        select count(1) from m_bs_tech t where 1=1
+        <include refid="queryTechnical"></include>
+    </select>
+
+
+    <sql id="queryTechnical">
+        <if test="Number != null and Number != ''">
+            and instr(t.CODE,#{Number})> 0
+        </if>
+        <if test="Title != null and Title != ''">
+            and instr(t.CHINESENAME,#{Title})> 0
+        </if>
+        <if test="FiledTimeStart != null and FiledTimeStart != ''">
+            and Date(t.RELEASEDATE) <![CDATA[  >=  ]]> #{FiledTimeStart}
+        </if>
+        <if test="FiledTimeEnd != null and FiledTimeEnd != ''">
+            and Date(t.RELEASEDATE) <![CDATA[  <=  ]]> #{FiledTimeEnd}
+        </if>
+        <if test="State != null and State != ''">
+            and t.`STATUS` = #{State}
+        </if>
+        <if test="TreeValue !=null and TreeValue!=''" >
+            and t.id in (select lt.SID from m_bs_lawstandard_type lt where lt.LAWSTYPEID in
+            <foreach collection="TreeValue" item="item" open="(" close=")" separator=",">
+                #{item.id}
+            </foreach>
+            )
+        </if>
+        <if test="KeyWords != null and KeyWords != ''">
+            and instr(t.KEYWORDS,#{KeyWords})> 0
+        </if>
+    </sql>
+
+    <!--新增或编辑技术文件-->
+    <insert id="SaveOrUpdateTechnical" parameterType="Technical">
+
+        <selectKey keyProperty="count" resultType="int" order="BEFORE">
+            select count(1) from m_bs_tech t where t.ID=#{id}
+        </selectKey>
+
+        <if test="count == 0">
+            insert into m_bs_tech
+            <trim prefix="(" suffix=")" suffixOverrides=",">
+                <if test="id != null">
+                    ID,
+                </if>
+                <if test="code != null">
+                    CODE,
+                </if>
+                <if test="chinesename != null">
+                    CHINESENAME,
+                </if>
+                <if test="englishname != null">
+                    ENGLISHNAME,
+                </if>
+                <if test="releasedate != null">
+                    RELEASEDATE,
+                </if>
+                <if test="keywords != null">
+                    KEYWORDS,
+                </if>
+                <if test="isbatch != null">
+                    ISBATCH,
+                </if>
+                <if test="inputuserid != null">
+                    INPUTUSERID,
+                </if>
+                <if test="inputdate != null">
+                    INPUTDATE,
+                </if>
+                <if test="modifyuserid != null">
+                    MODIFYUSERID,
+                </if>
+                <if test="modifydate != null">
+                    MODIFYDATE,
+                </if>
+                <if test="memo != null">
+                    MEMO,
+                </if>
+                <if test="summaryinfo != null">
+                    SUMMARYINFO,
+                </if>
+                <if test="statusname != null">
+                    STATUSNAME,
+                </if>
+                <if test="status != null">
+                    STATUS,
+                </if>
+            </trim>
+            <trim prefix="values (" suffix=")" suffixOverrides=",">
+                <if test="id != null">
+                    #{id,jdbcType=VARCHAR},
+                </if>
+                <if test="code != null">
+                    #{code,jdbcType=VARCHAR},
+                </if>
+                <if test="chinesename != null">
+                    #{chinesename,jdbcType=VARCHAR},
+                </if>
+                <if test="englishname != null">
+                    #{englishname,jdbcType=VARCHAR},
+                </if>
+                <if test="releasedate != null">
+                    #{releasedate,jdbcType=TIMESTAMP},
+                </if>
+                <if test="keywords != null">
+                    #{keywords,jdbcType=VARCHAR},
+                </if>
+                <if test="isbatch != null">
+                    #{isbatch,jdbcType=INTEGER},
+                </if>
+                <if test="inputuserid != null">
+                    #{inputuserid,jdbcType=VARCHAR},
+                </if>
+                <if test="inputdate != null">
+                    #{inputdate,jdbcType=TIMESTAMP},
+                </if>
+                <if test="modifyuserid != null">
+                    #{modifyuserid,jdbcType=VARCHAR},
+                </if>
+                <if test="modifydate != null">
+                    #{modifydate,jdbcType=TIMESTAMP},
+                </if>
+                <if test="memo != null">
+                    #{memo,jdbcType=VARCHAR},
+                </if>
+                <if test="summaryinfo != null">
+                    #{summaryinfo,jdbcType=VARCHAR},
+                </if>
+                <if test="status != null">
+                    #{status,jdbcType=VARCHAR},
+                </if>
+            </trim>
+
+        </if>
+        <if test="count>0">
+            update  m_bs_tech set
+            <trim prefix="" suffix="" suffixOverrides=",">
+
+                <if test="code != null">
+                    CODE = #{code,jdbcType=VARCHAR},
+                </if>
+                <if test="chinesename != null">
+                    CHINESENAME = #{chinesename,jdbcType=VARCHAR},
+                </if>
+                <if test="englishname != null">
+                    ENGLISHNAME = #{englishname,jdbcType=VARCHAR},
+                </if>
+                <if test="releasedate != null">
+                    RELEASEDATE =#{releasedate,jdbcType=TIMESTAMP},
+                </if>
+                <if test="keywords != null">
+                    KEYWORDS=#{keywords,jdbcType=VARCHAR},
+                </if>
+                <if test="isbatch != null">
+                    ISBATCH=   #{isbatch,jdbcType=INTEGER},
+                </if>
+                <if test="inputuserid != null">
+                    INPUTUSERID =  #{inputuserid,jdbcType=VARCHAR},
+                </if>
+                <if test="inputdate != null">
+                    INPUTDATE =  #{inputdate,jdbcType=DATE},
+                </if>
+                <if test="modifyuserid != null">
+                    MODIFYUSERID= #{modifyuserid,jdbcType=VARCHAR},
+                </if>
+                <if test="modifydate != null">
+                    MODIFYDATE= #{modifydate,jdbcType=DATE},
+                </if>
+
+                <if test="memo != null">
+                    MEMO= #{memo,jdbcType=VARCHAR},
+                </if>
+                <if test="summaryinfo != null">
+                    SUMMARYINFO=#{summaryinfo,jdbcType=VARCHAR},
+                </if>
+                <if test="status != null">
+                    STATUS=#{status,jdbcType=VARCHAR},
+                </if>
+            </trim>
+            where ID=#{id}
+
+
+        </if>
+    </insert>
+
+    <!--删除技术文件-->
+    <delete id="deleteLawstandardById" parameterType="String">
+        DELETE from m_bs_tech WHERE  ID = #{id}
+    </delete>
+
+    <!--建立类别与技术文件关联-->
+    <insert id="SaveOrUpdateTecAndType" parameterType="Technical">
+        <selectKey keyProperty="count" resultType="int" order="BEFORE">
+            select count(1) from m_bs_tech_type t where t.SID=#{id}
+        </selectKey>
+
+        <if test="count == 0">
+            insert into m_bs_tech_type  (ID,SID,LAWSTYPEID) VALUES
+            (uuid(),#{id},#{tectype,jdbcType=VARCHAR})
+        </if>
+        <if test="count>0" >
+            UPDATE m_bs_tech_type t set t.LAWSTYPEID = #{tectype,jdbcType=VARCHAR}
+            where t.sid = #{id}
+        </if>
+
+    </insert>
+
+    <!--删除类别与法规文件关联-->
+    <delete id="DeleteTecAndType" parameterType="String">
+        delete from m_bs_tech_type  where SID= #{id}
+    </delete>
+
+    <!--获取技术文件-->
+    <select id="getTechnicalById" parameterType="String" resultType="Technical">
+        SELECT
+        t.ID,
+        t.`CODE`,
+        t.CHINESENAME,
+        t.ENGLISHNAME,
+        t.RELEASEDATE,
+        t.KEYWORDS,
+        t.MEMO,
+        t.SUMMARYINFO,
+        n.TYPENAME,
+        n.id as tectype
+        FROM
+        `m_bs_tech` t
+        LEFT JOIN m_bs_tech_type m ON m.SID = t.id
+        LEFT JOIN m_bs_techtype n ON n.id = m.LAWSTYPEID
+
+        where t.id =#{id}
+
+    </select>
+
+</mapper>

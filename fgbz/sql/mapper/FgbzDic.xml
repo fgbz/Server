@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="phalaenopsis.fgbz.dao.FgbzDicDao" >
+
+    <!--获取发布部门-->
+    <select id="getPublishDep" resultType="FgbzDictory">
+        SELECT t.ID,t.PUBDEPNAME as name  from m_sa_publishdep t
+    </select>
+
+    <!--获取法规状态-->
+    <select id="getLawstandardState" resultType="FgbzDictory">
+        SELECT t.id,t.STATUSNAME as name  from m_sa_lawstandardstatus t
+    </select>
+
+</mapper>

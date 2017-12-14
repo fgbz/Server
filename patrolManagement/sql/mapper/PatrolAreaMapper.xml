@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper  
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"  
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="phalaenopsis.patrolManagement.dao.PatrolAreaMapper">
+	<select id="getAllAreaList" parameterType="map" resultType="PatrolArea">
+		select * from (
+		select p.* , s.name as patrolOrg, rownum num from PATROL_AREA p,SYS_ORGANIZATION s where 1 = 1 and s.id = p.patrolorgid
+		<include refid="AreaList"></include>
+		) where num between #{startNum} and #{endNum}
+	</select>
+	
+	<select id="getAllAreaCount" parameterType="map" resultType="int">
+		select count(*) from PATROL_AREA where 1 = 1 
+		<include refid="AreaList"></include> 
+	</select>
+	
+	<select id="getAreaList" parameterType="map" resultType="PatrolArea">
+		select * from (
+		select p.* , s.name as patrolOrg, rownum num from PATROL_AREA p,SYS_ORGANIZATION s where 1 = 1 and s.id = p.patrolorgid
+		<include refid="AreaList"></include>
+		) where num between #{startNum} and #{endNum}
+	</select>
+	
+	
+	
+	<select id="getAreaCount" parameterType="map" resultType="int">
+		select count(*) from PATROL_AREA t where 1 = 1 
+		<!-- <if test="organizationID!=null and organizationID!=''">
+			and patrolorgid in (select id from  SYS_ORGANIZATION o where o.id = #{organizationID} or o.parentid = #{organizationID}) 
+		</if> -->
+		<include refid="AreaList"></include> 
+	</select>
+	
+	<delete id="deleteArea" parameterType="String">
+		delete PATROL_AREA t where t.id = #{id}
+	</delete>
+	
+	<insert id="saveArea" parameterType="PatrolArea">
+		insert into PATROL_AREA(id,
+								areaname,
+								areatype,
+								patrol_level,
+								patrolorgid,
+								createdate,
+								patrolareacoordi) 
+						values(#{id},
+							   #{areaName},
+							   #{areaType},
+							   #{patrolLevel},
+							   #{patrolOrgid},
+							   #{createDate},
+							   #{coordi})
+	</insert>
+	
+	<sql id="AreaList">
+		<if test="patrolOrg!=null and patrolOrg!=''">
+			 and patrolorgid in ( select id
+        	 from sys_Organization START WITH ID=#{patrolOrg}
+        	 CONNECT BY PRIOR ID=PARENTID)
+		</if>
+		<if test="areaName!=null and areaName!=''">
+			and areaname like '%'||#{areaName}||'%'
+		</if>
+		<if test="areaType!=null and areaType!=''">
+			and areatype=#{areaType} 
+		</if>
+		<if test="patrolLevel!=null and patrolLevel!=''">
+			and patrol_level=#{patrolLevel}  
+		</if>
+	</sql>
+</mapper>

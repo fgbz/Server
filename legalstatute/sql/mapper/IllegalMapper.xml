@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="phalaenopsis.legalstatute.dao.IllegalDao">
+	<insert id="saveIllegal" parameterType="Illegal">
+		insert into LEGAL_ILLEGALACTIVITIES(
+								ILLEGALID,
+								ILLEGAL_TYPE,
+								ILLEGAL_TITLE,
+								LAWNAME,
+								LAWCONTENT,
+								REMARK
+								) 
+						values(
+							   #{illegalId},
+							   #{illegalType},
+							   #{illegalTitle},
+							   #{lawName},
+							   #{lawContent},
+							   #{remark})
+	</insert>
+	
+	<update id="editIllegal" parameterType="Illegal">
+		update LEGAL_ILLEGALACTIVITIES 
+		<set > 
+            <if test="illegalType != null and illegalType!=''" >
+                ILLEGAL_TYPE = #{illegalType},
+            </if>
+            <if test="illegalTitle != null and illegalTitle!=''" >
+                ILLEGAL_TITLE = #{illegalTitle},
+            </if>
+            <if test="lawName != null and lawName!=''" >
+                LAWNAME = #{lawName},
+            </if>
+            <if test="lawContent != null and lawContent!=''" >
+                LAWCONTENT = #{lawContent},
+            </if>
+            <if test="remark != null and remark!=''" >
+                REMARK = #{remark} 
+            </if>
+        </set>
+        where ILLEGALID = #{illegalId}
+	</update>
+	
+	<delete id="deleteIllegal" parameterType="String">
+		delete from LEGAL_ILLEGALACTIVITIES where ILLEGALID = #{illegalId}
+	</delete>
+	
+	<select id="getIllegalList" parameterType="map" resultType="Illegal">
+		select * from (select t.*,rownum num from LEGAL_ILLEGALACTIVITIES t where 1 = 1 
+		<if test="type!=null and type!=''">
+			and ILLEGAL_TYPE = #{type} 
+		</if>
+		<if test="title!=null and title!=''">
+			and ILLEGAL_TITLE like '%'||#{title}||'%'
+		</if>
+		) 
+		where num between #{startNum} and #{endNum}
+	</select>
+	
+	<select id="getIllegalCount" parameterType="map" resultType="Integer">
+		select count(*) from LEGAL_ILLEGALACTIVITIES t where 1 = 1 
+		<if test="type!=null and type!=''">
+			and ILLEGAL_TYPE = #{type} 
+		</if>
+		<if test="title!=null and title!=''">
+			and ILLEGAL_TITLE like '%'||#{title}||'%'
+		</if>
+	</select>
+
+
+</mapper>

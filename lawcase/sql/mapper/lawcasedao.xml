@@ -1,0 +1,1321 @@
+<?xml version="1.0" encoding="UTF-8" ?>  
+<!DOCTYPE mapper  
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"  
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="phalaenopsis.lawcase.dao.ILawCaseDao">
+    <!--获取列表中的当事人  getLitigantInfo-->
+    <select id="getLitigantInfo" parameterType="string" resultType="phalaenopsis.lawcase.entity.LitigantInfo">
+		select * from law_caselitigant li where li.caseid = #{caseID}
+	</select>
+    
+
+	<!--根据组织机构ID获取用户ID getUserIdByOrganizationID -->
+	<select id="getUserIdByOrganizationID" parameterType="map" resultType="phalaenopsis.common.entity.User">
+		select * from sys_user su where su.organizationid = #{orgId}
+	</select>
+	<!--根据角色ID获取用户ID getUserIdByRoleID -->
+	<select id="getUserIdByRoleID"  parameterType="string" resultType="String">
+		select sr.userid from sys_userroles sr where sr.roleid = #{roleid,jdbcType=VARCHAR}
+	</select>
+
+	<!--获取创建人ID queryCreateUserId -->
+	<select id="queryCreateUserId" parameterType="Signature"
+		resultType="String">
+		select c.createuser from law_casebaseinfo c left join
+		ss_sign s on s.instanceid = c.caseid where s.instanceid =#{instanceID}
+	</select> 
+
+
+	<!--结案节点提交签字获取下一环节签字总数 getNextNodeCount -->
+	<select id="getNextNodeCount" parameterType="map" resultType="int">
+		select count(1) from SS_SIGN t where t.instanceid =#{instanceID} and
+		t.signednode=#{signedNode} and t.templateid=#{templateID}
+	</select>
+
+
+	<!--结案节点提交签字保存或者更新 -->
+	<insert id="saveOrUpdateSignature" parameterType="Signature">
+		<selectKey keyProperty="count" resultType="int" order="BEFORE">
+			select count(1) from SS_SIGN t where t.id = #{id}
+		</selectKey>
+		<if test="count==0">
+			insert into SS_SIGN
+			(id,
+			issendback,
+			sendbackreason,
+			operatetime,
+			nodestatus,
+			idea,
+			signdate)
+			values
+			(
+			#{id},
+			#{isSendBack,jdbcType=INTEGER},
+			#{sendBackReason,jdbcType=VARCHAR},
+			#{operateTime,jdbcType=TIMESTAMP},
+			#{nodeStatus,jdbcType=INTEGER},
+			#{idea,jdbcType=VARCHAR},
+			#{signDate,jdbcType=TIMESTAMP}
+			)
+		</if>
+		<if test="count > 0">
+			update SS_SIGN s set
+			s.id = #{id},
+			s.issendback =
+			#{isSendBack,jdbcType=INTEGER},
+			s.sendbackreason =
+			#{sendBackReason,jdbcType=VARCHAR},
+			s. operatetime =
+			#{operateTime,jdbcType=TIMESTAMP},
+			s.nodestatus =
+			#{nodeStatus,jdbcType=INTEGER},
+			s.idea =
+			#{idea,jdbcType=VARCHAR},
+			s.status=
+			#{status,jdbcType=INTEGER},
+			s.signdate = #{signDate,jdbcType=TIMESTAMP}
+			where
+			id= #{id}
+		</if>
+	</insert>
+
+	<!--结案节点提交签字流程 获取签字总数 -->
+	<select id="getSignatureCount" parameterType="map" resultType="int">
+		select count(1) from SS_SIGN t where t.instanceid =#{caseID} and
+		t.signednode=#{node} and t.templateid=#{signLinkID} and
+		t.status=#{status}
+	</select>
+
+
+	<!--结案节点 根据ID去更新签字信息 updateSignature -->
+	<update id="updateSignature" parameterType="Signature">
+		update SS_SIGN set
+		issendback=#{isSendBack,jdbcType=INTEGER},sendbackreason=#{sendBackReason,jdbcType=VARCHAR},status
+		= #{status},nodestatus = #{nodeStatus} where id = #{id}
+	</update>
+
+
+	<!--结案节点 根据ID获取签字信息 querySignature -->
+	<select id="querySignature" parameterType="String" resultType="Signature">
+		select * from SS_SIGN t where t.id = #{id}
+	</select>
+
+	<!--结案节点退回删除签字信息 deleteSignatureByBack -->
+	<delete id="deleteSignatureByBack" parameterType="String">
+		delete
+		SS_SIGN s
+		where
+		s.id=#{string}
+	</delete>
+
+	<!--在结案节点保存签字信息 saveSignatureFromNodeByEndCase -->
+	<insert id="saveSignatureFromNodeByEndCase" parameterType="Signature">
+		insert into
+		SS_SIGN(id,templateid,instanceid,signednode,signeduserid,status,signdate,idea)
+		values(
+			#{id},
+			#{templateID,jdbcType=VARCHAR},
+			#{instanceID,jdbcType=VARCHAR},
+			#{signedNode,jdbcType=VARCHAR},
+			#{signedUserID,jdbcType=VARCHAR},
+			#{status,jdbcType=INTEGER},
+			#{signDate,jdbcType=TIMESTAMP},
+			#{idea,jdbcType=VARCHAR}
+		)
+	</insert>
+	<!--在结案节点更新签字信息 updateSignatureFromNodeByEndCase -->
+	<update id="updateSignatureFromNodeByEndCase" parameterType="Signature">
+		update SS_SIGN set
+		signdate=#{signDate,jdbcType=TIMESTAMP},status=#{status,jdbcType=INTEGER},idea=#{idea,jdbcType=VARCHAR} where
+		id = #{id}
+	</update>
+	<!-- 根据基本信息中caseID查询受理人信息 -->
+	<select id="queryCaseAcceptUser" parameterType="CaseBaseInfo"
+		resultType="CaseAcceptUser">
+		select * from LAW_CASEBASEINFO t where t.caseid = #{caseID}
+	</select>
+
+	<!-- 根据基本信息中caseID和Version查询当事人信息 -->
+	<select id="queryLitigantInfo" parameterType="CaseBaseInfo"
+		resultType="LitigantInfo">
+		select * from LAW_CASEBASEINFO t where t.version
+		=#{version} and t.caseid = #{caseID}
+	</select>
+
+
+	<!-- 检查受理编号是否存在重复 -->
+	<select id="checkRegisterCaseNo" parameterType="CaseBaseInfo"
+		resultType="int">
+		select count(1) from LAW_CASEBASEINFO t where t.registercaseno
+		=#{registerCaseNo,jdbcType=VARCHAR}
+		<if test="caseID !=null and caseID != ''">
+			and t.caseid <![CDATA[<]]> <![CDATA[>]]>#{caseID,jdbcType=VARCHAR}
+		</if>
+	</select>
+
+	<!-- 保存违法线索登记 -->
+	<insert id="saveOrUpdateCluesRegister" parameterType="IllegalClues">
+		<selectKey keyProperty="count" resultType="int" order="BEFORE">
+			select count(1) from LAW_ILLEGALCLUES t where t.id = #{id}
+		</selectKey>
+		<if test="count==0">
+			insert into law_illegalclues
+			(id,
+			caseid,
+			cluescode,
+			casesource,
+			person,
+			phonenum,
+			address,
+			district,
+			illegaladdress,
+			cluescontent,
+			attnopinion,
+			attnsign,
+			attnsigndate,
+			leaderopinion,
+			leadersign,
+			leadersigndate)
+			values
+			(#{id},
+			#{caseid,jdbcType=VARCHAR},
+			#{cluesCode,jdbcType=VARCHAR},
+			#{caseSource,jdbcType=VARCHAR},
+			#{person,jdbcType=VARCHAR},
+			#{phonenum,jdbcType=VARCHAR},
+			#{address,jdbcType=VARCHAR},
+			#{district,jdbcType=INTEGER},
+			#{illegaladdress,jdbcType=VARCHAR},
+			#{cluescontent,jdbcType=VARCHAR},
+			#{attnopinion,jdbcType=VARCHAR},
+			#{attnsign,jdbcType=VARCHAR},
+			#{attnsignDate,jdbcType=TIMESTAMP},
+			#{leaderopinion,jdbcType=VARCHAR},
+			#{leadesign,jdbcType=VARCHAR},
+			#{ledersignDate,jdbcType=TIMESTAMP}
+			)
+		</if>
+		<if test="count > 0">
+			update law_illegalclues set
+			caseid =
+			#{caseid,jdbcType=VARCHAR},
+			cluescode =
+			#{cluesCode,jdbcType=VARCHAR},
+			casesource =
+			#{caseSource,jdbcType=VARCHAR},
+			person =
+			#{person,jdbcType=VARCHAR},
+			phonenum = #{phonenum,jdbcType=VARCHAR},
+			address =
+			#{address,jdbcType=VARCHAR},
+			district =
+			#{district,jdbcType=INTEGER},
+			illegaladdress =
+			#{illegaladdress,jdbcType=VARCHAR},
+			cluescontent =
+			#{cluescontent,jdbcType=VARCHAR},
+			attnopinion =
+			#{attnopinion,jdbcType=VARCHAR},
+			attnsign =
+			#{attnsign,jdbcType=VARCHAR},
+			attnsigndate =
+			#{attnsignDate,jdbcType=TIMESTAMP},
+			leaderopinion =
+			#{leaderopinion,jdbcType=VARCHAR},
+			leadersign =
+			#{leadesign,jdbcType=VARCHAR},
+			leadersigndate =
+			#{ledersignDate,jdbcType=TIMESTAMP}
+			where id= #{id}
+		</if>
+	</insert>
+
+	<!--删除受理人信息 -->
+	<delete id="deleteCaseAcceptUser" parameterType="String">
+		delete
+		LAW_CASEACCEPTUSER t where t.caseid=#{caseID}
+	</delete>
+
+	<!-- 保存受理人信息 -->
+	<insert id="saveCaseAcceptUser" parameterType="java.util.List"
+		useGeneratedKeys="false">
+		insert all
+		<foreach collection="list" item="item" index="index"
+			separator="">
+			into LAW_CASEACCEPTUSER(
+			ID,
+			CASEID,
+			ACCEPTUSERID,
+			ISMAIN)
+			values
+			(
+			#{item.id,jdbcType=VARCHAR},
+			#{item.caseID,jdbcType=VARCHAR},
+			#{item.acceptUserID,jdbcType=VARCHAR},
+			#{item.isMain,jdbcType=INTEGER}
+			)
+		</foreach>
+		SELECT 1 FROM DUAL
+	</insert>
+
+	<!-- 删除当事人信息 -->
+	<delete id="deleteLitigantInfo" parameterType="String">
+		delete
+		LAW_CASELITIGANT t where t.caseid=#{caseID}
+	</delete>
+
+	<!-- 通过ID删除当事人信息 -->
+	<delete id="deleteLitigantInfoByID" parameterType="String">
+		delete
+		LAW_CASELITIGANT t where t.id = #{id}
+	</delete>
+
+	<!-- 保存当事人信息 -->
+	<insert id="saveLitigantInfo" parameterType="java.util.List"
+		useGeneratedKeys="false">
+		insert all
+		<foreach collection="list" item="item" index="index"
+			separator="">
+			into LAW_CASELITIGANT
+			(ID,
+			CASEID,
+			TYPE,
+			PERSONALNAME,
+			PERSONALSEX,
+			PERSONALAGE,
+			PERSONALIDCARD,
+			PERSONALPHONE,
+			PERSONALPOLITICALSTATUS,
+			PERSONALCONGRESSIONAL,
+			PERSONALISAGENT,
+			PERSONALPARTYORGANIZATION,
+			PERSONALUNIT,
+			PERSONALDUTY,
+			PERSONALADDRESS,
+			PERSONALMAILADDRESS,
+			PERSONALZIPCODE,
+			PERSONALFAX,
+			PERSONALEMAIL,
+			PERSONALMOBILE,
+			UNITNAME,
+			UNITADDRESS,
+			UNITZIPCODE,
+			UNITPHONE,
+			UNITBUSINESSLICENSE,
+			UNITORGANIZATIONCODE,
+			LEGALPERSONNAME,
+			LEGALPERSONSEX,
+			LEGALPERSONAGE,
+			LEGALPERSONIDCARD,
+			LEGALPERSONPHONE,
+			LEGALPERSONPOLITICALSTATUS,
+			LEGALPERSONCONGRESSIONAL,
+			LEGALPERSONUNIT,
+			LEGALPERSONDUTY,
+			LEGALPERSONADDRESS,
+			LEGALPERSONMAILADDRESS,
+			LEGALPERSONZIPCODE,
+			LEGALPERSONFAX,
+			LEGALPERSONEMAIL,
+			LEGALPERSONMOBILE,
+			CONTACTPERSONNAME,
+			CONTACTPERSONSEX,
+			CONTACTPERSONAGE,
+			CONTACTPERSONIDCARD,
+			CONTACTPERSONPHONE,
+			CONTACTPERSONUNIT,
+			CONTACTPERSONDUTY,
+			CONTACTPERSONADDRESS,
+			CONTACTPERSONMAILADDRESS,
+			CONTACTPERSONZIPCODE,
+			CONTACTPERSONFAX,
+			CONTACTPERSONEMAIL,
+			CONTACTPERSONMOBILE,
+			VERSION)
+			values (
+			#{item.id,jdbcType=VARCHAR},
+			#{item.caseID,jdbcType=VARCHAR},
+			#{item.type,jdbcType=INTEGER},
+			#{item.personalName,jdbcType=VARCHAR},
+			#{item.personalSex,jdbcType=VARCHAR},
+			#{item.personalAge,jdbcType=INTEGER},
+			#{item.personalIDCard,jdbcType=VARCHAR},
+			#{item.personalPhone,jdbcType=VARCHAR},
+			#{item.personalPoliticalStatus,jdbcType=VARCHAR},
+			#{item.personalCongressional,jdbcType=VARCHAR},
+			#{item.personalIsAgent,jdbcType=INTEGER},
+			#{item.personalPartyOrganization,jdbcType=VARCHAR},
+			#{item.personalUnit,jdbcType=VARCHAR},
+			#{item.personalDuty,jdbcType=VARCHAR},
+			#{item.personalAddress,jdbcType=VARCHAR},
+			#{item.personalMailAddress,jdbcType=VARCHAR},
+			#{item.personalZipCode,jdbcType=VARCHAR},
+			#{item.personalFax,jdbcType=VARCHAR},
+			#{item.personalEmail,jdbcType=VARCHAR},
+			#{item.personalMobile,jdbcType=VARCHAR},
+			#{item.unitName,jdbcType=VARCHAR},
+			#{item.unitAddress,jdbcType=VARCHAR},
+			#{item.unitZipCode,jdbcType=VARCHAR},
+			#{item.unitPhone,jdbcType=VARCHAR},
+			#{item.unitBusinessLicense,jdbcType=VARCHAR},
+			#{item.unitOrganizationCode,jdbcType=VARCHAR},
+			#{item.legalPersonName,jdbcType=VARCHAR},
+			#{item.legalPersonSex,jdbcType=VARCHAR},
+			#{item.legalPersonAge,jdbcType=INTEGER},
+			#{item.legalPersonIDCard,jdbcType=VARCHAR},
+			#{item.legalPersonPhone,jdbcType=VARCHAR},
+			#{item.legalPersonPoliticalStatus,jdbcType=VARCHAR},
+			#{item.legalPersonCongressional,jdbcType=VARCHAR},
+			#{item.legalPersonUnit,jdbcType=VARCHAR},
+			#{item.legalPersonDuty,jdbcType=VARCHAR},
+			#{item.legalPersonAddress,jdbcType=VARCHAR},
+			#{item.legalPersonMailAddress,jdbcType=VARCHAR},
+			#{item.legalPersonZipCode,jdbcType=VARCHAR},
+			#{item.legalPersonFax,jdbcType=VARCHAR},
+			#{item.legalPersonEmail,jdbcType=VARCHAR},
+			#{item.legalPersonMobile,jdbcType=VARCHAR},
+			#{item.ContactPersonName,jdbcType=VARCHAR},
+			#{item.contactPersonSex,jdbcType=VARCHAR},
+			#{item.contactPersonAge,jdbcType=INTEGER},
+			#{item.contactPersonIDCard,jdbcType=VARCHAR},
+			#{item.contactPersonPhone,jdbcType=VARCHAR},
+			#{item.contactPersonUnit,jdbcType=VARCHAR},
+			#{item.contactPersonDuty,jdbcType=VARCHAR},
+			#{item.contactPersonAddress,jdbcType=VARCHAR},
+			#{item.contactPersonMailAddress,jdbcType=VARCHAR},
+			#{item.contactPersonZipCode,jdbcType=VARCHAR},
+			#{item.contactPersonFax,jdbcType=VARCHAR},
+			#{item.contactPersonEmail,jdbcType=VARCHAR},
+			#{item.contactPersonMobile,jdbcType=VARCHAR},
+			#{item.version,jdbcType=INTEGER}
+			)
+		</foreach>
+		SELECT 1 FROM DUAL
+	</insert>
+
+	<!--保存案件信息 -->
+	<insert id="saveOrUpdateCaseBase" parameterType="CaseBaseInfo">
+		<selectKey keyProperty="count" resultType="int" order="BEFORE">
+			select count(1) from LAW_CASEBASEINFO t where t.id = #{id}
+		</selectKey>
+		<if test="count==0">
+			insert into LAW_CASEBASEINFO
+			(id,
+			CASEID,
+			INSTANCEID,
+			REGISTERCASENO,
+			CASEREASON,
+			ACCEPTTIME,
+			HAPPENEDTIME,
+			DISCOVERTIME,
+			ILLEGALREGION,
+			DISTRICT,
+			DETAILADDRESS,
+			BELONGDEPARTMENT,
+			CASESOURCE,
+			ILLEGALPURPOSE,
+			ILLEGALBODY,
+			CASETYPE,
+			CASENATURE,
+			ILLEGALNATURE,
+			URGENCYDEGREE,
+			ISSATELLITE,
+			ISLANDCHANGE,
+			FILLFORMDEPARTMENT,
+			FILLFORMPERSON,
+			FILLFORMTIME,
+			ILLEGALTRUTH,
+			REPORTCASETYPE,
+			REPORTCASEPHONE,
+			REPROTERIDCARD,
+			REPORTERNAME,
+			REPORTERSEX,
+			REPORTERAGE,
+			REPORTERHOUSEHOLD,
+			REPORTERADDRESS,
+			REPORTERPHONE,
+			REPORTCONTENT,
+			MEDIANAME,
+			DISCLOSURETIME,
+			ASSIGNDEPARTMENT,
+			ASSIGNWAY,
+			ASSIGNTIME,
+			ASSIGNREQUIREMENTS,
+			PATROLPEOPLE,
+			PATROLTIME,
+			PATROLROUTE,
+			SATELLITEIMAGESNO,
+			SATELLITEIMAGESYEAR,
+			LANDCHANGEMAPSPOTNO,
+			LANDCHANGEMAPSPOTYEAR,
+			ISLOCATION,
+			FINDWAY,
+			LANDCHANGESURVEYNO,
+			LANDCHANGESURVEYYEAR,
+			VERSION,
+			BUILDTIME,
+			CREATEUSER,
+			DEALSITUATION,
+			CASEBRIEF,
+			PUNISHMENTCONTENT,
+			EXECUTIVECONDITION,
+			IMPORTANCE,
+			NEXTNODES,
+			DEALILLEGALTRUTH,
+			DELAYREASON,
+			DELAYSTATUS,
+			LAWLESSNATURE,
+			LAWLESSNATUREDETAIL,
+			AREA,
+			ARABLELANDAREA,
+			BASICFARMLANDAREA)
+			values
+			(
+			#{id},
+			#{caseID,jdbcType=VARCHAR},
+			#{instanceID,jdbcType=VARCHAR},
+			#{registerCaseNo,jdbcType=VARCHAR},
+			#{caseReason,jdbcType=VARCHAR},
+			#{acceptTime,jdbcType=TIMESTAMP},
+			#{happenedTime,jdbcType=TIMESTAMP},
+			#{discoverTime,jdbcType=TIMESTAMP},
+			#{illegalRegion,jdbcType=VARCHAR},
+			#{district,jdbcType=INTEGER},
+			#{detailAddress,jdbcType=VARCHAR},
+			#{belongDepartment,jdbcType=VARCHAR},
+			#{caseSource,jdbcType=VARCHAR},
+			#{illegalPurpose,jdbcType=VARCHAR},
+			#{illegalBody,jdbcType=VARCHAR},
+			#{caseType,jdbcType=VARCHAR},
+			#{caseNature,jdbcType=VARCHAR},
+			#{illegalNature,jdbcType=VARCHAR},
+			#{urgencyDegree,jdbcType=VARCHAR},
+			#{isSatellite,jdbcType=INTEGER},
+			#{isLandChange,jdbcType=INTEGER},
+			#{fillFormDepartment,jdbcType=VARCHAR},
+			#{fillFormPerson,jdbcType=VARCHAR},
+			#{fillFormTime,jdbcType=TIMESTAMP},
+			#{illegalTruth,jdbcType=VARCHAR},
+			#{reportCaseType,jdbcType=VARCHAR},
+			#{reportCasePhone,jdbcType=VARCHAR},
+			#{reporterIDCard,jdbcType=VARCHAR},
+			#{reporterName,jdbcType=VARCHAR},
+			#{reporterSex,jdbcType=VARCHAR},
+			#{reporterAge,jdbcType=INTEGER},
+			#{reporterHouseHold,jdbcType=VARCHAR},
+			#{reporterAddress,jdbcType=VARCHAR},
+			#{reporterPhone,jdbcType=VARCHAR},
+			#{reportContent,jdbcType=VARCHAR},
+			#{mediaName,jdbcType=VARCHAR},
+			#{disclosureTime,jdbcType=TIMESTAMP},
+			#{assignDepartment,jdbcType=VARCHAR},
+			#{assignWay,jdbcType=VARCHAR},
+			#{assignTime,jdbcType=TIMESTAMP},
+			#{assignRequirements,jdbcType=VARCHAR},
+			#{patrolPeople,jdbcType=VARCHAR},
+			#{patrolTime,jdbcType=TIMESTAMP},
+			#{patrolRoute,jdbcType=VARCHAR},
+			#{satelliteImagesNo,jdbcType=VARCHAR},
+			#{satelliteImagesYear,jdbcType=VARCHAR},
+			#{landChangeMapSpotNo,jdbcType=VARCHAR},
+			#{landChangeMapSpotYear,jdbcType=VARCHAR},
+			#{isLocation,jdbcType=VARCHAR},
+			#{findWay,jdbcType=VARCHAR},
+			#{landChangeSurveyNo,jdbcType=VARCHAR},
+			#{landChangeSurveyYear,jdbcType=VARCHAR},
+			#{version,jdbcType=INTEGER},
+			#{buildTime,jdbcType=TIMESTAMP},
+			#{createUser,jdbcType=VARCHAR},
+			#{dealSituation,jdbcType=VARCHAR},
+			#{caseBrief,jdbcType=VARCHAR},
+			#{punishmentContent,jdbcType=VARCHAR},
+			#{executiveCondition,jdbcType=VARCHAR},
+			#{importance,jdbcType=VARCHAR},
+			#{nextNodes,jdbcType=VARCHAR},
+			#{dealIllegalTruth,jdbcType=VARCHAR},
+			#{delayReason,jdbcType=VARCHAR},
+			#{delayStatus,jdbcType=INTEGER},
+			#{lawlessNature,jdbcType=VARCHAR},
+			#{lawlessNatureDetail,jdbcType=VARCHAR},
+			#{area,jdbcType=DOUBLE},
+			#{arableLandArea,jdbcType=DOUBLE},
+			#{basicFarmLandArea,jdbcType=DOUBLE}
+			)
+		</if>
+		<if test="count>0">
+			update LAW_CASEBASEINFO set
+			<if test="caseID!=null ">
+			   CASEID=
+			  #{caseID,jdbcType=VARCHAR}
+			</if>
+			<if test="instanceID!=null">
+			  ,INSTANCEID=#{instanceID,jdbcType=VARCHAR}
+			</if>
+	
+			<if test="registerCaseNo!=null">
+			 ,REGISTERCASENO=
+			#{registerCaseNo,jdbcType=VARCHAR}
+			</if>
+			<if test="caseReason!=null">
+			  ,CASEREASON=#{caseReason,jdbcType=VARCHAR}
+			</if>
+			<if test="acceptTime!=null">
+			,ACCEPTTIME=#{acceptTime,jdbcType=DATE}
+			</if>
+			<if test="happenedTime!=null">
+			,HAPPENEDTIME=
+			#{happenedTime,jdbcType=DATE}
+			</if>
+			<if test="discoverTime!=null">
+			,DISCOVERTIME=#{discoverTime,jdbcType=DATE}
+			</if>
+			<if test="illegalRegion!=null">
+			,ILLEGALREGION=
+			#{illegalRegion,jdbcType=VARCHAR}
+			</if>
+			<if test="district!=null">
+			,DISTRICT=#{district,jdbcType=INTEGER}
+			</if>
+			<if test="detailAddress!=null">
+			,DETAILADDRESS=#{detailAddress,jdbcType=VARCHAR}
+			</if>
+			<if test="belongDepartment!=null">
+			,BELONGDEPARTMENT=#{belongDepartment,jdbcType=VARCHAR}
+			</if>
+			<if test="caseSource!=null">
+			,CASESOURCE=
+			#{caseSource,jdbcType=VARCHAR}
+			</if>
+			<if test="illegalPurpose!=null">
+			,ILLEGALPURPOSE=
+			#{illegalPurpose,jdbcType=VARCHAR}
+			</if>
+			<if test="illegalBody!=null">
+			,ILLEGALBODY=#{illegalBody,jdbcType=VARCHAR}
+			</if>
+			<if test="caseType!=null">
+			,CASETYPE=#{caseType,jdbcType=VARCHAR}
+			</if>
+			<if test="caseNature!=null">
+			,CASENATURE=
+			#{caseNature,jdbcType=VARCHAR}
+			</if>
+			<if test="illegalNature!=null">
+			,ILLEGALNATURE=
+			#{illegalNature,jdbcType=VARCHAR}
+			</if>
+			<if test="urgencyDegree!=null">
+			,URGENCYDEGREE=#{urgencyDegree,jdbcType=VARCHAR}
+			</if>
+			<if test="isSatellite!=null">
+			,ISSATELLITE=
+			#{isSatellite,jdbcType=INTEGER}
+			</if>
+			<if test="isLandChange!=null">
+			,ISLANDCHANGE=#{isLandChange,jdbcType=INTEGER}
+			</if>
+			<if test="fillFormDepartment!=null">
+			,FILLFORMDEPARTMENT=#{fillFormDepartment,jdbcType=VARCHAR}
+			</if>
+			<if test="fillFormPerson!=null">
+			,FILLFORMPERSON=#{fillFormPerson,jdbcType=VARCHAR}
+			</if>
+			<if test="fillFormTime!=null">
+			,FILLFORMTIME=#{fillFormTime,jdbcType=DATE}
+			</if>
+			<if test="illegalTruth!=null">
+			,ILLEGALTRUTH=#{illegalTruth,jdbcType=VARCHAR}
+			</if>
+			<if test="reportCaseType!=null">
+			,REPORTCASETYPE=#{reportCaseType,jdbcType=VARCHAR}
+			</if>
+			<if test="reportCasePhone!=null">
+			,REPORTCASEPHONE=
+			#{reportCasePhone,jdbcType=VARCHAR}
+			</if>
+			<if test="reporterIDCard!=null">
+			,REPROTERIDCARD=
+			#{reporterIDCard,jdbcType=VARCHAR}
+			</if>
+			<if test="reporterName!=null">
+			,REPORTERNAME=#{reporterName,jdbcType=VARCHAR}
+			</if>
+			<if test="reporterSex!=null">
+			,REPORTERSEX=#{reporterSex,jdbcType=VARCHAR}
+			</if>
+			<if test="reporterAge!=null">
+			,REPORTERAGE=#{reporterAge,jdbcType=INTEGER}
+			</if>
+			<if test="reporterHouseHold!=null">
+			,REPORTERHOUSEHOLD=#{reporterHouseHold,jdbcType=VARCHAR}
+			</if>
+			<if test="reporterAddress!=null">
+			,REPORTERADDRESS=#{reporterAddress,jdbcType=VARCHAR}
+			</if>
+			<if test="reporterPhone!=null">
+			,REPORTERPHONE=#{reporterPhone,jdbcType=VARCHAR}
+			</if>
+			<if test="reportContent!=null">
+			,REPORTCONTENT=#{reportContent,jdbcType=VARCHAR}
+			</if>
+			<if test="mediaName!=null">
+			,MEDIANAME=
+			#{mediaName,jdbcType=VARCHAR}
+			</if>
+			<if test="disclosureTime!=null">
+			,DISCLOSURETIME=
+			#{disclosureTime,jdbcType=DATE}
+			</if>
+			<if test="assignDepartment!=null">
+			,ASSIGNDEPARTMENT=
+			#{assignDepartment,jdbcType=VARCHAR}
+			</if>
+			<if test="assignWay!=null">
+			,ASSIGNWAY=#{assignWay,jdbcType=VARCHAR}
+			</if>
+			<if test="assignTime!=null">
+			,ASSIGNTIME=#{assignTime,jdbcType=DATE}
+			</if>
+			<if test="assignRequirements!=null">
+			,ASSIGNREQUIREMENTS=#{assignRequirements,jdbcType=VARCHAR}
+			</if>
+			<if test="patrolPeople!=null">
+			,PATROLPEOPLE=#{patrolPeople,jdbcType=VARCHAR}
+			</if>
+			<if test="patrolTime!=null">
+			,PATROLTIME=#{patrolTime,jdbcType=DATE}
+			</if>
+			<if test="patrolRoute!=null">
+			,PATROLROUTE=
+			#{patrolRoute,jdbcType=VARCHAR}
+			</if>
+			<if test="satelliteImagesNo!=null">
+			,SATELLITEIMAGESNO=#{satelliteImagesNo,jdbcType=VARCHAR}
+			</if>
+			<if test="satelliteImagesYear!=null">
+			,SATELLITEIMAGESYEAR=#{satelliteImagesYear,jdbcType=VARCHAR}
+			</if>
+			<if test="landChangeMapSpotNo!=null">
+			,LANDCHANGEMAPSPOTNO=#{landChangeMapSpotNo,jdbcType=VARCHAR}
+			</if>
+			<if test="landChangeMapSpotYear!=null">
+			,LANDCHANGEMAPSPOTYEAR= #{landChangeMapSpotYear,jdbcType=VARCHAR}
+			</if>
+			<if test="instanceID!=null">
+			,ISLOCATION=#{isLocation,jdbcType=VARCHAR}
+			</if>
+			<if test="findWay!=null">
+			,FINDWAY=#{findWay,jdbcType=VARCHAR}
+			</if>
+			<if test="landChangeSurveyNo!=null">
+			,LANDCHANGESURVEYNO=#{landChangeSurveyNo,jdbcType=VARCHAR}
+			</if>
+			<if test="landChangeSurveyYear!=null">
+			,LANDCHANGESURVEYYEAR=#{landChangeSurveyYear,jdbcType=VARCHAR}
+			</if>
+			<if test="version!=null">
+			,VERSION=#{version,jdbcType=INTEGER}
+			</if>
+			<if test="buildTime!=null">
+			,BUILDTIME=#{buildTime,jdbcType=DATE}
+			</if>
+			<if test="createUser!=null">
+			,CREATEUSER=#{createUser,jdbcType=VARCHAR}
+			</if>
+			<if test="dealSituation!=null">
+			,DEALSITUATION=#{dealSituation,jdbcType=VARCHAR}
+			</if>
+			<if test="caseBrief!=null">
+			,CASEBRIEF=#{caseBrief,jdbcType=VARCHAR}
+			</if>
+			<if test="punishmentContent!=null">
+			,PUNISHMENTCONTENT=#{punishmentContent,jdbcType=VARCHAR}
+			</if>
+			<if test="executiveCondition!=null">
+			,EXECUTIVECONDITION=#{executiveCondition,jdbcType=VARCHAR}
+			</if>
+			<if test="importance!=null">
+			,IMPORTANCE=#{importance,jdbcType=VARCHAR}
+			</if>
+			<if test="nextNodes!=null">
+		    ,NEXTNODES
+			=#{nextNodes,jdbcType=VARCHAR}
+			</if>
+			<if test="dealIllegalTruth!=null">
+			,DEALILLEGALTRUTH=#{dealIllegalTruth,jdbcType=VARCHAR}
+			</if>
+			<if test="delayReason!=null">
+			,DELAYREASON=
+			#{delayReason,jdbcType=VARCHAR}
+			</if>
+			<if test="delayStatus!=null">
+			,DELAYSTATUS
+			=#{delayStatus,jdbcType=INTEGER}
+			</if>
+			<if test="lawlessNature!=null">
+			,LAWLESSNATURE=#{lawlessNature,jdbcType=VARCHAR}
+			</if>
+			<if test="lawlessNatureDetail!=null">
+			,LAWLESSNATUREDETAIL=
+			#{lawlessNatureDetail,jdbcType=VARCHAR}
+			</if>
+			<if test="area !=null">
+			,AREA=
+			#{area,jdbcType=DOUBLE}
+			</if>
+			<if test="arableLandArea !=null">
+			,ARABLELANDAREA=
+			#{arableLandArea,jdbcType=DOUBLE}
+			</if>
+			<if test="basicFarmLandArea !=null">
+			,BASICFARMLANDAREA=#{basicFarmLandArea,jdbcType=DOUBLE}
+			</if>
+		    where id=#{id}
+		</if>
+	</insert>
+
+	<!-- 获取签证流程数据 -->
+	<select id="getSignatureList" parameterType="map" resultType="Signature">
+		select * from SS_SIGN t where t.instanceid =#{caseID,jdbcType=VARCHAR}
+		and
+		t.signednode=#{node,jdbcType=VARCHAR} and
+		t.templateid=#{signLinkID,jdbcType=VARCHAR}
+	</select>
+
+	<!--保存签证流程数据 -->
+	<insert id="saveSignature" parameterType="java.util.List"
+		useGeneratedKeys="false">
+		INSERT ALL
+		<foreach collection="list" item="item" index="index"
+			separator="">
+			into SS_SIGN
+			(id,
+			templateid,
+			instanceid,
+			signednode,
+			signeduser,
+			signdate,
+			idea,
+			issendback,
+			sendbackreason,
+			signeduserid,
+			operatetime,
+			status,
+			nodestatus)
+			values
+			(
+			#{item.id},
+			#{item.templateID,jdbcType=VARCHAR},
+			#{item.InstanceID,jdbcType=VARCHAR},
+			#{item.signedNode,jdbcType=VARCHAR},
+			#{item.signedUser,jdbcType=VARCHAR},
+			#{item.signDate,jdbcType=TIMESTAMP},
+			#{item.idea,jdbcType=VARCHAR},
+			#{item.isSendBack,jdbcType=INTEGER},
+			#{item.sendBackReason,jdbcType=VARCHAR},
+			#{item.signedUserID,jdbcType=VARCHAR},
+			#{item.operateTime,jdbcType=TIMESTAMP},
+			#{item.status,jdbcType=INTEGER},
+			#{item.nodeStatus,jdbcType=INTEGER}
+			)
+		</foreach>
+		SELECT 1 FROM DUAL
+	</insert>
+
+	<!--删除签证流程数据 -->
+	<delete id="deleteSignature" parameterType="java.util.List">
+		delete from SS_SIGN where id in
+		<foreach collection="list" item="item" index="index" open="("
+			separator="," close=")">
+			#{item.id}
+		</foreach> 
+	</delete>
+
+	<!-- 查询条件 -->
+	<sql id="queryCaseBaseInfo">
+		<!-- 所属行政区域条件 -->
+		and (district in
+		(select t.REGIONID
+		from SS_REGION t
+		inner join
+		sys_OrgRegions o on o.regionid = t.regionid
+		where o.organizationid =
+		#{organizationid})
+		or district is null)
+
+		<if test="NodeID!=null and NodeID!=''">
+			and nodeid = #{NodeID}
+		</if>
+		<if test="CaseSource!=null and CaseSource!=''">
+			and CaseSource = #{CaseSource}
+		</if>
+		<if test="HappenedTimeBegin!=null and HappenedTimeBegin!=''">
+			and HappenedTime <![CDATA[>=]]>
+			to_date(#{HappenedTimeBegin},'yyyy-mm-dd')
+		</if>
+		<if test="HappenedTimeEnd!=null and HappenedTimeEnd!=''">
+			and HappenedTime  <![CDATA[<=]]>
+			to_date(#{HappenedTimeEnd},'yyyy-mm-dd')
+		</if>
+		<if test="District!=null and District!=''">
+			and District = #{District}
+		</if>
+		<if test="BuildTimeBegin!=null and BuildTimeBegin!=''">
+			and BuildTime  <![CDATA[>=]]>
+			to_date(#{BuildTimeBegin},'yyyy-mm-dd')
+		</if>
+		<if test="BuildTimeEnd!=null and BuildTimeEnd!=''">
+			and BuildTime <![CDATA[<=]]>
+			to_date(#{BuildTimeEnd},'yyyy-mm-dd')
+		</if>
+		<if test="CaseID!=null and CaseID!=''">
+			and CaseID = #{CaseID}
+		</if>
+		<if test="CasePlace!=null and CasePlace!=''">
+			and instr(CasePlace ,#{CasePlace})>0
+		</if>
+		<if test="RegisterCaseNo!=null and RegisterCaseNo!=''">
+			and instr(RegisterCaseNo,#{RegisterCaseNo})>0
+		</if>
+
+		<!-- 办结 -->
+		<if test="handOver!=null and handOver!=''">
+			and nodeid = 'Over' and CaseID
+			in ( select
+			sssign.instanceid from
+			ss_sign
+			sssign where
+			sssign.signeduserid
+			=#{userid} and sssign.status=2
+			and
+			sssign.templateid in
+			<foreach collection="signLinkIDs" index="index" item="item"
+				open="(" separator="," close=")">
+				#{item}
+			</foreach>
+			)
+		</if>
+
+		<!-- 待办 -->
+		<if test="handle!=null and handle!=''">
+			and nodeid <![CDATA[<]]> <![CDATA[>]]>
+			'Over' and
+			<!-- 当前用户经办 并且 不是其他人待签，且不是当前用户待签 的案件 -->
+			(
+			<!-- ( -->
+			(select count(1) from law_caseacceptuser acceptuser where
+			acceptuser.caseid=caseid and acceptuser.acceptuserid=#{userid})>0
+			<!-- and
+			(select count(1) from SS_SIGN t where t.status  <![CDATA[<]]> <![CDATA[>]]>2
+			and t.signeduserid <![CDATA[<]]> <![CDATA[>]]>
+			#{userid}
+			and t.templateid in
+			<foreach collection="signLinkIDs" index="index" item="item"
+				open="(" separator="," close=")">
+				#{item}
+			</foreach>
+			)
+			=0
+			) -->
+			or
+			<!-- 当前用户未经办 并且 当前用户待签 -->
+			(
+			(select count(1) from law_caseacceptuser acceptuser where
+			acceptuser.caseid=caseid and acceptuser.acceptuserid=#{userid})=0
+			and
+			(select count(1) from SS_SIGN t where t.status  <![CDATA[<]]> <![CDATA[>]]>2
+			and t.signeduserid =#{userid}
+			and t.instanceid = caseid
+			and t.templateid in
+			<foreach collection="signLinkIDs" index="index" item="item"
+				open="(" separator="," close=")">
+				#{item}
+			</foreach>
+			) >0
+			)
+			)
+		</if>
+
+		<!-- 已办 -->
+		<if test="handed!=null and handed!=''">
+			and nodeid <![CDATA[<]]> <![CDATA[>]]>
+			'Over' and
+			<!-- 当前用户经办 并且 其他人待签，且不是当前用户待签 的案件 -->
+			(
+			(
+			(select count(1) from law_caseacceptuser acceptuser where
+			acceptuser.caseid=caseid and acceptuser.acceptuserid=#{userid})>0
+			and
+			(select count(1) from SS_SIGN t where t.status  <![CDATA[<]]> <![CDATA[>]]>2
+			and t.signeduserid <![CDATA[<]]> <![CDATA[>]]>
+			#{userid}
+			and t.templateid in
+			<foreach collection="signLinkIDs" index="index" item="item"
+				open="(" separator="," close=")">
+				#{item}
+			</foreach>
+			) >0
+			)
+			or
+			<!-- 当前用户未经办 并且 当前用户签过，且不是当前用户待签 的案件 -->
+			(
+			(select count(1) from law_caseacceptuser acceptuser where
+			acceptuser.caseid=caseid and acceptuser.acceptuserid=#{userid})=0
+			and
+			(select count(1) from SS_SIGN t where t.status =2 and t.instanceid = caseid and t.signeduserid
+			=#{userid}
+			and t.templateid in
+			<foreach collection="signLinkIDs" index="index" item="item"
+				open="(" separator="," close=")">
+				#{item}
+			</foreach>
+			) >0
+			)
+			)
+		</if>
+
+		<!-- 当事人 -->
+		<if test="PersonalName!=null and PersonalName!=''">
+			<!-- and (select count(1) from law_caselitigant litigant where
+			instr(litigant.personalname,#{PersonalName})>0 and litigant.caseid =
+			caseid)>0 -->
+			
+			 and  caseid in   (select litigant.caseid from law_caselitigant litigant where instr(litigant.personalname, #{PersonalName}) > 0)
+		</if>
+		<!-- 按案件编号排序 -->
+		<if
+			test="sortPropertyByCaseNo!=null and sortPropertyByCaseNo!='' and sortPropertyByCaseNo == 'RegisterCaseNo'">
+			order by RegisterCaseNo
+		</if>
+		<!-- 按案件状态排序 NodeID -->
+		<if
+			test="sortPropertyByNodeID!=null and sortPropertyByNodeID!='' and sortPropertyByNodeID == 'NodeID'">
+			order by NodeID
+		</if>
+		<!--按区域排序  -->
+		<if
+			test="sortPropertyByDistrict!=null and sortPropertyByDistrict!='' and sortPropertyByDistrict == 'District'">
+			order by District
+		</if>
+		
+		<!-- <if test="sortProperty!=null and sortProperty!=''"> 
+			order by #{sortProperty} </if> -->
+		
+		<!-- <if test="sortProperty!=null and sortProperty!='' and sortProperty='NodeID'"> 
+			order by NodeID </if> -->
+		<if test="direction!=null and direction!=''">
+			DESC
+		</if>
+	</sql>
+
+	<!-- 查询列表信息 -->
+	<select id="getCaseBaseInfoList" parameterType="map" resultType="CaseBaseInfo">
+		with casebaseview as
+		(select
+		t.*,wf.nodeid,u.organizationid
+		OrgID,o.name
+		OrgName,
+		r.regionname||t.detailaddress CasePlace
+		from
+		law_casebaseinfo t
+		left join wf_instance wf on
+		t.instanceid=wf.instanceid
+		left join
+		sys_user u on t.createuser=u.id
+		left join sys_organization o on
+		u.organizationid=o.id
+		left join
+		ss_region r on t.district=r.regionid)
+
+		select *from(
+		select m.*,rownum no from (select * from casebaseview
+		where 1=1
+
+		<include refid="queryCaseBaseInfo"></include>
+		) m) where no between #{startNum} and #{endNum}
+	</select>
+
+	<!-- 获取查询列表总数 -->
+	<select id="getCaseBaseInfoTotal" parameterType="map"
+		resultType="int">
+		with casebaseview as
+		(select
+		t.*,wf.nodeid,u.organizationid
+		OrgID,o.name
+		OrgName,
+		r.regionname||t.detailaddress CasePlace
+		from
+		law_casebaseinfo t
+		left join wf_instance wf on
+		t.instanceid=wf.instanceid
+		left join
+		sys_user u on t.createuser=u.id
+		left join sys_organization o on
+		u.organizationid=o.id
+		left join
+		ss_region r on t.district=r.regionid)
+
+		select count(1) from casebaseview where 1=1
+		<include refid="queryCaseBaseInfo"></include>
+	</select>
+
+	<!-- 通过caseid查询最大版本号 -->
+	<select id="getMaxVersion" parameterType="String" resultType="int">
+		select max(t.version) from law_casebaseinfo t where t.caseid =
+		#{caseID}
+	</select>
+
+	<!-- 封装查询案件结果集 -->
+	<resultMap type="CaseBaseInfo" id="CaseBaseInfoMap">
+		<id column="id" property="id" />
+		<result column="caseid" property="caseID" />
+		<result column="district" property="district" />
+		<result column="illegalregion" property="illegalRegion" />
+		<result column="discovertime" property="discoverTime" />
+		<result column="happenedtime" property="happenedTime" />
+		<result column="accepttime" property="acceptTime" />
+		<result column="casereason" property="caseReason" />
+		<result column="registercaseno" property="registerCaseNo" />
+		<result column="instanceid" property="instanceID" />
+		<result column="fillformtime" property="fillFormTime" />
+		<result column="fillformperson" property="fillFormPerson" />
+		<result column="fillformdepartment" property="fillFormDepartment" />
+		<result column="islandchange" property="isLandChange" />
+		<result column="issatellite" property="isSatellite" />
+		<result column="urgencydegree" property="urgencyDegree" />
+		<result column="illegalnature" property="illegalNature" />
+		<result column="casenature" property="caseNature" />
+		<result column="casetype" property="caseType" />
+		<result column="illegalbody" property="illegalBody" />
+		<result column="illegalpurpose" property="illegalPurpose" />
+		<result column="casesource" property="caseSource" />
+		<result column="belongdepartment" property="belongDepartment" />
+		<result column="detailaddress" property="detailAddress" />
+		<result column="basicfarmlandarea" property="basicFarmLandArea" />
+		<result column="arablelandarea" property="arableLandArea" />
+		<result column="area" property="area" />
+		<result column="lawlessnaturedetail" property="lawlessNatureDetail" />
+		<result column="lawlessnature" property="lawlessNature" />
+		<result column="delaystatus" property="delayStatus" />
+		<result column="delayreason" property="delayReason" />
+		<result column="dealillegaltruth" property="dealIllegalTruth" />
+		<result column="nextnodes" property="nextNodes" />
+		<result column="importance" property="importance" />
+		<result column="executivecondition" property="executiveCondition" />
+		<result column="punishmentcontent" property="punishmentContent" />
+		<result column="casebrief" property="caseBrief" />
+		<result column="dealsituation" property="dealSituation" />
+		<result column="createuser" property="createUser" />
+		<result column="buildtime" property="buildTime" />
+		<result column="version" property="version" />
+		<result column="landchangesurveyyear" property="landChangeSurveyYear" />
+		<result column="landchangesurveyno" property="landChangeSurveyNo" />
+		<result column="findway" property="findWay" />
+		<result column="islocation" property="isLocation" />
+		<result column="realshape" property="realShape" />
+		<result column="shape" property="shape" />
+		<result column="landchangemapspotyear" property="landChangeMapSpotYear" />
+		<result column="landchangemapspotno" property="landChangeMapSpotNo" />
+		<result column="satelliteimagesyear" property="satelliteImagesYear" />
+		<result column="satelliteimagesno" property="satelliteImagesNo" />
+		<result column="patrolroute" property="patrolRoute" />
+		<result column="patroltime" property="patrolTime" />
+		<result column="patrolpeople" property="patrolPeople" />
+		<result column="assignrequirements" property="assignRequirements" />
+		<result column="assigntime" property="assignTime" />
+		<result column="assignway" property="assignWay" />
+		<result column="assigndepartment" property="assignDepartment" />
+		<result column="disclosuretime" property="disclosureTime" />
+		<result column="medianame" property="mediaName" />
+		<result column="reportcontent" property="reportContent" />
+		<result column="reporterphone" property="reporterPhone" />
+		<result column="reporteraddress" property="reporterAddress" />
+		<result column="reporterhousehold" property="reporterHouseHold" />
+		<result column="reporterage" property="reporterAge" />
+		<result column="reportersex" property="reporterSex" />
+		<result column="reportername" property="reporterName" />
+		<result column="reportcasephone" property="reportCasePhone" />
+		<result column="reportcasetype" property="reportCaseType" />
+		<result column="illegaltruth" property="illegalTruth" />
+		<result column="CasePlace"  property="casePlace" />
+		<collection property="litigantInfos" column="litigantID"
+			ofType="LitigantInfo">
+			<id column="litigantID" property="id" />
+			<result column="personalname" property="personalName"></result>
+			<result column="personalphone" property="personalPhone"></result>
+			<result column="personaladdress" property="personalAddress"></result>
+			<result column="personalzipcode" property="personalZipCode"></result>
+				<result column="type" property="type"></result>
+			
+		</collection>
+		<collection property="acceptUsers" column="aid" ofType="CaseAcceptUser">
+			<id column="aid" property="id" />
+			<result column="acceptusername" property="acceptUserName"></result>
+			<!--TODO 20170606添加 acceptuserID -->
+			<result column="auid" property="acceptUserID"></result>
+		</collection>
+		<collection property="signatureList" column="sssignID"
+			ofType="Signature">
+			<id column="sssignID" property="id" />
+			<result column="sssigntemplateid" property="templateID"></result>
+			<result column="sssigninstanceid" property="InstanceID"></result>
+			<result column="signednode" property="signedNode"></result>
+			<result column="signeduser" property="signedUser"></result>
+			<result column="signdate" property="signDate"></result>
+			<result column="idea" property="idea"></result>
+			<result column="issendback" property="isSendBack"></result>
+			<result column="sendbackreason" property="sendBackReason"></result>
+			<result column="signeduserid" property="signedUserID"></result>
+			<result column="operatetime" property="operateTime"></result>
+			<result column="status" property="status"></result>
+			<result column="nodestatus" property="nodeStatus"></result>
+		</collection>
+		<collection property="attachments" column="attachmentID"
+			ofType="Attachment">
+			<id column="attachmentID" property="id" />
+			<result column="filename" property="fileName"></result>
+			<result column="uploadtime" property="uploadTime"></result>
+			<result column="fileext" property="fileExt"></result>
+		</collection>
+	</resultMap>
+
+	<!--通过caseid查询信息 -->
+	<select id="getCaseBaseByCaseID" parameterType="map" resultMap="CaseBaseInfoMap">
+		select casebase.*,casebase.happenedtime as happenedTime,
+		<!-- 当事人信息 -->
+		litigant.id as litigantID,litigant.personalname,litigant.type,litigant.personalphone,litigant.personaladdress,litigant.personalzipcode,
+		<!-- 受理人信息 -->
+		<!-- acceptuser.acceptuserid as acceptuserID,sysuser.name as acceptusername, -->
+		acceptuser.id as aid,acceptuser.acceptuserid as auid,sysuser.name as
+		acceptusername,
+		<!-- 签证流程信息 -->
+		sssign.id as sssignID,sssign.templateid as
+		sssigntemplateid,sssign.instanceid as sssigninstanceid,
+		sssign.signednode,sssign.signeduser,sssign.signdate,sssign.idea,sssign.issendback,sssign.sendbackreason,sssign.signeduserid,
+		sssign.operatetime,sssign.status,sssign.nodestatus,
+		<!-- 附件信息 -->
+		attachment.id as
+		attachmentID,attachment.filename,attachment.uploadtime,attachment.fileext,
+
+       (select v.CasePlace as CasePlace from vlaw_casebaseinfo v where v.caseid = #{caseID} and v.version = #{version} ) as CasePlace
+
+		from law_casebaseinfo casebase
+
+		left join law_caselitigant litigant on
+		casebase.caseid = litigant.caseid
+		and casebase.version
+		=litigant.version
+		left join law_caseacceptuser
+		acceptuser on
+		casebase.caseid =acceptuser.caseid
+		left join ss_sign
+		sssign on
+		casebase.caseid = sssign.instanceid
+		left join ss_attachment
+		attachment
+		on casebase.caseid = attachment.bizid
+		left join sys_user
+		sysuser on
+		acceptuser.acceptuserid = sysuser.id
+		where
+		casebase.caseid=#{caseID} and
+		casebase.version =#{version}
+		
+	</select>
+	
+	
+	<select id="getCaseBase" parameterType="map" resultMap="CaseBaseInfoMap">
+		
+	</select>
+	
+
+	<!--通过流程id获取caseId -->
+	<select id="getCaseIDByInstanceID" parameterType="String"
+		resultType="String">
+		select distinct t.caseid from law_casebaseinfo t where
+		t.instanceid=#{instanceID}
+	</select>
+	
+
+	
+	<!-- 通过caseId删除案件相关数据 -->
+	<delete id="deleteCase" parameterType="String">
+		{call
+		declare
+		begin
+
+		delete
+		law_casebaseinfo t where t.caseid = #{caseID};
+		delete
+		law_caseacceptuser t where t.caseid = #{caseID};
+		delete
+		law_illegalclues t where t.caseid = #{caseID};
+		delete law_caselitigant
+		t where t.caseid = #{caseID};
+		delete law_casedocument t where t.caseid
+		= #{caseID};
+		delete ss_sign t where t.instanceid = #{caseID};
+		delete
+		LAW_DELIVERLAWCASERELATION t where t.caseid = #{caseID};
+
+		end
+		}
+	</delete>
+
+	<!-- 获取违法线索信息 -->
+	<select id="getIllegalClues" parameterType="String" resultType="IllegalClues">
+		select *from law_illegalclues t where t.caseid=#{caseID}
+	</select>
+
+	<!-- 获取签字信息 -->
+	<select id="getSignatureByCaseID" parameterType="String"
+		resultType="Signature">
+		select *from ss_sign sssign where sssign.instanceid
+		=#{caseID,jdbcType=VARCHAR} and sssign.templateid='Clue'
+	</select>
+
+	<!-- 通过关联ID查询附件信息 -->
+	<select id="getAttachmentByLinkID" parameterType="String"
+		resultType="Attachment">
+		select
+		t.id,t.filename,t.fileext,t.filesize,t.actualfile,t.uploadtime,t.module,t.extrainfo
+		from SS_ATTACHMENT t where t.bizid=#{caseID}
+	</select>
+
+	<!-- 判断是否已转违法案件 -->
+	<select id="isDeliverToLawCase" parameterType="java.util.List"
+		resultType="int">
+		select count(1) from law_deliverlawcaserelation t where t.relationid
+		in
+		<foreach collection="ids" index="index" item="item" open="("
+			separator="," close=")">
+			#{item}
+		</foreach>
+	</select>
+
+	<!-- 保存转违法案件 -->
+	<insert id="saveOrUpdateDeliverLawCase" parameterType="DeliverLawCaseRelation">
+		<selectKey keyProperty="count" resultType="int" order="BEFORE">
+			select count(1) from law_deliverlawcaserelation t where t.id = #{id}
+		</selectKey>
+		<if test="count==0">
+			insert into law_deliverlawcaserelation(id, relationid,
+			caseid, type) values
+			(
+			#{id},
+			#{relationID,jdbcType=VARCHAR},
+			#{caseID,jdbcType=VARCHAR},
+			#{type,jdbcType=VARCHAR}
+			)
+		</if>
+		<if test="count>0">
+			update law_deliverlawcaserelation set
+			relationid=#{relationID,jdbcType=VARCHAR},
+			caseid=
+			#{caseID,jdbcType=VARCHAR},
+			type = #{type,jdbcType=VARCHAR}
+			where id = #{id}
+		</if>
+	</insert>
+	
+</mapper>

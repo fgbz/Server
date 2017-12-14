@@ -1,0 +1,46 @@
+package ${package.Service};
+
+import ${package.Entity}.${entity};
+import ${superServiceClassPackage};
+import org.springframework.stereotype.Service;
+
+/**
+ * <p>
+ * ${table.comment}  服务实现类
+ * </p>
+ *
+ * @author ${author}
+ * @since ${date}
+ */
+@Service("${entity}Service")
+public class ${entity}Service {
+
+	@Autowired
+	private ${entity}Dao ${entity}Dao;
+	
+	
+	
+	/**
+	 * 添加
+	 */
+	public int add${entity}(${entity} t) {
+		int result = ${entity}Dao.add${entity}(t);
+		return result;
+	}
+	
+	/**
+	 * 修改
+	 */
+	public int update${entity}(${entity} t) {
+	       int result=${entity}Dao.update${entity}(t);
+		   return result;
+	}
+
+	/**
+	 * 删除
+	 */
+	public int delete${entity}(String id) {
+		int result = ${entity}Dao.delete${entity}(t);
+		return result;
+	}
+}

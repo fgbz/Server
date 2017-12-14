@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper  
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"  
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="satelliteWorkflow">
+    <!--TODO 20170412  queryOver-->
+    <select id="queryOver" parameterType="map" resultType="phalaenopsis.satellitegraph.entity.MapSpot2016" >
+		select * from sg_mapspot where 
+		 <if test="orgGrade==1">   
+         COUNTY = #{regionID} 
+         </if>  
+         <if test="orgGrade==2">  
+         CITY = #{regionID} 
+         </if> 
+         <if test="orgGrade==3"> 
+         PROVINCE = #{regionID} 
+         </if> 
+         and NODE in
+         <foreach collection="nodes" open="(" close=")" separator="," item="node">
+        #{node}
+    </foreach> 
+	</select> 
+	
+	<!-- 查询流程节点下的图斑 -->
+	<select id="getSports" parameterType="String" resultType="phalaenopsis.satellitegraph.entity.MapSpot2016" >
+		select * from sg_mapspot where InstanceID = #{instanceID}
+	</select>
+	
+	<!-- 更新图斑节点 -->
+	<update id="updateSportInstance" parameterType="phalaenopsis.common.entity.Device" >
+		update sg_mapspot set node=#{node} where id=#{id}
+	</update>
+	
+	
+	<!-- 查询Version(获取满足条件的第一条数据) -->
+	<select id="getWFVerInstance" parameterType="String" resultType="phalaenopsis.satellitegraph.entity.WFVerInstance" >
+		select * from  WF_Instance where InstanceID = #{instanceID}
+	</select>
+	
+	<!-- 查询图斑流程还原列表 -->
+	<select id="getWFVerHistorys" parameterType="String" resultType="phalaenopsis.satellitegraph.entity.WFVerHistory" >
+		select * from WF_History where InstanceID = #{instanceID}
+	</select>
+	
+	<!-- 更新Version -->
+	<update id="updateWFVerHistory" parameterType="phalaenopsis.satellitegraph.entity.WFVerHistory" >
+		update WF_History set version=#{Version} where id=#{ID}
+	</update>
+</mapper>

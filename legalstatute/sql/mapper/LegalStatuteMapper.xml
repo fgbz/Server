@@ -1,0 +1,203 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="phalaenopsis.legalstatute.dao.LegalStatuteDao">
+	<!-- <select id="getLegalStatuteByLegalStatute" parameterType="LegalStatute" resultType="LegalStatute">
+		select * from legal_statute where 1 = 1 
+		<if test="legalStatute.node == 1">
+			and law_Id = #{legalStatute.lawId,jdbcType=VARCHAR} and chapter is null 
+		</if>
+		<if test="legalStatute.node == 2">
+			and law_Id = #{legalStatute.lawId,jdbcType=VARCHAR} and chapter = #{legalStatute.chapter,jdbcType=VARCHAR} and section is null
+		</if>
+		<if test="legalStatute.node == 3">
+			and law_Id = #{legalStatute.lawId,jdbcType=VARCHAR} and chapter = #{legalStatute.chapter,jdbcType=VARCHAR} and section = #{legalStatute.section,jdbcType=VARCHAR}
+		</if>
+		 and content is null 
+	</select>
+	
+	<update id="editLegalStatuteById" parameterType="LegalStatute">
+		update legal_statute 
+		<set > 
+            <if test="lawName != null" >
+                law_Name = #{lawName},
+            </if>
+            <if test="chapter != null" >
+                chapter = #{chapter},
+            </if>
+            <if test="chapterName != null" >
+                CHAPTER_NAME = #{chapterName},
+            </if>
+            <if test="chapterContent != null" >
+                CHAPTER_CONTENT = #{chapterContent},
+            </if>
+            <if test="section != null" >
+                SECTION = #{section},
+            </if>
+            <if test="sectionName != null" >
+                SECTION_NAME = #{sectionName},
+            </if>
+            <if test="sectionContent != null" >
+                SECTION_CONTENT = #{sectionContent},
+            </if>
+            <if test="entry != null" >
+                ENTRY = #{entry},
+            </if>
+            <if test="entryName != null" >
+                ENTRY_NAME = #{entryName},
+            </if>
+            <if test="content != null" >
+                CONTENT = content
+            </if>
+        </set>
+        where ID = #{id}
+	</update> -->
+	
+	<insert id="saveLegalStatute" parameterType="LegalStatute">
+		insert into LEGAL_STATUTE(
+								ID,
+								LAW_ID,
+								LAW_NAME,
+								CHAPTER_NAME,
+								CHAPTER_CONTENT,
+								ORGANIZATION_ID,
+								ORGANIZATION_NAME,
+								ISSUE_NUMBER,
+								ISSUE_TIME,
+								ENFORCE_TIME,
+								EFFECT,
+								LAW_LEVELL,
+								LAWTYPE_NAME,
+								PARENTID,
+								NODE,
+								SORT
+								) 
+						values(
+							   #{id},
+							   #{lawId},
+							   #{lawName},
+							   #{chapterName},
+							   #{chapterContent},
+							   #{organizationId},
+							   #{organizationName},
+							   #{issueNumber},
+							   #{issueTime,jdbcType=DATE},
+							   #{enforceTime,jdbcType=DATE},
+							   #{effect},
+							   #{lawLevell},
+							   #{lawtypeName},
+							   #{parentId},
+							   #{node},
+							   #{sort})
+	</insert>
+	
+	<select id="getLegalStatuteSort" parameterType="String" resultType="Integer">
+		select max(sort) from legal_statute where parentId = #{parentId}
+	</select>
+	
+	<select id="getLegalStatuteTopSort" resultType="Integer">
+		select max(sort) from legal_statute where parentId is null
+	</select>
+	
+	<update id="updateLegalStatuteById" parameterType="LegalStatute">
+		update legal_statute 
+		<set > 
+            <if test="lawName != null and lawName!=''" >
+                law_Name = #{lawName},
+            </if>
+            <if test="chapterName != null and chapterName!=''" >
+                CHAPTER_NAME = #{chapterName},
+            </if>
+            <if test="chapterContent != null and chapterContent!=''" >
+                CHAPTER_CONTENT = #{chapterContent},
+            </if>
+            <if test="organizationName != null and organizationName!=''" >
+                ORGANIZATION_NAME = #{organizationName},
+            </if>
+            <if test="issueNumber != null and issueNumber!=''" >
+                ISSUE_NUMBER = #{issueNumber},
+            </if>
+            <if test="issueTime != null and issueTime!=''" >
+                ISSUE_TIME = #{issueTime},
+            </if>
+            <if test="enforceTime != null and enforceTime!=''" >
+                ENFORCE_TIME = #{enforceTime},
+            </if>
+            <if test="effect != null and effect!=''" >
+                EFFECT = #{effect},
+            </if>
+            <if test="lawLevell != null and lawLevell!=''" >
+                LAW_LEVELL = #{lawLevell},
+            </if>
+            <if test="lawtypeName != null and lawtypeName!=''" >
+                LAWTYPE_NAME = #{lawtypeName}
+            </if>
+        </set>
+        where id = #{id}
+	</update>
+	
+	<delete id="deleteLegalStatute" parameterType="String">
+		<!-- delete from legal_statute where id = #{id} -->
+		delete 
+    	from legal_statute where id in (select id 
+    	from legal_statute START WITH ID=#{id}
+    	CONNECT BY PRIOR ID=PARENTID) 
+	</delete>
+	
+	<select id="getLegalTree" resultType="LegalStatute">
+		select * from legal_statute order by  node, parentId,sort 
+	</select>
+
+	<select id="getLegalTreeByParentID" parameterType="String"
+		resultType="LegalStatute">
+		select *
+		from legal_statute START WITH ID=#{parentId}
+		CONNECT BY PRIOR ID=PARENTID order by  node, parentId,sort 
+	</select>
+	
+	<select id="searchLegalStatuteByStr" resultType="LegalStatute" parameterType="String">
+		<!-- select distinct * from legal_statute t 
+		start with id in (select id from legal_statute where LAW_NAME like '%'||#{each}||'%' or CHAPTER_NAME like '%'||#{each}||'%' or CHAPTER_CONTENT like '%'||#{each}||'%') connect by prior parentid=id 
+		order by  node, parentId,sort  -->
+		select * from legal_statute where LAW_NAME like '%'||#{each}||'%' or CHAPTER_NAME like '%'||#{each}||'%' or CHAPTER_CONTENT like '%'||#{each}||'%' 
+		order by  node, parentId,sort 
+	</select>
+	
+	<select id="getLegalStatuteByIdList" resultType="LegalStatute" parameterType="Long[]">
+		select distinct * from legal_statute t 
+		start with id  
+		<foreach  collection="array" item="id" open="in (" close=")" separator=",">   
+            #{id}  
+        </foreach> connect by prior parentid=id 
+		order by  node, parentId,sort 
+	</select>
+	
+	<select id="getLegalStatuteSortUp" resultType="LegalStatute" parameterType="Map">
+		select * from (select * from legal_statute where parentId = #{parentId} and sort <![CDATA[<]]> #{sort} order by sort desc) where rownum =1
+	</select>
+	
+	<select id="getLegalStatuteTopSortUp" resultType="LegalStatute" parameterType="Map">
+		select * from (select * from legal_statute where parentId is null and sort <![CDATA[<]]> #{sort} order by sort desc) where rownum =1
+	</select>
+	
+	<select id="getLegalStatuteSortDown" resultType="LegalStatute" parameterType="Map">
+		select * from (select * from legal_statute where parentId = #{parentId} and sort <![CDATA[>]]> #{sort} order by sort) where rownum =1
+	</select>
+	
+	<select id="getLegalStatuteTopSortDown" resultType="LegalStatute" parameterType="Map">
+		select * from (select * from legal_statute where parentId is null and sort <![CDATA[>]]> #{sort} order by sort) where rownum =1
+	</select>
+	
+	<select id="getLegalStatuteById" resultType="LegalStatute" parameterType="String">
+		select * from legal_statute where id = #{id} 
+	</select>
+	
+	<update id="updateLegalStatuteSort" parameterType="Map">
+		update legal_statute 
+		<set > 
+            <if test="sort != null" >
+                sort = #{sort},
+            </if>
+        </set>
+        where id = #{id}
+	</update>
+</mapper>

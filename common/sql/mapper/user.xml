@@ -1,0 +1,198 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper  
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"  
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="user">
+
+	<!-- 获取用户-->
+	<select id="getUserById" parameterType="String" resultType="phalaenopsis.common.entity.User">
+		select u.id ,u.isonline from sys_user u where u.id=#{id}
+	</select>
+	
+	<!-- 获取用户详情 -->
+	<select id="getUserDetail" parameterType="String"
+		resultType="phalaenopsis.common.entity.User">
+		select u.id ,u.account ,u.name ,u.password ,u.organizationid ,u.remarks
+		,u.hasphoto ,u.signaturephoto,u.lastupdate ,o.name
+		from sys_user u
+		join SYS_ORGANIZATION o on o.id=u.organizationid
+		where u.id=#{id}
+	</select>
+	
+	<!-- 获取满足条件下的用户个数 -->
+	<select id="getUsersCount" parameterType="map"
+		resultType="int">
+		select count(1)
+		from sys_user d left join sys_organization og on d.ORGANIZATIONID=og.id
+		<if test="Org != null and Org != ''">
+			inner join
+			(select t.id, t.name, t.grade from sys_Organization t start with id =
+			#{Org} connect by prior id = parentid) o on d.ORGANIZATIONID = o.id
+		</if>
+		<if test="Org == ''">
+			inner join sys_Organization o on o.id = d.organizationid
+		</if>  
+		<if test="SearchText != null and SearchText != ''">
+			where d.NAME like CONCAT('%',CONCAT(#{SearchText},'%')) 
+			or d.ACCOUNT like CONCAT('%',CONCAT(#{SearchText},'%'))
+			or og.NAME like CONCAT('%',CONCAT(#{SearchText},'%'))
+		</if> 
+	</select>
+
+	<!-- 获取用户列表，分页数据 -->
+	<select id="getUsers" parameterType="map"
+		resultType="phalaenopsis.common.entity.User">
+		select * from (
+		select d.ID as id, d.ACCOUNT as account, d.NAME as name, d.ORGANIZATIONID as organizationID, d.ISONLINE as isOnline, 
+		d.hasphoto as hasphoto, o.name as organizationName, o.grade as OrgGrade, rownum as rn
+		from sys_user d left join sys_organization og on d.ORGANIZATIONID=og.id
+		<if test="Org != null and Org != ''">
+			inner join
+			(select t.id, t.name, t.grade from sys_Organization t start with id =
+			#{Org} connect by prior id = parentid) o on d.ORGANIZATIONID = o.id
+		</if>
+		<if test="Org == ''">
+			inner join sys_Organization o on o.id = d.organizationid
+		</if>  
+		<if test="SearchText != null and SearchText != ''">
+			where d.NAME like CONCAT('%',CONCAT(#{SearchText},'%')) 
+			or d.ACCOUNT like CONCAT('%',CONCAT(#{SearchText},'%'))
+			or og.NAME like CONCAT('%',CONCAT(#{SearchText},'%'))
+		</if> 
+		) where rn between #{startNum}  and  #{endNum} order by isOnline desc
+	</select>
+ 
+	<!-- 更新用户信息 -->
+	<!--  -->
+	<update id="updateUser" parameterType="phalaenopsis.common.entity.User">
+		update sys_user set
+		ACCOUNT=#{account},NAME=#{name},ORGANIZATIONID=#{organizationID},REMARKS=#{remarks,jdbcType=VARCHAR},
+		SIGNATUREPHOTO=#{signaturePhoto,jdbcType=VARCHAR},HASPHOTO=#{hasPhoto,javaType=boolean,jdbcType=NUMERIC},
+		TIMING=sysdate
+		<!-- 
+		<choose>
+			<when test="hasPhoto==true">
+			 1
+			</when>
+			<otherwise>
+				0
+			</otherwise>
+		</choose>
+		 -->
+		where ID=#{id}
+	</update>
+	
+	<!--20170327新增 更新用户角色 -->
+	<!-- <update id="deleteFromUserRoleId" parameterType="String">
+           <foreach collection="roles" item="item" index="index" open="begin" close="end" separator=";">
+				update SYS_USERROLES 
+				<set>
+				  roleid=#{item.id}
+				</set>
+				where userid = #{id}
+	   </foreach>
+	</update> -->
+	<delete id="deleteFromUserRoleId" parameterType="phalaenopsis.common.entity.User">
+		delete from SYS_USERROLES where userid=#{id}
+	</delete>
+	<!-- 批量删除用户 -->
+	<delete id="deleteUsers" parameterType="java.util.List">
+		delete from sys_user where id in
+		<foreach collection="list" item="item" index="index" open="(" 
+		separator="," close=")">
+		#{item}
+	</foreach> 
+		 
+	</delete>
+
+	<!-- 根据密码和id查询用户，判断用户密码是否正确 -->
+	<select id="getUserByPassword" parameterType="phalaenopsis.common.entity.User"
+		resultType="phalaenopsis.common.entity.User">
+		select * from sys_user where id=#{id} and
+		password=#{password}
+	</select>
+
+	<!-- 用户修改密码 -->
+	<update id="updateUserPassword" parameterType="phalaenopsis.common.entity.User">
+		update sys_user
+		set password=#{password} , TIMING=sysdate where id=#{id}
+	</update>
+	
+	<!--更新用户在线状态-->
+	<update id="updateUserIsOnline" parameterType="phalaenopsis.common.entity.User">
+		update sys_user set TIMING=sysdate,ISONLINE=#{isOnline}
+		<if test="id != null and id != ''">
+			where ID=#{id}
+		</if>
+		 
+	</update>
+	
+	<select id="duplicateUserAccount" parameterType="string" resultType="int">
+		select count(1) from  sys_user where account = #{account}
+	</select>
+	
+	<!-- 编辑用户信息时判断 -->
+	<select id="checkUserAccount" parameterType="phalaenopsis.common.entity.User" resultType="int">
+		select count(1) from  sys_user where account = #{account} and id != #{id}
+	</select>
+	
+	<!-- 查询所有用户 -->
+	<select id="getAllUser" resultType="phalaenopsis.common.entity.User">
+		select u.id ,u.account ,u.name ,u.password ,u.organizationid ,u.remarks
+		,u.hasphoto ,u.signaturephoto,u.lastupdate  from sys_user u
+	</select>
+	
+	<!-- 根据批量查询用户信息 -->
+	<select id="getUserByIDs" parameterType="java.util.List" resultType="phalaenopsis.common.entity.User">
+		select * from sys_user where id in 
+		<foreach collection="list" index="index" item="item" open="(" separator="," close=")">  
+        	#{item}  
+        </foreach>  
+	</select>
+	<insert id="insertUserRole" parameterType="phalaenopsis.common.entity.Role">
+		insert into SYS_USERROLES(ID,USERID,ROLEID) values (sys_guid(),#{USERID},#{ROLEID})
+	</insert>
+	
+	<insert id="insertUser" parameterType="phalaenopsis.common.entity.User" useGeneratedKeys="false">
+		insert into SYS_USER(ID,ACCOUNT,NAME,PASSWORD,ORGANIZATIONID,REMARKS,HASPHOTO,SIGNATUREPHOTO,TIMING,ISONLINE)
+		values(#{id},#{account},#{name},#{password},#{organizationID},#{remarks,jdbcType=VARCHAR},
+		#{hasPhoto,javaType=boolean,jdbcType=NUMERIC},#{signaturePhoto,jdbcType=VARCHAR},sysdate,#{isOnline,jdbcType=VARCHAR})
+
+		<!-- 
+		INSERT ALL
+		<foreach collection="roles" item="item" index="index"
+			separator="">
+			into sys_rolepermissions (ID,ROLEID,PERMISSIONCODE) values
+			(sys_guid(),#{id} ,#{item.id})
+		</foreach>
+		SELECT 1 FROM DUAL
+		-->
+		  
+	</insert>
+	
+	<select id="getUserByName" parameterType="String" resultType="phalaenopsis.common.entity.User">
+		select u.id ,u.account ,u.name ,u.password ,u.organizationid ,u.remarks
+		,u.hasphoto ,u.signaturephoto,u.lastupdate,f.NAME as organizationName
+		 from sys_user u,sys_organization f where u.ORGANIZATIONID = f.ID and u.name LIKE '%' ||  #{name} || '%'
+	</select>
+	
+	<select id="getUserByOrganizationID" parameterType="String" resultType="phalaenopsis.common.entity.User">
+		select u.id ,u.account ,u.name ,u.password ,u.organizationid ,u.remarks
+		,u.hasphoto ,u.signaturephoto,u.lastupdate,f.NAME as organizationName
+		 from sys_user u,sys_organization f where u.ORGANIZATIONID = f.ID and u.organizationID  = #{organizationID}
+	</select>
+	
+	
+	<select id="getUserByOrganizationsID" parameterType="phalaenopsis.common.entity.User" resultType="phalaenopsis.common.entity.User">
+		select u.id ,u.account ,u.name ,u.password ,u.organizationid ,u.remarks
+		,u.hasphoto ,u.signaturephoto,u.lastupdate,f.NAME as organizationName
+		 from sys_user u,
+		 (select NAME,ID from sys_organization 
+		 <if test="organizationsID != null">
+	   			where 1=1 and
+	        <foreach item="item" index="index" collection="organizationsID"  open="(" separator="or" close=")" >  
+				id in #{item}  
+			 </foreach>   
+	    </if>) f where u.ORGANIZATIONID = f.ID
+	</select> 
+</mapper> 

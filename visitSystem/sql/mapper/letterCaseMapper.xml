@@ -1,0 +1,422 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper  
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"  
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="phalaenopsis.visitSystem.dao.LetterCaseMapper">
+	<!-- 查询列表数据 -->
+	<select id="getList"  resultType="XfRegister">
+		select * from (select t.* , rownum num from XF_REGISTER t 
+		<include refid="queryList"></include>
+		order by substr(t.serialno, -12) desc
+		) where num between #{startNum} and #{endNum}
+	</select>
+	<!-- 根据ID查询信访信息 -->
+	<select id="getLetterCaseById" resultType="XfRegister">
+		select * from XF_REGISTER where REGISTERID=#{id}
+	</select>
+	<!-- 查询最新流水单号 -->
+	<select  id="getMaxNum" resultType="Serialnumber">
+			select * from SS_SERIALNUMBER where type=#{type} FOR UPDATE
+	</select>
+	<!-- 添加流水单号初始值 -->
+	<insert id="insert" parameterType="Serialnumber">
+		insert into SS_SERIALNUMBER(
+					ID,
+ 					SERIALNUM,			 
+ 					YEAR,			 
+ 					TYPE,			 
+ 					CREATOR,			 
+ 					CREATIONTIME		 
+				)
+			values (
+					#{id},
+ 					#{serialnum},			 
+ 					#{year},			 
+ 					#{type},			 
+ 					#{creator},			 
+ 					#{creationtime}		 
+				)
+	</insert>
+	<!-- 更新流水单号为最新 -->
+	<update id="update" parameterType="Serialnumber">
+		begin update SS_SERIALNUMBER set 
+			YEAR=#{year,jdbcType=INTEGER},
+			SERIALNUM=#{serialnum,jdbcType=VARCHAR},
+			MODIFIER=#{modifier,jdbcType=VARCHAR},
+			MODIFIERTIME=#{modifiertime,jdbcType=TIMESTAMP}
+		where type=#{type,jdbcType=VARCHAR};commit; end;
+	</update>
+	<!-- 登记保存或提交 -->
+	<insert id="saveOrUpdate" parameterType="XfRegister">
+		<selectKey keyProperty="count" resultType="int" order="BEFORE">
+			select count(1) from XF_REGISTER t where t.REGISTERID=#{registerid}
+		</selectKey>
+		<if test="count==0">
+			insert into XF_REGISTER(
+ 					REGISTERID,			 
+ 					HOMEADDRESS,			 
+ 					GENDER,			 
+ 					AGE,			 
+ 					PHONENO,			 
+ 					IDENTITYNO,			 
+ 					VIPORNOT,			 
+ 					XFPEOPLECOUNT,			 
+ 					SERIALNO,			 
+ 					ISSUEDESC,			 
+ 					XFTYPE,			 
+ 					ISSUEADDRESS,			 
+ 					RESPOSIBLEUSERNAME,			 
+ 					RESPONSIBLEUSERID,			 
+ 					AREALEVEL,			 
+ 					REGISTERDATE,			 
+ 					STATUS,			 
+ 					XFNAME,			 
+ 					ISSUENATURE,			 
+ 					LITIORNOT,			 
+ 					PROVINCEID,			 
+ 					CITYID,			 
+ 					COUNTYID,			 
+ 					REGLEVEL,			 
+ 					TRASLEVEL,			 
+ 					PROPATTERN,			 
+ 					CITYPATTERN,			 
+ 					COUNTYPATTERN,			 
+ 					TRANSUNIT,			 
+ 					RESPONSREGIONID,
+ 					PROSTATUS,
+ 					CITYSTATUS,
+ 					ACCESSNUM,
+ 					XFTYPENAME			 
+					)
+			values (
+ 					#{registerid,jdbcType=INTEGER},			 
+ 					#{homeaddress,jdbcType=VARCHAR},			 
+ 					#{gender,jdbcType=INTEGER},			 
+ 					#{age,jdbcType=INTEGER},			 
+ 					#{phoneno,jdbcType=VARCHAR},			 
+ 					#{identityno,jdbcType=VARCHAR},			 
+ 					#{vipornot,jdbcType=INTEGER},			 
+ 					#{xfpeoplecount,jdbcType=INTEGER},			 
+ 					#{serialno,jdbcType=VARCHAR},			 
+ 					#{issuedesc,jdbcType=VARCHAR},			 
+ 					#{xftype,jdbcType=VARCHAR},			 
+ 					#{issueaddress,jdbcType=VARCHAR},			 
+ 					#{resposibleusername,jdbcType=VARCHAR},			 
+ 					#{responsibleuserid,jdbcType=VARCHAR},			 
+ 					#{arealevel,jdbcType=INTEGER},			 
+ 					#{registerdate,jdbcType=TIMESTAMP},			 
+ 					#{status,jdbcType=INTEGER},			 
+ 					#{xfname,jdbcType=VARCHAR},			 
+ 					#{issuenature,jdbcType=VARCHAR},			 
+ 					#{litiornot,jdbcType=INTEGER},			 
+ 					#{provinceid,jdbcType=INTEGER},			 
+ 					#{cityid,jdbcType=INTEGER},			 
+ 					#{countyid,jdbcType=INTEGER},			 
+ 					#{reglevel,jdbcType=INTEGER},			 
+ 					#{traslevel,jdbcType=INTEGER},			 
+ 					#{propattern,jdbcType=INTEGER},			 
+ 					#{citypattern,jdbcType=INTEGER},			 
+ 					#{countypattern,jdbcType=INTEGER},			 
+ 					#{transunit,jdbcType=VARCHAR},			 
+ 					#{responsregionid,jdbcType=INTEGER},
+ 					#{prostatus,jdbcType=INTEGER},
+ 					#{citystatus,jdbcType=INTEGER},
+ 					#{accessnum,jdbcType=INTEGER},
+ 					#{xftypename,jdbcType=VARCHAR}
+				)
+		</if>
+	    <if test="count>0">
+	    	update XF_REGISTER
+	    			<trim prefix="set" suffixOverrides=",">
+	    			<if test="accessnum!=null and accessnum !=''">
+ 						ACCESSNUM=#{accessnum},			 
+ 			  		</if>
+	    			<if test="homeaddress!=null and homeaddress !=''">
+ 						HOMEADDRESS=#{homeaddress,jdbcType=VARCHAR},	 
+ 			  		</if>
+ 			  		<if test="homeaddress!=null and homeaddress !=''">
+ 						GENDER=#{gender,jdbcType=INTEGER},	 
+ 			  		</if>
+ 			  		<if test="age!=null and age !=''">		 
+ 						AGE=#{age,jdbcType=INTEGER},
+ 					</if>
+ 					<if test="phoneno!=null and phoneno !=''">		 
+ 						PHONENO=#{phoneno,jdbcType=VARCHAR},
+ 					</if>
+ 					<if test="identityno!=null and identityno !=''">			 
+ 						IDENTITYNO=#{identityno,jdbcType=VARCHAR},
+ 					</if>	
+ 					<if test="vipornot!=null and vipornot !=''">		 
+ 						VIPORNOT=#{vipornot,jdbcType=INTEGER},
+ 					</if>	
+ 					<if test="xfpeoplecount!=null and xfpeoplecount !=''">		 
+ 						XFPEOPLECOUNT=#{xfpeoplecount,jdbcType=INTEGER},
+ 					</if>
+ 					<if test="serialno!=null and serialno !=''">			 
+ 						SERIALNO=#{serialno,jdbcType=VARCHAR},
+ 					</if>
+ 					<if test="issuedesc!=null and issuedesc !=''">			 
+ 						ISSUEDESC=#{issuedesc,jdbcType=VARCHAR},
+ 					</if>
+ 					<if test="xftype!=null and xftype!=''">			 
+ 						XFTYPE=#{xftype,jdbcType=VARCHAR},
+ 					</if>
+ 					<if test="issueaddress!=null and issueaddress!=''">		 
+ 						ISSUEADDRESS=#{issueaddress,jdbcType=VARCHAR},
+ 					</if>
+ 					<!-- 经办人姓名、ID不更新 
+ 					<if test="resposibleusername!=null and resposibleusername!=''">		 
+ 						RESPOSIBLEUSERNAME=#{resposibleusername,jdbcType=VARCHAR},
+ 					</if>
+ 					<if test="responsibleuserid!=null and responsibleuserid!=''">		 
+ 						RESPONSIBLEUSERID=#{responsibleuserid,jdbcType=VARCHAR},
+ 					</if>
+ 					-->
+ 					<if test="arealevel!=null and arealevel!=''">		 
+ 						AREALEVEL=#{arealevel,jdbcType=INTEGER},
+ 					</if>	
+ 					<if test="registerdate!=null and registerdate!=''">			 
+ 						REGISTERDATE=#{registerdate,jdbcType=TIMESTAMP},
+ 					</if>
+ 					<if test="status!=null and status!=''">		 
+ 						STATUS=#{status,jdbcType=INTEGER},
+ 					</if>		 
+ 					<if test="xfname!=null and xfname!=''">
+ 						XFNAME=#{xfname},		 
+ 			 		</if>       
+				    <if test="issuenature!=null and issuenature !=''">
+ 						ISSUENATURE=#{issuenature},		 
+ 			  		</if>       
+				    <if test="litiornot!=null and litiornot !=''">
+ 						LITIORNOT=#{litiornot},	 
+ 			  		</if>       
+				    <if test="provinceid!=null and provinceid !=''">
+ 						PROVINCEID=#{provinceid},			 
+ 			  		</if>       
+				    <if test="cityid!=null and cityid !=''">
+ 						CITYID=#{cityid},			 
+ 			  		</if>       
+				    <if test="countyid!=null and countyid !=''">
+ 						COUNTYID=#{countyid},			 
+ 			 		</if>       
+				    <if test="reglevel!=null and reglevel !=''">
+ 						REGLEVEL=#{reglevel},			 
+ 			  		</if>       
+				    <if test="traslevel!=null and traslevel !=''">
+ 						TRASLEVEL=#{traslevel},		 
+ 			  		</if>       
+				    <if test="propattern!=null and propattern !=''">
+ 						PROPATTERN=#{propattern},			 
+ 			  		</if>       
+				    <if test="citypattern!=null and citypattern !=''">
+ 						CITYPATTERN=#{citypattern},			 
+ 			 		</if>       
+				    <if test="countypattern!=null and countypattern !=''">
+ 						COUNTYPATTERN=#{countypattern},			 
+ 			  		</if>       
+				    <if test="transunit!=null and transunit !=''">
+ 						TRANSUNIT=#{transunit},			 
+ 			  		</if>       
+				    <if test="responsregionid!=null and responsregionid !=''">
+ 						RESPONSREGIONID=#{responsregionid},		 
+ 			  		</if>       
+				    <if test="prostatus!=null and prostatus !=''">
+ 						PROSTATUS=#{prostatus},			 
+ 			  		</if>       
+				    <if test="citystatus!=null and citystatus !=''">
+ 						CITYSTATUS=#{citystatus},			 
+ 			  		</if>       
+ 			  		<if test="xftypename!=null and xftypename !=''">       
+ 						XFTYPENAME=#{xftypename,jdbcType=VARCHAR},
+ 					</if>
+ 					</trim>	 
+				where REGISTERID = #{registerid}
+	    </if>
+	</insert>
+	<!-- 删除操作 -->
+	<delete id="deleteXfRegister" parameterType="String"> 
+		delete from XF_REGISTER where REGISTERID =#{registerid}
+	</delete>
+	<!-- 删除重复件操作 -->
+	<delete id="deleteRepeatItems" parameterType="String"> 
+		delete from XF_REPEAT_ITEMS where XFREGISTERID =#{registerid}
+	</delete>
+	<!-- 查询列表的总数 -->
+	<select id="getCount" resultType="int">
+		select count(1) from XF_REGISTER t 
+		<include refid="queryList"></include>
+	</select>
+	<!-- 重复信访列表 -->
+	<select id="getRepeatList" resultType="XfRegister">
+		select  * from XF_REGISTER  where responsregionid=#{regionId}
+		and (XFNAME=#{name} or  IDENTITYNO=#{idCard})
+	</select>
+	<!-- 保存重复件信息 -->
+	<insert id="saveXfRepeatItems" parameterType="XfRepeatItems">
+			insert into XF_REPEAT_ITEMS(
+		 					ID,			 
+		 					XFTYPE,			 
+		 					XFDATE,			 
+		 					XFPEOPELCOUNT,			 
+		 					XFREMARK,			 
+		 					XFREGISTERID,
+		 					XFTYPENAME		 
+					)
+					values (
+		 					#{id,jdbcType=INTEGER},			 
+		 					#{xftype,jdbcType=VARCHAR},			 
+		 					#{xfdate,jdbcType=TIMESTAMP},			 
+		 					#{xfpeopelcount,jdbcType=INTEGER},			 
+		 					#{xfremark,jdbcType=VARCHAR},			 
+		 					#{xfregisterid,jdbcType=INTEGER}，
+		 					#{xftypename,jdbcType=VARCHAR}			 
+					  )
+	</insert>
+	
+	<!-- 查询重复件信息列表 -->
+	<select id="selectRepeatItems" resultType="XfRepeatItems">
+		select  * from XF_REPEAT_ITEMS  where xfregisterid=#{xfregisterid}
+	</select>
+	<sql id="queryList">
+		where  1=1
+		<!-- 登记列表条件 -->
+		<if test="type==3">
+			and t.responsibleuserid=#{authId}
+			<if test="organizationGrade==1">
+				and t.status=0
+			</if>
+			<if test="organizationGrade==2">
+				and t.citystatus=0
+			</if>
+			<if test="organizationGrade==3">
+				and t.prostatus=0
+			</if>
+		</if>
+		<!-- 待办 -->
+		<if test="type==4">
+			and t.transunit=#{transunit}
+			<if test="organizationGrade==1">
+				and t.status=1
+			</if>
+			<if test="organizationGrade==2">
+				and t.citystatus=1
+			</if>
+			<if test="organizationGrade==3">
+				and t.prostatus=1
+			</if>
+		</if>
+		<!-- 待审 -->
+		<if test="type==5">
+			
+			<if test="organizationGrade==1">
+				and t.transunit=#{transunit}
+				and ( t.status=2 or t.status = 6 )
+			</if>
+			<if test="organizationGrade==2">
+				and t.transunit=#{transunit}
+				and ( t.citystatus=2 or t.citystatus = 6)
+			</if>
+			<if test="organizationGrade==3">
+				and t.arealevel=3
+				and (t.prostatus=2 or t.prostatus=6)
+			</if>
+		</if>
+		<!-- 已办列表 -->
+		<if test="type==2">
+ 			<if test="xfAudit==2 and xfRegister==1"><!-- 只有审核权限 -->
+				and t.registerid in(
+					select d.registerid   from xf_deals d 
+				where d.commit=1 and d.audittype=2
+				and d.orgid=#{transunit}
+				)
+				<if test="organizationGrade==1">
+						and t.status=3
+				</if>
+				<if test="organizationGrade==2">
+						and t.citystatus in(3,5,7)
+				</if>
+				<if test="organizationGrade==3">
+						and t.prostatus in(3,5,7)
+				</if> 
+			</if>
+			<if test="xfAudit==2 and xfRegister==2"><!-- 审核，登记权限 -->
+				and ( t.registerid in(
+					select d.registerid   from xf_deals d 
+				where d.commit=1 and d.audittype=2
+				and d.orgid=#{transunit}
+				) 
+					<if test="organizationGrade==1">
+						or t.status in(2,3,5,7)
+					</if>
+					<if test="organizationGrade==2">
+						or t.citystatus in(2,3,5,7)
+					</if>
+					<if test="organizationGrade==3">
+						or t.prostatus in(2,3,5,7)
+					</if>
+				)
+			</if>
+			<if test="xfAudit==1 and xfRegister==2"><!-- 只有登记权限 -->
+				<if test="organizationGrade==1">
+					and t.status in(2,3,5,7)
+				</if>
+				<if test="organizationGrade==2">
+					and t.citystatus in(2,3,5,7)
+				</if>
+				<if test="organizationGrade==3">
+					and t.prostatus in(2,3,5,7)
+				</if>
+			</if>
+		</if>
+		<!-- 全部列表 -->
+		<if test="type==1">
+			 and (t.responsregionid in
+				<foreach collection="regionList" item="item" open="(" separator="," close=")">
+						   #{item}
+				</foreach>
+				 <if test="organizationGrade==1">
+						or t.status in(2,3,5,6,7)
+				 </if>
+				 <if test="organizationGrade==2">
+						or t.citystatus in(2,3,5,6,7)
+				 </if>
+				 <if test="organizationGrade==3">
+						or t.prostatus in(2,3,5,6,7)
+				 </if>
+			 )
+		</if>
+		<if test="keywords!=null and keywords!=''">
+			and  (	(t.serialno like '%'||#{keywords}||'%') 
+					or (t.registerdate like '%'||#{keywords}||'%') 
+					or (t.xfname like '%'||#{keywords}||'%')
+					or (t.issueaddress like '%'||#{keywords}||'%')
+				)
+		</if>
+		<if test="xfname!=null and xfname!=''">
+			and t.XFNAME  like '%'||#{xfname}||'%'
+		</if>
+		<if test="startDate!=null and startDate!=''">
+			and t.registerdate  <![CDATA[>=]]>
+			to_date(#{startDate},'yyyy-mm-dd')
+		</if>
+		<if test="endDate!=null and endDate!=''">
+			and t.registerdate <![CDATA[<=]]>
+			to_date(#{endDate},'yyyy-mm-dd')
+		</if>
+		<if test="provinceid!=null and provinceid!='' and provinceid!=0">
+			and t.provinceid=#{provinceid}
+		</if>
+		<if test="cityid!=null and cityid!='' and cityid!=0">
+			and t.cityid=#{cityid}
+		</if>
+		<if test="countyid!=null and countyid!='' and countyid!=0">
+			and t.countyid=#{countyid}
+		</if>
+		<if test="issueaddress!=null and issueaddress!=''">
+			and t.issueaddress like '%'||#{issueaddress}||'%'
+		</if>
+		<if test="idcardNo!=null and idcardNo!=''">
+			and t.identityno like '%'||#{idcardNo}||'%'
+		</if>
+	</sql>
+</mapper>

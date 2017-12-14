@@ -1,0 +1,903 @@
+<?xml version="1.0" encoding="UTF-8" ?>  
+<!DOCTYPE mapper  
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"  
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="lawcaseEvaluation">
+
+	<!-- 查询当前年份对应的评查标准的ID -->
+	<select id="getPcbzIdByYear" parameterType="int" resultType="int">
+		select pcbz.id from CE_PCBZ pcbz where #{year} between pcbz.startyear
+		and pcbz.endyear
+	</select>
+
+	<!-- 查询区县的上级新政区划代码 -->
+	<select id="getParentRegionCode" parameterType="String"
+		resultType="String">
+		select t.parentid from SS_REGION t where
+		t.regionid=#{regionCode}
+	</select>
+
+	<!-- 插入评查案件 -->
+	<insert id="addLawcaseAccount" parameterType="java.util.List"
+		useGeneratedKeys="false">
+		insert all
+		<foreach collection="list" item="item" index="index"
+			separator="">
+			into CE_LAWCASEACCOUNT (ID, XH, REGIONNAME, REGIONCODE,
+			PARENTREGIONCODE,
+			CASECODE, CASENAME, MAINTRUTH, ISCLOSED,
+			ISIMPORTANT, ISCHECKED,
+			ISCITYCHECKED, iscanreport,CE_PCBZ_ID,
+			BELONGEDYEAR) values
+			(#{item.ID},#{item.XH,jdbcType=VARCHAR},#{item.regionName},#{item.regionCode},#{item.parentRegionCode},#{item.caseCode},#{item.caseName},#{item.mainTruth,jdbcType=VARCHAR},#{item.isClosed,jdbcType=VARCHAR},
+			#{item.isImportant,jdbcType=VARCHAR},#{item.isChecked,jdbcType=VARCHAR},#{item.isCityChecked,jdbcType=VARCHAR},0,#{item.pcbzID},#{item.belongedYear})
+		</foreach>
+		SELECT 1 FROM DUAL
+	</insert>
+
+	<!-- 插入评查人员 -->
+	<insert id="addEvaluationPersons" parameterType="java.util.List"
+		useGeneratedKeys="false">
+		INSERT ALL
+		<foreach collection="list" item="item" index="index"
+			separator="">
+			INTO CE_EVALUATIONUSER (ID, USER_ACCOUNT, CE_PCBZ_ID,
+			SS_REGION_ID,
+			BELONGEDYEAR, DUTY, CONTACTWAY, REMARK) VALUES
+			(#{item.id},#{item.userAccount},#{item.pcbzId},#{item.regionCode},
+			#{item.year},#{item.duty,jdbcType=VARCHAR},#{item.contract,jdbcType=VARCHAR},#{item.remark,jdbcType=VARCHAR})
+		</foreach>
+		SELECT 1 FROM DUAL
+	</insert>
+
+	<!-- 通过年份删除案件 -->
+	<delete id="deleteLawcaseAccountByYear" parameterType="int">
+		delete
+		CE_LAWCASEACCOUNT t where t.belongedyear =#{year} 
+	</delete>
+
+	<!-- 获取分页的评查人列表 -->
+	<select id="getEvaPersons" resultType="EvaluationPerson">
+		SELECT id, userAccount, name, cityname, duty,
+		contract, regionnames,
+		remark, belongedyear, rn,ssuserid
+		FROM (SELECT ve.*, rownum as rn FROM
+		VIEW_EVALUATIONACCOUNT ve
+		WHERE BELONGEDYEAR = #{Year}
+		<if test="Name!=null and Name !=''">
+			AND instr(name,#{Name}) >0
+		</if>
+		) a WHERE a.rn between #{startRow} and #{endRow}
+	</select>
+	
+	<!-- 获取评查人列表总数-->
+	<select id="getEvaPersonCount" resultType="int">
+		SELECT COUNT(1) FROM VIEW_EVALUATIONACCOUNT WHERE BELONGEDYEAR =
+		#{Year}
+		<if test="Name!=null and Name !=''">
+			AND instr(name,#{Name}) >0
+		</if>
+	</select>
+
+	<!-- 获取市级行政区划 -->
+	<select id="getRegionList" resultType="phalaenopsis.lawcaseevaluation.entity.SSRegion">
+		select t.regionid as
+		regioncode,t.regionname from SS_REGION t where t.rank=1
+	</select>
+
+	<!-- 根据 userid 查询评查人员 -->
+	<select id="getEvaPerson" parameterType="long" resultType="EvaluationPerson">
+		SELECT ve.*
+		FROM VIEW_EVALUATIONACCOUNT ve
+		WHERE id = #{Year}
+	</select>
+
+	<!-- 检查传入年份的评查人员账号是否重复 -->
+	<select id="checkEvaPerson" resultType="int">
+		SELECT COUNT(1)
+		FROM
+		CE_EVALUATIONUSER
+		WHERE USER_ACCOUNT = #{Account} AND BELONGEDYEAR =
+		#{Year}
+	</select>
+
+	<!-- 插入人员区域关联表 -->
+	<insert id="addEvaluationPersonsMap" parameterType="java.util.List"
+		useGeneratedKeys="false">
+		INSERT ALL
+		<foreach collection="list" item="item" index="index"
+			separator="">
+			INTO CE_EVALUATIONAREAUSER_MAP (ID, SS_REGION_ID,
+			EVALUATIONUSER_ID) VALUES
+			(#{item.id},#{item.regionID},#{item.evaluationUserID})
+		</foreach>
+		SELECT 1 FROM DUAL
+	</insert>
+
+	<!--导入时删除人员区域关联表和系统用户表 -->
+	<delete id="deleteMapImport" parameterType="int">
+		delete
+		CE_EVALUATIONAREAUSER_MAP cem  where cem.evaluationuser_id in (select
+		ceu.id from ce_evaluationuser ceu where ceu.belongedyear=#{year})
+		
+	</delete>
+	
+	<!-- 删除系统用户表 -->
+	<delete id="deleteMapImportUser" parameterType="int">
+		delete SYS_USER sysuser where sysuser.account in (select  ceu.user_account from ce_evaluationuser ceu where ceu.belongedyear=#{year})
+	</delete>
+
+	<!-- 通过id删除人员区域关系表 -->
+	<delete id="deleteEvaluationAreaUserMapById" parameterType="long">
+		delete
+		CE_EVALUATIONAREAUSER_MAP t where t.evaluationuser_id =#{id} 
+	</delete>
+
+	<!--通过id修改人员表 -->
+	<update id="updateEvaluationUser" parameterType="EvaluationPerson">
+		update
+		CE_EVALUATIONUSER t set
+		t.user_account=#{userAccount},t.ss_region_id=#{regionCode},t.belongedyear=#{belongedYear},t.duty=#{duty,jdbcType=VARCHAR},t.contactway=#{contract,jdbcType=VARCHAR},t.remark=#{remark,jdbcType=VARCHAR}
+		where t.id=#{id}
+	</update>
+
+	<!-- 通过id更新ss_user表 -->
+	<update id="updateSsUser" parameterType="EvaluationPerson">
+		update SYS_USER sysuser
+		set sysuser.account=#{userAccount},sysuser.name=#{name}
+		where
+		sysuser.id=#{ssuserid}
+	</update>
+
+	<!-- 通过id删除人员表 -->
+	<delete id="deleteEvaluationUserById" parameterType="long">
+		delete
+		CE_EVALUATIONUSER t where t.id =#{id}
+	</delete>
+
+	<!-- 判断该年度案件是否开始评查 -->
+	<select id="checkLawcaseAccountWork" resultType="int"
+		parameterType="int">
+		select count(1) as num from ce_lawcaseaccount ce_account
+		inner join ce_lawcaseuser_map ce_map
+		on ce_account.id =
+		ce_map.ce_lawcaseaccount_id where
+		ce_account.belongedyear=#{year}
+	</select>
+
+	<!-- 判断该年度人员是否开始工作 -->
+	<select id="checkUserWork" resultType="int" parameterType="int">
+		select count(1) as count from ce_evaluationuser ce_user
+		inner join
+		ce_lawcaseuser_map ce_map
+		on ce_user.id = ce_map.evaluationuser_id
+		where ce_user.belongedyear=#{year}
+	</select>
+
+	<!-- 通过年份删除人员 -->
+	<delete id="deleteEvaluationUserByYear" parameterType="int">
+		delete
+		ce_evaluationuser t where t.belongedyear =#{year} 
+	</delete>
+
+	<!-- 通过年份删除人员区域关系表 -->
+	<delete id="deleteEvaluationUserMapByYear" parameterType="int">
+		delete
+		from ce_evaluationareauser_map t where t.evaluationuser_id in
+		(select
+		ce_user.id from ce_evaluationuser ce_user
+		where
+		ce_user.belongedyear=#{year})
+	</delete>
+
+	<!-- 获取评查区域列表 -->
+	<select id="getEvaluationAreaList" resultType="EvaluationArea">
+		select
+		reg.regionName,reg.regionid as regionCode,
+		wm_concat(su.name) as names,
+		wm_concat(ce_user.id) as ids ,
+		wm_concat(userRegion.Regionname)
+		as
+		userRegionNames
+		from ss_region reg
+		left join ce_evaluationareauser_map
+		userAreaMap
+		on reg.regionid=userAreaMap.Ss_Region_Id
+		left join
+		ce_evaluationuser
+		ce_user
+		on ce_user.id = userAreaMap.evaluationuser_id
+		and ce_user.belongedyear=#{year}
+		left join sys_user su
+		on su.account =
+		ce_user.user_account
+		left join ss_region userRegion
+		on
+		userRegion.Regionid = ce_user.ss_region_id
+		where reg.rank=1
+		group by
+		reg.regionname,reg.regionid
+		order by reg.regionid
+	</select>
+
+	<!-- 通过行政区划和年份获取userid -->
+	<select id="getUserIdsByYearAndRegion" parameterType="map"
+		resultType="String">
+		select wm_concat(ceu.id) from ce_evaluationareauser_map cem
+		inner join ce_evaluationuser ceu on cem.evaluationuser_id = ceu.id
+		where cem.ss_region_id =#{region} and ceu.belongedyear=#{year}
+	</select>
+
+	<resultMap type="SSRegion" id="getUserListInAreaMap">
+		<id column="regionCode" property="regionCode" />
+		<result column="regionname" property="regionName"></result>
+		<collection property="peopleList" column="id" ofType="EvaluationPerson">
+			<id column="id" property="id" />
+			<result column="userAccount" property="userAccount"></result>
+		</collection>
+	</resultMap>
+
+	<!-- 区域下所属的用户 -->
+	<select id="getUserListInArea" parameterType="int"
+		resultMap="getUserListInAreaMap">
+		select
+		regions.regionname,regions.regionid as
+		regionCode,ce_user.user_account as
+		userAccount,ce_user.id
+		from ss_region
+		regions
+		left join
+		ce_evaluationuser ce_user on regions.regionid =
+		ce_user.ss_region_id
+		and ce_user.belongedyear=#{year}
+		where
+		regions.rank=1 order by
+		regions.regionid
+	</select>
+
+	<!-- 通过区域id删除区域人员关联表 -->
+	<delete id="deleteEvaluationUserMapByAreaId" parameterType="map">
+		delete CE_EVALUATIONAREAUSER_MAP t where t.ss_region_id =
+		#{allocationRegionCode} and t.evaluationuser_id in (select ceu.id from
+		ce_evaluationuser ceu where
+		ceu.belongedyear=#{year})
+	</delete>
+
+	<!-- 根据 userid获取初评案件查询条件，年份、评查区域 -->
+	<select id="getYearsAndAreas" parameterType="String"
+		resultType="SearchYearsAndRegions">
+		SELECT ce.belongedyear as year,cem.ss_region_id as
+		regionid,sr.regionname
+		FROM CE_EVALUATIONUSER ce
+		LEFT JOIN
+		CE_EVALUATIONAREAUSER_MAP cem ON ce.id = cem.evaluationuser_id
+		LEFT
+		JOIN ss_region sr ON cem.ss_region_id = sr.regionid
+		left join sys_user
+		sysuser on sysuser.account = ce.user_account
+		WHERE
+		sysuser.id =
+		#{account}
+	</select>
+
+	<!-- 获取 复核案件查询条件，年份、评查区域 -->
+	<select id="getReviewYearsAndAreas" resultType="SearchYearsAndRegions">
+		SELECT distinct
+		ce.belongedyear as year,cem.ss_region_id as
+		regionid,sr.regionname
+		FROM
+		CE_EVALUATIONUSER ce
+		left JOIN
+		CE_EVALUATIONAREAUSER_MAP cem ON ce.id =
+		cem.evaluationuser_id
+		left JOIN ss_region sr ON cem.ss_region_id =
+		sr.regionid order by
+		ce.belongedyear desc
+	</select>
+
+	<!-- 获取分页的初评案件列表 -->
+	<select id="getFirstTrialLawcases" resultType="FirstTrialLawcase"
+		parameterType="map">
+		SELECT id as ceLawCaseAccountId, xh,regionname, casecode, casename,
+		maintruth, isclosed,
+		isimportant, ischecked, iscitychecked,
+		firsttotalscore,
+		ISSUBMITTED as
+		firstSubmitted, userid,rn
+		FROM (
+		select
+		m.*, rownum as rn from (
+		SELECT
+		cl.*,clm.firsttotalscore,clm.ISSUBMITTED, ce_user.id as userid
+		FROM
+		ce_lawcaseaccount cl
+		left join ce_evaluationareauser_map ce_map on
+		(cl.parentregioncode=ce_map.ss_region_id or cl.regioncode = ce_map.ss_region_id)
+		 left join ce_evaluationuser
+		ce_user on ce_map.evaluationuser_id =
+		ce_user.id LEFT JOIN
+		ce_lawcaseuser_map clm on ce_user.id=clm.evaluationuser_id and
+		cl.id=
+		clm.ce_lawcaseaccount_id
+		WHERE cl.BELONGEDYEAR=#{Year} and
+		ce_user.user_account=#{Account} and (cl.REVIEWSTATE  <![CDATA[<]]> <![CDATA[>]]>
+		4 or cl.REVIEWSTATE is null)
+		and (select count(1) from
+		ce_lawcaseuser_map clm_map
+		where clm_map.ce_lawcaseaccount_id = cl.id
+		and clm_map.evaluationuser_id !=
+		ce_user.id )
+		&lt; 3
+		<if test="RegionCode!=null and RegionCode !=''">
+			AND  (cl.parentregioncode = #{RegionCode} or cl.regioncode =  #{RegionCode} )
+		</if>
+		<if test="CaseName!=null and CaseName !=''">
+			AND instr(cl.casename,#{CaseName} ) >0
+		</if>
+		<if test="CaseCode!=null and CaseCode !=''">
+			AND instr(cl.casecode,#{CaseCode}) >0
+		</if>
+		<if test="PraType!=null and PraType !='' and noPra==null">
+			AND (clm.ISSUBMITTED=0 or clm.ISSUBMITTED is null)
+		</if>
+		<if test="PraType!=null and PraType !='' and noPra!=null">
+			AND clm.ISSUBMITTED=1
+		</if>
+		order by
+		<!-- 排序保存-未处理-已提交 -->
+		nvl(clm.ISSUBMITTED,0.5), cl.regioncode) m ) a WHERE a.rn between #{startRow}
+		and #{endRow}
+	</select>
+
+	<select id="getFirstTrialLawcaseCount" resultType="int"
+		parameterType="map">
+		SELECT COUNT(1) FROM ce_lawcaseaccount cl
+		left join
+		ce_evaluationareauser_map ce_map on
+		(cl.parentregioncode=ce_map.ss_region_id or cl.regioncode = ce_map.ss_region_id)
+		left join ce_evaluationuser
+		ce_user on ce_map.evaluationuser_id =
+		ce_user.id
+		LEFT JOIN
+		ce_lawcaseuser_map clm on ce_user.id=clm.evaluationuser_id and
+		cl.id=
+		clm.ce_lawcaseaccount_id
+		WHERE cl.BELONGEDYEAR
+		=#{Year} and
+		ce_user.user_account=#{Account} and (cl.REVIEWSTATE  <![CDATA[<]]> <![CDATA[>]]>
+		4 or cl.REVIEWSTATE is null)
+		and (select count(1) from
+		ce_lawcaseuser_map clm_map
+		where clm_map.ce_lawcaseaccount_id = cl.id
+		and clm_map.evaluationuser_id !=
+		ce_user.id )
+		&lt; 3
+		<if test="RegionCode!=null and RegionCode !=''">
+			AND  (cl.parentregioncode = #{RegionCode} or cl.regioncode =  #{RegionCode} )
+		</if>
+		<if test="CaseName!=null and CaseName !=''">
+			AND instr(cl.casename,#{CaseName} ) >0
+		</if>
+		<if test="CaseCode!=null and CaseCode !=''">
+			AND instr(cl.casecode,#{CaseCode}) >0
+		</if>
+		<if test="PraType!=null and PraType !='' and noPra==null">
+			AND (clm.ISSUBMITTED=0 or clm.ISSUBMITTED is null)
+		</if>
+		<if test="PraType!=null and PraType !='' and noPra!=null">
+			AND clm.ISSUBMITTED=1
+		</if>
+	</select>
+
+
+	<resultMap type="FirstTrialLawcase" id="firstTrialSurvey">
+		<id column="id" property="id" />
+		<result column="ce_lawcaseaccount_id" property="ceLawCaseAccountId" />
+		<result column="evaluationuser_id" property="evaluationUserId" />
+		<result column="firsttotalscore" property="firstTotalScore" />
+		<result column="issubmitted" property="firstSubmitted" />
+		<result column="reviewtotalscore" property="reviewTotalScore" />
+		<result column="isreviewsubmitted" property="reviewSubmitted" />
+		<result column="review_useraccount" property="reviewUserAccount" />
+		<!-- <association property="caseJudge" javaType="CaseJudge"> -->
+		<result column="cpId" property="caseJudge.id" />
+		<result column="startyear" property="caseJudge.startYear" />
+		<result column="endyear" property="caseJudge.endYear" />
+		<result column="name" property="caseJudge.name" />
+		<result column="remarks" property="caseJudge.remarks" />
+		<collection property="caseJudge.surveyProjects" ofType="SurveyProject">
+			<id column="cpfId" property="id" />
+			<result column="pcbz_id" property="pcbzId" />
+			<result column="cpfname" property="name" />
+			<result column="total_score" property="totalScore" />
+			<collection property="surveyContents" ofType="SurveyContent">
+				<id column="cpzId" property="id" />
+				<result column="pcbz_fx_id" property="pcbzFxId" />
+				<result column="cpzname" property="name" />
+				<result column="cptotalscore" property="totalScore" />
+				<result column="is_show" property="isShow" />
+				<collection property="surveryStandards" ofType="SurveryStandard">
+					<id column="cpdId" property="id" />
+					<result column="scoreid" property="scoreId" />
+					<result column="pcbz_zx_id" property="pcbzZxId" />
+					<result column="cpdname" property="name" />
+					<result column="cpdtotalscore" property="totalScore" />
+					<result column="kfjg" property="kfjg" />
+					<result column="type" property="type" />
+					<result column="firstscore" property="firstScore" />
+					<result column="reviewscore" property="reviewScore" />
+					<result column="reason" property="reason" />
+				</collection>
+			</collection>
+		</collection>
+		<!-- </association> -->
+	</resultMap>
+
+
+
+	<!-- 查询案件初审信息 -->
+	<select id="getFirstTrialSurvey" parameterType="map"
+		resultMap="firstTrialSurvey">
+		with score as (
+		select cem.id, cem.firsttotalscore,
+		cem.issubmitted,
+		cem.reviewtotalscore, cem.isreviewsubmitted,
+		cem.ce_lawcaseaccount_id,
+		cem.evaluationuser_id,cem.review_useraccount,
+		ces.pcbz_detail_id,
+		ces.firstscore, ces.reviewscore, ces.reason, ces.id as scoreid from
+		CE_LAWCASEUSER_MAP
+		cem,
+		CE_SCORE ces
+		where
+		cem.ce_lawcaseaccount_id =
+		#{caseId} and
+		cem.evaluationuser_id =#{userId} and cem.id =
+		ces.lawcaseuser_map_id
+		)
+		select
+		nvl(s.id,0) as id, s.firsttotalscore,
+		s.issubmitted,
+		s.reviewtotalscore,
+		s.isreviewsubmitted,s.ce_lawcaseaccount_id,s.evaluationuser_id,s.review_useraccount,
+		cp.id as cpId, cp.startyear, cp.endyear, cp.name, cp.remarks,
+		cpf.id as
+		cpfId, cpf.pcbz_id, cpf.name as cpfname, cpf.total_score,
+		cpz.id as
+		cpzId, cpz.pcbz_fx_id, cpz.name as cpzname, cpz.total_score as
+		cptotalscore, cpz.is_show,
+		cpd.id as cpdId, cpd.pcbz_zx_id, cpd.name as
+		cpdname, nvl(cpd.total_score,0)
+		as cpdtotalscore, nvl(cpd.kfjg,0) as
+		kfjg, cpd.type, s.firstscore,
+		s.reviewscore, s.reason, s.scoreid
+		from
+		CE_PCBZ cp,
+		CE_PCBZ_FX cpf,
+		CE_PCBZ_ZX cpz,
+		CE_PCBZ_DETAIL cpd
+		left join
+		score s
+		on
+		s.pcbz_detail_id = cpd.id
+		where
+		cp.id = cpf.pcbz_id and cpf.id
+		=
+		cpz.pcbz_fx_id and cpz.id = cpd.pcbz_zx_id
+		and cp.id = (select
+		CE_PCBZ_ID from CE_LAWCASEACCOUNT where ID
+		=#{caseId} ) order by cpd.id
+	</select>
+
+
+
+	<!-- 保存案件初审信息 -->
+	<insert id="saveOrUpdateFirstTrialSurvey" parameterType="FirstTrialLawcase">
+		{call
+		declare
+		begin
+
+		delete from CE_LAWCASEUSER_MAP where
+		ce_lawcaseaccount_id =
+		#{ceLawCaseAccountId} and evaluationuser_id
+		=#{evaluationUserId};
+
+		insert into
+		CE_LAWCASEUSER_MAP
+		(id,ce_lawcaseaccount_id,evaluationuser_id,firsttotalscore,issubmitted,reviewtotalscore,isreviewsubmitted,review_useraccount)
+		values
+		(#{id}, #{ceLawCaseAccountId,jdbcType=NUMERIC},
+		#{evaluationUserId,jdbcType=NUMERIC},
+		#{firstTotalScore,jdbcType=NUMERIC},
+		#{firstSubmitted,javaType=boolean,jdbcType=NUMERIC},
+		#{reviewTotalScore,jdbcType=NUMERIC},
+		#{reviewSubmitted,javaType=boolean,jdbcType=NUMERIC},
+		#{reviewUserAccount,jdbcType=NUMERIC});
+
+		<foreach collection="caseJudge.surveyProjects" item="surveyProject"
+			index="" separator="">
+			<foreach collection="surveyProject.surveyContents" item="surveyContent">
+				<foreach collection="surveyContent.surveryStandards" item="item">
+					insert into
+					CE_SCORE
+					(id,
+					lawcaseuser_map_id,pcbz_detail_id,firstscore,reviewscore,reason)
+					values
+					(#{item.scoreId},
+					#{id,jdbcType=NUMERIC},
+					#{item.id,jdbcType=NUMERIC},
+					#{item.firstScore,jdbcType=NUMERIC},
+					#{item.reviewScore,jdbcType=NUMERIC},
+					#{item.reason,jdbcType=VARCHAR});
+				</foreach>
+			</foreach>
+		</foreach>
+
+		<if test="reviewState!=null  and  reviewState !=''">
+			update CE_LAWCASEACCOUNT set reviewstate = #{reviewState}
+			where id
+			=#{ceLawCaseAccountId};
+		</if>
+
+		end
+		}
+	</insert>
+
+
+	<!-- 保存复审信息 -->
+	<update id="saveReviewLawcase" parameterType="map">
+		{call
+		declare
+		begin
+
+		update
+		CE_LAWCASEUSER_MAP
+		set
+		reviewtotalscore =
+		#{reviewTotalScore,jdbcType=NUMERIC},
+		isreviewsubmitted =
+		#{reviewSubmitted,javaType=boolean,jdbcType=NUMERIC},
+		REVIEW_USERACCOUNT = #{reviewUserAccount,jdbcType=VARCHAR}
+		where
+		ce_lawcaseaccount_id =#{ceLawCaseAccountId} and
+		evaluationuser_id=#{evaluationUserId};
+
+		<foreach collection="caseJudge.surveyProjects" item="surveyProject"
+			index="" separator="">
+			<foreach collection="surveyProject.surveyContents" item="surveyContent">
+				<foreach collection="surveyContent.surveryStandards" item="item">
+					update CE_SCORE set reviewscore
+					=#{item.reviewScore,jdbcType=NUMERIC} where id = #{item.scoreId};
+				</foreach>
+			</foreach>
+		</foreach>
+
+		end
+		}
+	</update>
+
+
+
+	<!-- 查询复核列表总数 -->
+	<select id="getReviewLawcasesCount" parameterType="map"
+		resultType="int">
+		select count(1)
+		from CE_LAWCASEACCOUNT cec where
+		cec.BELONGEDYEAR=#{Year}
+		<if test="RegionCode!=null and RegionCode !=''">
+			AND  (cec.parentregioncode = #{RegionCode} or cec.regioncode =  #{RegionCode} )
+		</if>
+		<if test="CaseName!=null and CaseName !=''">
+			AND instr(cec.casename,#{CaseName} ) >0
+		</if>
+		<if test="CaseCode!=null and CaseCode !=''">
+			AND instr(cec.casecode,#{CaseCode}) >0
+		</if>
+		<if test="noPra==null and ReviewState!=null and ReviewState!=''">
+			AND REVIEWSTATE = #{ReviewState}
+		</if>
+		<if test="noPra!=null">
+			AND (REVIEWSTATE = #{ReviewState} or REVIEWSTATE is null)
+		</if>
+	</select>
+
+	<resultMap type="ReviewLawcase" id="reviewLawcase">
+		<id column="id" property="ID" />
+		<result column="xh" property="XH" />
+		<result column="regionname" property="regionName" />
+		<result column="casecode" property="caseCode" />
+		<result column="casename" property="caseName" />
+		<result column="maintruth" property="mainTruth" />
+		<result column="isclosed" property="isClosed" />
+		<result column="isimportant" property="isImportant" />
+		<result column="ischecked" property="isChecked" />
+		<result column="reviewstate" property="reviewState" />
+		<collection property="userMaps" column="cemId" ofType="LawCaseUserMap">
+			<id column="cemId" property="id" />
+			<result column="userid" property="evaluationUserId"></result>
+			<result column="name" property="evaluationUserName" />
+			<result column="firsttotalscore" property="firstTotalScore" />
+			<result column="issubmitted" property="firstSubmitted" />
+			<result column="reviewtotalscore" property="reviewTotalScore" />
+			<result column="isreviewsubmitted" property="reviewSubmitted" />
+		</collection>
+	</resultMap>
+
+
+	<!-- 获取复查列表数据 -->
+	<select id="getReviewLawcases" parameterType="map" resultMap="reviewLawcase">
+		select
+		t.id, t.xh,t.regionname, t.casecode, t.casename, t.maintruth,
+		t.isclosed,
+		t.isimportant, t.ischecked, t.reviewstate,
+		m.id as cemId,
+		m.firsttotalscore, r.id as userid,sysuser.name,
+		m.issubmitted,
+		m.reviewtotalscore, m.isreviewsubmitted
+		from (select * from
+		(select
+		cel.*,rownum as rn from
+		(select *from CE_LAWCASEACCOUNT clc order by
+		clc.reviewstate ,clc.regioncode) cel
+		where
+		1=1
+		<if test="Year!=null and  Year !=''">
+			AND cel.BELONGEDYEAR = #{Year}
+		</if>
+		<if test="RegionCode!=null and RegionCode !=''">
+			AND  (cel.parentregioncode = #{RegionCode} or cel.regioncode =  #{RegionCode} )
+		</if>
+		<if test="CaseName!=null and CaseName !=''">
+			AND instr(cel.casename,#{CaseName} ) >0
+		</if>
+		<if test="CaseCode!=null and CaseCode !=''">
+			AND instr(cel.casecode,#{CaseCode}) >0
+		</if>
+		<if test="noPra==null  and ReviewState!=null and ReviewState!=''">
+			AND REVIEWSTATE = #{ReviewState}
+		</if>
+		<if test="noPra!=null">
+			AND (REVIEWSTATE = #{ReviewState} or REVIEWSTATE is null)
+		</if>
+		) cl where cl.rn between
+		#{startRow}
+		and #{endRow})t
+		left outer join
+		CE_LAWCASEUSER_MAP m
+		on
+		m.ce_lawcaseaccount_id = t.id
+		left outer join
+		CE_EVALUATIONUSER r
+		on
+		r.id = m.evaluationuser_id
+		left join sys_user
+		sysuser on
+		sysuser.account = r.user_account
+		order by m.id
+	</select>
+
+	<resultMap type="CaseGradeCount" id="caseGradeCount">
+		<result column="good" property="goodCount" />
+		<result column="grade" property="gradeCount" />
+		<result column="ungrade" property="unGradeCount" />
+		<result column="reviewstate" property="UnReviewCount" />
+	</resultMap>
+
+	<!-- 统计案件优秀、合格、不合格、复核的个数 -->
+	<select id="getCaseGradeCount" statementType="CALLABLE"
+		resultMap="caseGradeCount">
+		{call Pro_casegrade(#{year,mode=IN,jdbcType=NUMERIC},
+		#{result,mode=OUT,jdbcType=CURSOR,javaType=ResultSet,
+		resultMap=caseGradeCount})}
+	</select>
+
+
+
+	<!-- 判断评查人数是否超过限制 -->
+	<select id="getFirstTrialSurveyCount" resultType="FirstTrialLawcase">
+		select t.id, t.firsttotalscore, t.issubmitted as firstSubmitted
+		from
+		CE_LAWCASEUSER_MAP t
+		where t.ce_lawcaseaccount_id =
+		#{caseId} and
+		t.evaluationuser_id  <![CDATA[<]]> <![CDATA[>]]>
+		#{userId}
+	</select>
+
+	<!-- 获取所有评查的年份 -->
+	<select id="getAllEvaluationYear" resultType="int">
+		select distinct
+		ce_user.belongedyear from ce_evaluationuser ce_user order by
+		ce_user.belongedyear desc
+	</select>
+
+	<!-- 获取未开始评查的年份 -->
+	<select id="getNotWorkingEvaluationYear" resultType="int">
+		select
+		distinct ce_user.belongedyear from ce_evaluationuser ce_user
+		left join
+		ce_lawcaseuser_map ce_lawcase on
+		ce_user.id=ce_lawcase.evaluationuser_id
+		where ce_lawcase.id is null
+		order by ce_user.belongedyear desc
+	</select>
+
+	<!-- 复核完结 -->
+	<update id="compeleteReview" parameterType="map">
+		update
+		CE_LAWCASEACCOUNT t set t.reviewstate=#{reviewState} where t.id =
+		#{caseid}
+	</update>
+
+	<resultMap type="ReviewLawcase" id="getReviewMap">
+		<id column="id" property="ID" />
+		<result column="xh" property="XH" />
+		<result column="regionname" property="regionName" />
+		<result column="casecode" property="caseCode" />
+		<result column="casename" property="caseName" />
+		<result column="maintruth" property="mainTruth" />
+		<result column="isclosed" property="isClosed" />
+		<result column="isimportant" property="isImportant" />
+		<result column="ischecked" property="isChecked" />
+		<result column="reviewstate" property="reviewState" />
+		<collection property="userMaps" column="cemId" ofType="LawCaseUserMap">
+			<id column="cemId" property="id" />
+			<result column="userid" property="evaluationUserId"></result>
+			<result column="name" property="evaluationUserName" />
+			<result column="firsttotalscore" property="firstTotalScore" />
+			<result column="issubmitted" property="firstSubmitted" />
+			<result column="reviewtotalscore" property="reviewTotalScore" />
+			<result column="isreviewsubmitted" property="reviewSubmitted" />
+			<result column="reasons" property="reasons" />
+			<result column="reviewName" property="reviewUserName" />
+		</collection>
+	</resultMap>
+
+	<!-- 通过id获取复核信息 -->
+	<select id="getReviewInfoById" parameterType="long" resultMap="getReviewMap">
+		with reasonTable as (select
+		views.caseid,views.userid,wm_concat(reason) as reasons
+		from (select
+		t.id as caseid ,m.evaluationuser_id as userid,score.reason as
+		reason
+		from CE_LAWCASEACCOUNT t
+		inner join CE_LAWCASEUSER_MAP m on
+		m.ce_lawcaseaccount_id = t.id
+		inner join ce_score score on
+		score.lawcaseuser_map_id = m.id order by
+		score.id) views
+		group by
+		views.caseid,views.userid )
+		select t.id, t.xh,t.regionname, t.casecode,
+		t.casename,
+		t.maintruth,t.isclosed,t.isimportant, t.ischecked,
+		t.reviewstate,m.id
+		as cemId,vi.reasons,
+		m.firsttotalscore, r.id as
+		userid,sysuser.name,m.issubmitted,m.reviewtotalscore,
+		m.isreviewsubmitted,reviewUser.Name as reviewName
+		from reasonTable vi
+		inner join ce_lawcaseaccount t
+		on t.id=vi.caseid
+		inner join
+		CE_EVALUATIONUSER r on vi.userid =r.id
+		left join CE_LAWCASEUSER_MAP m
+		on m.ce_lawcaseaccount_id = t.id and
+		m.evaluationuser_id = r.id left
+		join sys_user sysuser on
+		sysuser.account = r.user_account
+		left join
+		sys_user reviewUser on m.review_useraccount = reviewUser.Id
+		where
+		vi.caseid = #{id}
+	</select>
+
+	<!-- 各市各案卷一览表 -->
+	<select id="getStatisticSchedule" parameterType="int"
+		resultType="ExportSchedule">
+		select ssregion.regionname,
+		count(m.id) as casecount,
+		sum(case when
+		m.finaltotal <![CDATA[  >=  ]]>
+		90 and (m.reviewstate <![CDATA[  <  ]]> <![CDATA[  >  ]]>4 or m.reviewstate is null)
+		then 1 else 0 end) as goodcasecount,
+		sum(case when m.finaltotal <![CDATA[  <  ]]>
+		90 and m.finaltotal <![CDATA[  >=  ]]>
+		70 and (m.reviewstate <![CDATA[  <  ]]> <![CDATA[  >  ]]>4 or m.reviewstate is null)
+		then 1 else 0 end) as
+		gradecasecount, sum(case when m.finaltotal <![CDATA[  <  ]]>
+		70 and (m.reviewstate <![CDATA[  <  ]]> <![CDATA[  >  ]]>4 or m.reviewstate is null)
+		then 1 else 0 end) as ungradecasecount,
+		nvl(sum(m.unmatchedcount),0) as
+		unmatchedcasecount
+		from ss_region
+		ssregion
+		left join
+		(select
+		t.id,t.regioncode ,t.parentregioncode,t.reviewstate,
+		sum(case when
+		clm.isreviewsubmitted ='1' then clm.reviewtotalscore
+		else
+		clm.firsttotalscore end)/3 as finaltotal,
+		sum(case when
+		t.reviewstate =
+		4 then 1 else 0 end)/count(t.id) as unmatchedcount
+		from
+		CE_LAWCASEACCOUNT t
+		inner join CE_LAWCASEUSER_MAP clm on t.id =
+		clm.ce_lawcaseaccount_id
+		where t.belongedyear=#{year}
+		group by t.regioncode,
+		t.parentregioncode,t.id,t.reviewstate)
+		m on (ssregion.regionid = m.regioncode or ssregion.regionid = m.parentregioncode) 
+		where ssregion.rank=1
+		group by ssregion.regionname
+	</select>
+
+	<!-- 各市各案卷得分表 -->
+	<select id="getAllEvaluationResultAccount" parameterType="map"
+		resultMap="getReviewMap">
+		with remark as
+		(select t.lawcaseuser_map_id, wm_concat(t.reason) as
+		reasons from CE_SCORE t
+		group by t.lawcaseuser_map_id)
+		select t.id,
+		t.xh,t.casename,
+		sysuser.name as name,m.firsttotalscore,
+		m.reviewtotalscore,
+		m.issubmitted,
+		m.isreviewsubmitted, m.id as
+		cemId,
+		reviewUser.name as reviewName,t.reviewstate
+		,r.reasons,
+		parentregioncode,regioncode,ssregion.regionname  from
+		(select * from CE_LAWCASEACCOUNT
+		where
+		1=1
+		<if test="Code!=0">
+			and (Parentregioncode= #{Code} or regioncode= #{Code})
+		</if>
+		<if test="Year!=null and Year!=''">
+			and belongedyear = #{Year}
+		</if>
+		<if test="Userid!=0">
+		and (select count(1) from ce_lawcaseuser_map clm where 
+    CE_LAWCASEACCOUNT.Id = clm.ce_lawcaseaccount_id and clm.evaluationuser_id=#{Userid})<![CDATA[  >  ]]>0 
+    and  (CE_LAWCASEACCOUNT.Reviewstate <![CDATA[  < ]]><![CDATA[  >  ]]> 4 or CE_LAWCASEACCOUNT.Reviewstate is null)
+		</if>
+		) t
+		left outer join CE_LAWCASEUSER_MAP m on t.id =
+		m.ce_lawcaseaccount_id
+		left
+		outer join CE_EVALUATIONUSER r on r.id =
+		m.evaluationuser_id
+		left outer
+		join remark r on r.lawcaseuser_map_id =
+		m.id
+		left outer join sys_user
+		sysuser on r.user_account =
+		sysuser.account
+		left outer join sys_user reviewUser on reviewUser.Id =
+		m.review_useraccount
+		left join ss_region ssregion on t.regioncode = ssregion.regionid
+		order by t.regioncode
+	</select>
+
+	<!-- 判断当前人员是否开始工作 -->
+	<select id="getUserWorkingCountByID" parameterType="map"
+		resultType="int">
+		select count(1) from ce_lawcaseuser_map cem inner join
+		ce_evaluationuser ceu
+		on cem.evaluationuser_id=ceu.id
+		where
+		ceu.id=#{userid} and ceu.belongedyear=#{year}
+	</select>
+	
+	<!-- 根据年份和执法单位获取评查人员 -->
+	<select id="getUserByYearAndRegionCode"  parameterType="map" resultType="EvaluationPerson">
+	select ceu.id,sysuser.name as userAccount from ce_evaluationuser ceu 
+	left join sys_user sysuser on ceu.user_account = sysuser.account
+	where ceu.belongedyear=#{year} 
+	</select>
+
+</mapper>

@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ehcache updateCheck="false" name="defaultCache">
+
+	<diskStore path="../temp/jeesite/ehcache" />
+
+	<!-- 默认缓存配置. -->
+	<defaultCache  maxEntriesLocalHeap="100" eternal="false" 
+		timeToIdleSeconds="1800" timeToLiveSeconds="1800" overflowToDisk="true"
+		maxEntriesLocalDisk="100000" />
+
+	<!-- 系统缓存 -->
+	<cache name="sysCache"   maxEntriesLocalHeap="100" eternal="true"
+		overflowToDisk="true" />  
+	<!-- 数据字典缓存 -->
+	<cache name="dataCache"   maxEntriesLocalHeap="100" eternal="true"
+		overflowToDisk="true" />
+	<!-- 字典数据list缓存 -->
+	<cache name="sysMapCache"   maxEntriesLocalHeap="100" eternal="true"
+		overflowToDisk="true" />    
+		
+	<!-- 用户缓存 -->
+	<!-- <cache name="userCache" maxEntriesLocalHeap="100" eternal="true"
+		overflowToDisk="true" />  userCache-->	
+	<cache  name="userCache" 
+			 maxElementsInMemory="1000"
+			 eternal="true" 
+			 overflowToDisk="true" 
+			 clearOnFlush="true"
+			 />	
+    <cache  name="regionCache" 
+			 maxElementsInMemory="1000"
+			 eternal="true"
+	 		 timeToIdleSeconds="0"
+			 overflowToDisk="true" 
+			 clearOnFlush="true"
+			 />		
+	<!-- 系统活动会话缓存 -->
+	<cache name="activeSessionsCache" maxEntriesLocalHeap="10000"
+		overflowToDisk="true" eternal="true" timeToLiveSeconds="0"
+		timeToIdleSeconds="1800" diskPersistent="true"
+		diskExpiryThreadIntervalSeconds="600" />
+		
+		<!-- 流程使用。用一次就失效的缓存配置 -->
+	<cache name="workFlowCache"  
+					maxElementsInMemory="1000"
+					eternal="false"
+					 overflowToDisk="false"/>
+	<!-- 简单页面缓存 <cache name="SimplePageCachingFilter" maxEntriesLocalHeap="100" 
+		eternal="false" overflowToDisk="true" timeToIdleSeconds="120" timeToLiveSeconds="120" 
+		memoryStoreEvictionPolicy="LFU"/> -->
+
+</ehcache>

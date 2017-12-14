@@ -1,0 +1,42 @@
+﻿<?xml version="1.0" encoding="UTF-8" ?>  
+<!DOCTYPE configuration  
+  PUBLIC "-//mybatis.org//DTD Config 3.0//EN"  
+  "http://mybatis.org/dtd/mybatis-3-config.dtd">
+<configuration>
+	<!-- <mappers> <mapper resource="sql/test.xml" /> <mapper resource="sql/auth.xml" 
+		/> <mapper resource="sql/device.xml" /> <mapper resource="sql/organization.xml" 
+		/> <mapper resource="sql/role.xml" /> <mapper resource="sql/datadictionary.xml" 
+		/> <mapper resource="sql/satellitegraph-service.xml" /> <mapper resource="sql/user.xml" 
+		/> <mapper resource="sql/mapservice.xml"/> </mappers> <settings> <setting 
+		name="useColumnLabel" value="true"/> <setting name="mapUnderscoreToCamelCase" 
+		value="true"/> </settings> -->
+	<settings>
+		<!-- lazyLoadingEnabled:延迟加载启动，默认false -->
+		<setting name="lazyLoadingEnabled" value="true" />
+
+		<!-- aggressiveLazyLoading:积极的懒加载，false的话按需加载，默认false -->
+		<setting name="aggressiveLazyLoading" value="false" />
+
+		<!-- 开启二级缓存，默认是false -->
+		<setting name="cacheEnabled" value="true" />
+
+		<setting name="useColumnLabel" value="true" />
+
+		<!-- mapUnderscoreToCamelCase:将数据库字段中的下划线，变为实体字段的小驼峰 -->
+		<setting name="mapUnderscoreToCamelCase" value="true" />
+		<setting name="logImpl" value="LOG4J" />
+	</settings>
+
+	<typeHandlers>
+		<typeHandler handler="org.apache.ibatis.type.EnumOrdinalTypeHandler"
+			javaType="phalaenopsis.lawcaseevaluation.entity.ReviewState" />
+	<!-- 	<typeHandler
+			handler="phalaenopsis.common.method.typehandler.SdoGeometryTypeHandler"
+			javaType="oracle.spatial.geometry.JGeometry" /> -->
+		<!-- <typeHandler handler="org.apache.ibatis.type.EnumOrdinalTypeHandler" 
+			javaType="phalaenopsis.lawcase.entity.LitigantType" /> <typeHandler handler="org.apache.ibatis.type.EnumOrdinalTypeHandler" 
+			javaType="phalaenopsis.lawcase.entity.SignStatus" /> <typeHandler handler="org.apache.ibatis.type.EnumOrdinalTypeHandler" 
+			javaType="phalaenopsis.lawcase.entity.SignNodeStatus" /> -->
+	</typeHandlers>
+
+</configuration>

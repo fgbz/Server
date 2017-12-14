@@ -1,0 +1,128 @@
+<?xml version="1.0" encoding="UTF-8" ?>  
+<!DOCTYPE mapper  
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"  
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="phalaenopsis.common.dao.IAttachmentDao">
+
+	<!-- phalaenopsis.common.entity.Attachment.Attachment -->
+
+	<!-- 根据业务数据Id，获取对应附件集合 -->
+	<select id="getAttachments" parameterType="string" resultType="phalaenopsis.common.entity.Attachment.Attachment">
+		select  ID,
+		FILETYPE as fileExt,
+		SERVERFILENAME as actualFile,
+		CLIENTFILENAME as fileName,
+		SERVERPATH as path
+		from m_sa_fileinfo where REFID = #{bizID}
+	</select>
+	
+	<!-- 根据业务数据Id，获取对应附件集合 （倒叙）  -->
+	<select id="getDescAttachments" parameterType="string" resultType="phalaenopsis.common.entity.Attachment.Attachment">
+		select * from SS_ATTACHMENT where  nvl(ISDELETE,0) <![CDATA[<]]> <![CDATA[>]]> 1 and bizid = #{bizID} order by explain desc
+	</select>
+	
+	<!-- 移动端查询照片是否已经上传过一次 -->
+	<select id="getAttachmentByBizIdAndFileName" resultType="phalaenopsis.common.entity.Attachment.Attachment">
+		select * from SS_ATTACHMENT t where t.filename = #{fileName}  and  t.bizid = #{spotid}
+	</select>
+	
+    <!-- 根据业务数据Id，获取对应附件集合 -->
+	<select id="getMoblieAttachments" resultType="phalaenopsis.common.entity.Attachment.Attachment">
+		select * from SS_ATTACHMENT where nvl(ISDELETE,0) <![CDATA[<]]> <![CDATA[>]]> 1 and  bizid = #{bizID} and SOURCE = #{source}
+	</select>
+	
+	<!-- 批量删除附件(逻辑删除，实际上是做修改操作) -->
+	<update id="batchUpdate" parameterType="java.util.List">
+		delete from m_sa_fileinfo
+		where id in
+		 <foreach collection="ids" item="item" open="(" separator="," close=")">
+		   		#{item}
+		 </foreach>
+	</update>
+    <!-- 更新附件对应的业务数据 -->
+	<update id="updateBizID" parameterType="string">
+		update SS_ATTACHMENT set bizid = #{bizID}
+		<if test="exreaInfo != null and exreaInfo != '' ">
+			, extrainfo = #{exreaInfo, javaType=String, jdbcType=CLOB}
+		</if>
+		<if test="module != null and module != '' ">
+			, module = #{module}
+		</if>
+		 where id=#{fileID}
+	</update>
+	 
+	<!-- 根据附件Id，获取附件对应的数据 -->
+	<select id="getAttachmentById" parameterType="string"  resultType="phalaenopsis.common.entity.Attachment.Attachment">
+		select ID,
+		FILETYPE as fileExt,
+		SERVERFILENAME as actualFile,
+		CLIENTFILENAME as fileName,
+		SERVERPATH as path
+		from m_sa_fileinfo where id = #{fileID}
+	</select>
+	
+	<!-- 删除对应附件数据 -->
+	<delete id="delete" parameterType="string">
+		delete SS_ATTACHMENT where  id = #{fileID}
+	</delete>
+	
+	<insert id="save"  parameterType="phalaenopsis.common.entity.Attachment.Attachment">
+		insert into SS_ATTACHMENT(
+		ID,
+		FILENAME,
+		FILEEXT,
+		FILESIZE,
+		ACTUALFILE,
+		BIZID,
+		THUMBFILE,
+		EXPLAIN,
+		UPLOADTIME,
+		MODULE,
+		SOURCE,
+		X,
+		Y,
+		ANGLE,
+		LASTUPDATE,
+		ISDELETE) values
+		(#{id},
+		#{fileName,jdbcType=VARCHAR},
+		#{fileExt,jdbcType=VARCHAR},
+		#{fileSize,jdbcType=INTEGER},
+		#{actualFile,jdbcType=VARCHAR},
+		#{bizID,jdbcType=VARCHAR},
+		#{thumbFile,jdbcType=VARCHAR},
+		#{explain,jdbcType=VARCHAR},
+		#{uploadTime,jdbcType=TIMESTAMP},
+		#{module,jdbcType=VARCHAR},
+		#{source,jdbcType=VARCHAR},
+		#{x,jdbcType=DOUBLE},
+		#{y,jdbcType=DOUBLE},
+		#{angle,jdbcType=DOUBLE},
+		#{lastUpdate,jdbcType=TIMESTAMP},
+		#{isdelete,jdbcType=INTEGER}
+		)
+		
+	</insert>
+
+	<!--保存法规附件-->
+	<insert id="saveFgbz" parameterType="phalaenopsis.common.entity.Attachment.Attachment">
+		insert into m_sa_fileinfo(
+		ID,
+		FILETYPE,
+		SERVERFILENAME,
+		CLIENTFILENAME,
+		SERVERPATH
+		) values
+		(#{id},
+		#{fileExt,jdbcType=VARCHAR},
+		#{actualFile,jdbcType=VARCHAR},
+		#{fileName,jdbcType=VARCHAR},
+		#{path,jdbcType=VARCHAR}
+		)
+	</insert>
+	
+	<delete id="deleteByBizID" parameterType="string">
+		delete ss_attachment t where t.bizid = #{bizId}
+	</delete>
+
+</mapper>

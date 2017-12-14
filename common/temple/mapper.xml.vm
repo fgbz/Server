@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="${entity}">
+#if(${enableCache})
+	<!-- 开启二级缓存 -->
+	<cache type="org.mybatis.caches.ehcache.LoggingEhcache"/>
+#end
+
+#if(${baseResultMap})
+	<!-- 通用查询映射结果 -->
+	<resultMap id="BaseResultMap" type="${package.Entity}.${entity}">
+#foreach($field in ${table.fields})
+#if(${field.keyFlag})
+		<id column="${field.name}" property="${field.propertyName}" />
+#else
+		<result column="${field.name}" property="${field.propertyName}" />
+#end
+#end
+	</resultMap>
+#end
+
+#if(${baseColumnList})
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        ${table.fieldNames}
+    </sql>
+#end
+	
+	
+	<update id="update${entity}" parameterType="${entity}">
+	update ${table.name} set
+	        #foreach($field in ${table.fields})
+	          <if test="${field.propertyName}!=null and ${field.propertyName} !=''">
+ 					${field.name}=#{${field.propertyName}},			 
+ 			  </if>       
+			#end
+			where id = #{id}
+	</update>
+	
+	<insert id="save${entity}" parameterType="${entity}">
+	insert into ${table.name}(
+			#foreach($field in ${table.fields})
+	          <if test="${field.propertyName}!=null and ${field.propertyName} !=''">
+ 					${field.name},			 
+ 			  </if>       
+			#end
+			)
+			values (
+			#foreach($field in ${table.fields})
+	          <if test="${field.propertyName}!=null and ${field.propertyName} !=''">
+ 					#{${field.propertyName}},			 
+ 			  </if>       
+			#end
+			)
+	</insert>
+	
+	<delete id="delete${entity}" parameterType="String"> 
+		delete from ${table.name} where ID =#{ID}
+	</delete>
+	
+	
+</mapper>

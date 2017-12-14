@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="SS_HITS">
+	<resultMap id="BaseResultMap" type="phalaenopsis.common.entity.Ss_HITS">
+		<id column="ID" jdbcType="DECIMAL" property="id" />
+		<result column="SESSIONID" jdbcType="VARCHAR" property="sessionid" />
+		<result column="HITTIME" jdbcType="TIMESTAMP" property="hittime" />
+		<result column="URL" jdbcType="VARCHAR" property="url" />
+		<result column="USERAGENT" jdbcType="VARCHAR" property="useragent" />
+		<result column="SIDE" jdbcType="VARCHAR" property="side" />
+		<result column="PROCESSTIME" jdbcType="DECIMAL" property="processtime" />
+		<result column="CONCURRENT" jdbcType="DECIMAL" property="concurrent" />
+		<result column="USERNAME" jdbcType="VARCHAR" property="username" />
+		<result column="IP" jdbcType="VARCHAR" property="ip" />
+	</resultMap>
+	
+	<select id="loggingAccess" statementType="CALLABLE" parameterType="hashmap">
+		{call PRO_ACCESS_STAT(
+		#{v_sessionid, mode=IN, jdbcType=VARCHAR},
+		#{v_url, mode=IN, jdbcType=VARCHAR},
+		#{v_useragent, mode=IN, jdbcType=VARCHAR},
+		#{v_side, mode=IN, jdbcType=VARCHAR},
+		#{v_processtime, mode=IN, jdbcType=INTEGER},
+		#{v_username, mode=IN, jdbcType=VARCHAR},
+		#{v_name, mode=IN, jdbcType=VARCHAR},
+		#{v_ip, mode=IN, jdbcType=VARCHAR}
+		)}
+	</select>
+
+</mapper>

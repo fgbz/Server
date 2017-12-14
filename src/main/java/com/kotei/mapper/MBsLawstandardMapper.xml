@@ -1,0 +1,447 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.kotei.controller.MBsLawstandardMapper">
+  <resultMap id="BaseResultMap" type="com.kotei.pojo.MBsLawstandard">
+    <result column="ID" jdbcType="INTEGER" property="id" />
+    <result column="CODE" jdbcType="VARCHAR" property="code" />
+    <result column="CHINESENAME" jdbcType="VARCHAR" property="chinesename" />
+    <result column="ENGLISHNAME" jdbcType="VARCHAR" property="englishname" />
+    <result column="ISCONTROL" jdbcType="INTEGER" property="iscontrol" />
+    <result column="RELEASEDATE" jdbcType="TIMESTAMP" property="releasedate" />
+    <result column="IMPDATE" jdbcType="TIMESTAMP" property="impdate" />
+    <result column="KEYWORDS" jdbcType="VARCHAR" property="keywords" />
+    <result column="ISBATCH" jdbcType="INTEGER" property="isbatch" />
+    <result column="INPUTUSERID" jdbcType="INTEGER" property="inputuserid" />
+    <result column="INPUTDATE" jdbcType="TIMESTAMP" property="inputdate" />
+    <result column="MODIFYUSERID" jdbcType="INTEGER" property="modifyuserid" />
+    <result column="MODIFYDATE" jdbcType="TIMESTAMP" property="modifydate" />
+    <result column="CLICKCOUNT" jdbcType="INTEGER" property="clickcount" />
+    <result column="DOWNLOADCOUNT" jdbcType="INTEGER" property="downloadcount" />
+    <result column="PRINTCOUNT" jdbcType="INTEGER" property="printcount" />
+    <result column="INFORELEASENAME" jdbcType="INTEGER" property="inforeleasename" />
+    <result column="MEMO" jdbcType="VARCHAR" property="memo" />
+    <result column="SUMMARYINFO" jdbcType="VARCHAR" property="summaryinfo" />
+    <result column="SUBSYSID" jdbcType="INTEGER" property="subsysid" />
+    <result column="STATUSNAME" jdbcType="INTEGER" property="statusname" />
+    <result column="STATUS" jdbcType="INTEGER" property="status" />
+    <result column="APPROVESTATUS" jdbcType="INTEGER" property="approvestatus" />
+    <result column="EXTEND1" jdbcType="VARCHAR" property="extend1" />
+    <result column="EXTEND2" jdbcType="VARCHAR" property="extend2" />
+    <result column="EXTEND3" jdbcType="VARCHAR" property="extend3" />
+    <result column="LSSTATUSNAME" jdbcType="VARCHAR" property="lsstatusname" />
+    <result column="sortno" jdbcType="INTEGER" property="sortno" />
+  </resultMap>
+  <sql id="Example_Where_Clause">
+    <where>
+      <foreach collection="oredCriteria" item="criteria" separator="or">
+        <if test="criteria.valid">
+          <trim prefix="(" prefixOverrides="and" suffix=")">
+            <foreach collection="criteria.criteria" item="criterion">
+              <choose>
+                <when test="criterion.noValue">
+                  and ${criterion.condition}
+                </when>
+                <when test="criterion.singleValue">
+                  and ${criterion.condition} #{criterion.value}
+                </when>
+                <when test="criterion.betweenValue">
+                  and ${criterion.condition} #{criterion.value} and #{criterion.secondValue}
+                </when>
+                <when test="criterion.listValue">
+                  and ${criterion.condition}
+                  <foreach close=")" collection="criterion.value" item="listItem" open="(" separator=",">
+                    #{listItem}
+                  </foreach>
+                </when>
+              </choose>
+            </foreach>
+          </trim>
+        </if>
+      </foreach>
+    </where>
+  </sql>
+  <sql id="Update_By_Example_Where_Clause">
+    <where>
+      <foreach collection="example.oredCriteria" item="criteria" separator="or">
+        <if test="criteria.valid">
+          <trim prefix="(" prefixOverrides="and" suffix=")">
+            <foreach collection="criteria.criteria" item="criterion">
+              <choose>
+                <when test="criterion.noValue">
+                  and ${criterion.condition}
+                </when>
+                <when test="criterion.singleValue">
+                  and ${criterion.condition} #{criterion.value}
+                </when>
+                <when test="criterion.betweenValue">
+                  and ${criterion.condition} #{criterion.value} and #{criterion.secondValue}
+                </when>
+                <when test="criterion.listValue">
+                  and ${criterion.condition}
+                  <foreach close=")" collection="criterion.value" item="listItem" open="(" separator=",">
+                    #{listItem}
+                  </foreach>
+                </when>
+              </choose>
+            </foreach>
+          </trim>
+        </if>
+      </foreach>
+    </where>
+  </sql>
+  <sql id="Base_Column_List">
+    ID, CODE, CHINESENAME, ENGLISHNAME, ISCONTROL, RELEASEDATE, IMPDATE, KEYWORDS, ISBATCH, 
+    INPUTUSERID, INPUTDATE, MODIFYUSERID, MODIFYDATE, CLICKCOUNT, DOWNLOADCOUNT, PRINTCOUNT, 
+    INFORELEASENAME, MEMO, SUMMARYINFO, SUBSYSID, STATUSNAME, STATUS, APPROVESTATUS, 
+    EXTEND1, EXTEND2, EXTEND3, LSSTATUSNAME, sortno
+  </sql>
+  <select id="selectByExample" parameterType="com.kotei.pojo.MBsLawstandardExample" resultMap="BaseResultMap">
+    select
+    <if test="distinct">
+      distinct
+    </if>
+    <include refid="Base_Column_List" />
+    from m_bs_lawstandard
+    <if test="_parameter != null">
+      <include refid="Example_Where_Clause" />
+    </if>
+    <if test="orderByClause != null">
+      order by ${orderByClause}
+    </if>
+  </select>
+  <delete id="deleteByExample" parameterType="com.kotei.pojo.MBsLawstandardExample">
+    delete from m_bs_lawstandard
+    <if test="_parameter != null">
+      <include refid="Example_Where_Clause" />
+    </if>
+  </delete>
+  <insert id="insert" parameterType="com.kotei.pojo.MBsLawstandard">
+    insert into m_bs_lawstandard (ID, CODE, CHINESENAME, 
+      ENGLISHNAME, ISCONTROL, RELEASEDATE, 
+      IMPDATE, KEYWORDS, ISBATCH, 
+      INPUTUSERID, INPUTDATE, MODIFYUSERID, 
+      MODIFYDATE, CLICKCOUNT, DOWNLOADCOUNT, 
+      PRINTCOUNT, INFORELEASENAME, MEMO, 
+      SUMMARYINFO, SUBSYSID, STATUSNAME, 
+      STATUS, APPROVESTATUS, EXTEND1, 
+      EXTEND2, EXTEND3, LSSTATUSNAME, 
+      sortno)
+    values (#{id,jdbcType=INTEGER}, #{code,jdbcType=VARCHAR}, #{chinesename,jdbcType=VARCHAR}, 
+      #{englishname,jdbcType=VARCHAR}, #{iscontrol,jdbcType=INTEGER}, #{releasedate,jdbcType=TIMESTAMP}, 
+      #{impdate,jdbcType=TIMESTAMP}, #{keywords,jdbcType=VARCHAR}, #{isbatch,jdbcType=INTEGER}, 
+      #{inputuserid,jdbcType=INTEGER}, #{inputdate,jdbcType=TIMESTAMP}, #{modifyuserid,jdbcType=INTEGER}, 
+      #{modifydate,jdbcType=TIMESTAMP}, #{clickcount,jdbcType=INTEGER}, #{downloadcount,jdbcType=INTEGER}, 
+      #{printcount,jdbcType=INTEGER}, #{inforeleasename,jdbcType=INTEGER}, #{memo,jdbcType=VARCHAR}, 
+      #{summaryinfo,jdbcType=VARCHAR}, #{subsysid,jdbcType=INTEGER}, #{statusname,jdbcType=INTEGER}, 
+      #{status,jdbcType=INTEGER}, #{approvestatus,jdbcType=INTEGER}, #{extend1,jdbcType=VARCHAR}, 
+      #{extend2,jdbcType=VARCHAR}, #{extend3,jdbcType=VARCHAR}, #{lsstatusname,jdbcType=VARCHAR}, 
+      #{sortno,jdbcType=INTEGER})
+  </insert>
+  <insert id="insertSelective" parameterType="com.kotei.pojo.MBsLawstandard">
+    insert into m_bs_lawstandard
+    <trim prefix="(" suffix=")" suffixOverrides=",">
+      <if test="id != null">
+        ID,
+      </if>
+      <if test="code != null">
+        CODE,
+      </if>
+      <if test="chinesename != null">
+        CHINESENAME,
+      </if>
+      <if test="englishname != null">
+        ENGLISHNAME,
+      </if>
+      <if test="iscontrol != null">
+        ISCONTROL,
+      </if>
+      <if test="releasedate != null">
+        RELEASEDATE,
+      </if>
+      <if test="impdate != null">
+        IMPDATE,
+      </if>
+      <if test="keywords != null">
+        KEYWORDS,
+      </if>
+      <if test="isbatch != null">
+        ISBATCH,
+      </if>
+      <if test="inputuserid != null">
+        INPUTUSERID,
+      </if>
+      <if test="inputdate != null">
+        INPUTDATE,
+      </if>
+      <if test="modifyuserid != null">
+        MODIFYUSERID,
+      </if>
+      <if test="modifydate != null">
+        MODIFYDATE,
+      </if>
+      <if test="clickcount != null">
+        CLICKCOUNT,
+      </if>
+      <if test="downloadcount != null">
+        DOWNLOADCOUNT,
+      </if>
+      <if test="printcount != null">
+        PRINTCOUNT,
+      </if>
+      <if test="inforeleasename != null">
+        INFORELEASENAME,
+      </if>
+      <if test="memo != null">
+        MEMO,
+      </if>
+      <if test="summaryinfo != null">
+        SUMMARYINFO,
+      </if>
+      <if test="subsysid != null">
+        SUBSYSID,
+      </if>
+      <if test="statusname != null">
+        STATUSNAME,
+      </if>
+      <if test="status != null">
+        STATUS,
+      </if>
+      <if test="approvestatus != null">
+        APPROVESTATUS,
+      </if>
+      <if test="extend1 != null">
+        EXTEND1,
+      </if>
+      <if test="extend2 != null">
+        EXTEND2,
+      </if>
+      <if test="extend3 != null">
+        EXTEND3,
+      </if>
+      <if test="lsstatusname != null">
+        LSSTATUSNAME,
+      </if>
+      <if test="sortno != null">
+        sortno,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides=",">
+      <if test="id != null">
+        #{id,jdbcType=INTEGER},
+      </if>
+      <if test="code != null">
+        #{code,jdbcType=VARCHAR},
+      </if>
+      <if test="chinesename != null">
+        #{chinesename,jdbcType=VARCHAR},
+      </if>
+      <if test="englishname != null">
+        #{englishname,jdbcType=VARCHAR},
+      </if>
+      <if test="iscontrol != null">
+        #{iscontrol,jdbcType=INTEGER},
+      </if>
+      <if test="releasedate != null">
+        #{releasedate,jdbcType=TIMESTAMP},
+      </if>
+      <if test="impdate != null">
+        #{impdate,jdbcType=TIMESTAMP},
+      </if>
+      <if test="keywords != null">
+        #{keywords,jdbcType=VARCHAR},
+      </if>
+      <if test="isbatch != null">
+        #{isbatch,jdbcType=INTEGER},
+      </if>
+      <if test="inputuserid != null">
+        #{inputuserid,jdbcType=INTEGER},
+      </if>
+      <if test="inputdate != null">
+        #{inputdate,jdbcType=TIMESTAMP},
+      </if>
+      <if test="modifyuserid != null">
+        #{modifyuserid,jdbcType=INTEGER},
+      </if>
+      <if test="modifydate != null">
+        #{modifydate,jdbcType=TIMESTAMP},
+      </if>
+      <if test="clickcount != null">
+        #{clickcount,jdbcType=INTEGER},
+      </if>
+      <if test="downloadcount != null">
+        #{downloadcount,jdbcType=INTEGER},
+      </if>
+      <if test="printcount != null">
+        #{printcount,jdbcType=INTEGER},
+      </if>
+      <if test="inforeleasename != null">
+        #{inforeleasename,jdbcType=INTEGER},
+      </if>
+      <if test="memo != null">
+        #{memo,jdbcType=VARCHAR},
+      </if>
+      <if test="summaryinfo != null">
+        #{summaryinfo,jdbcType=VARCHAR},
+      </if>
+      <if test="subsysid != null">
+        #{subsysid,jdbcType=INTEGER},
+      </if>
+      <if test="statusname != null">
+        #{statusname,jdbcType=INTEGER},
+      </if>
+      <if test="status != null">
+        #{status,jdbcType=INTEGER},
+      </if>
+      <if test="approvestatus != null">
+        #{approvestatus,jdbcType=INTEGER},
+      </if>
+      <if test="extend1 != null">
+        #{extend1,jdbcType=VARCHAR},
+      </if>
+      <if test="extend2 != null">
+        #{extend2,jdbcType=VARCHAR},
+      </if>
+      <if test="extend3 != null">
+        #{extend3,jdbcType=VARCHAR},
+      </if>
+      <if test="lsstatusname != null">
+        #{lsstatusname,jdbcType=VARCHAR},
+      </if>
+      <if test="sortno != null">
+        #{sortno,jdbcType=INTEGER},
+      </if>
+    </trim>
+  </insert>
+  <select id="countByExample" parameterType="com.kotei.pojo.MBsLawstandardExample" resultType="java.lang.Long">
+    select count(*) from m_bs_lawstandard
+    <if test="_parameter != null">
+      <include refid="Example_Where_Clause" />
+    </if>
+  </select>
+  <update id="updateByExampleSelective" parameterType="map">
+    update m_bs_lawstandard
+    <set>
+      <if test="record.id != null">
+        ID = #{record.id,jdbcType=INTEGER},
+      </if>
+      <if test="record.code != null">
+        CODE = #{record.code,jdbcType=VARCHAR},
+      </if>
+      <if test="record.chinesename != null">
+        CHINESENAME = #{record.chinesename,jdbcType=VARCHAR},
+      </if>
+      <if test="record.englishname != null">
+        ENGLISHNAME = #{record.englishname,jdbcType=VARCHAR},
+      </if>
+      <if test="record.iscontrol != null">
+        ISCONTROL = #{record.iscontrol,jdbcType=INTEGER},
+      </if>
+      <if test="record.releasedate != null">
+        RELEASEDATE = #{record.releasedate,jdbcType=TIMESTAMP},
+      </if>
+      <if test="record.impdate != null">
+        IMPDATE = #{record.impdate,jdbcType=TIMESTAMP},
+      </if>
+      <if test="record.keywords != null">
+        KEYWORDS = #{record.keywords,jdbcType=VARCHAR},
+      </if>
+      <if test="record.isbatch != null">
+        ISBATCH = #{record.isbatch,jdbcType=INTEGER},
+      </if>
+      <if test="record.inputuserid != null">
+        INPUTUSERID = #{record.inputuserid,jdbcType=INTEGER},
+      </if>
+      <if test="record.inputdate != null">
+        INPUTDATE = #{record.inputdate,jdbcType=TIMESTAMP},
+      </if>
+      <if test="record.modifyuserid != null">
+        MODIFYUSERID = #{record.modifyuserid,jdbcType=INTEGER},
+      </if>
+      <if test="record.modifydate != null">
+        MODIFYDATE = #{record.modifydate,jdbcType=TIMESTAMP},
+      </if>
+      <if test="record.clickcount != null">
+        CLICKCOUNT = #{record.clickcount,jdbcType=INTEGER},
+      </if>
+      <if test="record.downloadcount != null">
+        DOWNLOADCOUNT = #{record.downloadcount,jdbcType=INTEGER},
+      </if>
+      <if test="record.printcount != null">
+        PRINTCOUNT = #{record.printcount,jdbcType=INTEGER},
+      </if>
+      <if test="record.inforeleasename != null">
+        INFORELEASENAME = #{record.inforeleasename,jdbcType=INTEGER},
+      </if>
+      <if test="record.memo != null">
+        MEMO = #{record.memo,jdbcType=VARCHAR},
+      </if>
+      <if test="record.summaryinfo != null">
+        SUMMARYINFO = #{record.summaryinfo,jdbcType=VARCHAR},
+      </if>
+      <if test="record.subsysid != null">
+        SUBSYSID = #{record.subsysid,jdbcType=INTEGER},
+      </if>
+      <if test="record.statusname != null">
+        STATUSNAME = #{record.statusname,jdbcType=INTEGER},
+      </if>
+      <if test="record.status != null">
+        STATUS = #{record.status,jdbcType=INTEGER},
+      </if>
+      <if test="record.approvestatus != null">
+        APPROVESTATUS = #{record.approvestatus,jdbcType=INTEGER},
+      </if>
+      <if test="record.extend1 != null">
+        EXTEND1 = #{record.extend1,jdbcType=VARCHAR},
+      </if>
+      <if test="record.extend2 != null">
+        EXTEND2 = #{record.extend2,jdbcType=VARCHAR},
+      </if>
+      <if test="record.extend3 != null">
+        EXTEND3 = #{record.extend3,jdbcType=VARCHAR},
+      </if>
+      <if test="record.lsstatusname != null">
+        LSSTATUSNAME = #{record.lsstatusname,jdbcType=VARCHAR},
+      </if>
+      <if test="record.sortno != null">
+        sortno = #{record.sortno,jdbcType=INTEGER},
+      </if>
+    </set>
+    <if test="_parameter != null">
+      <include refid="Update_By_Example_Where_Clause" />
+    </if>
+  </update>
+  <update id="updateByExample" parameterType="map">
+    update m_bs_lawstandard
+    set ID = #{record.id,jdbcType=INTEGER},
+      CODE = #{record.code,jdbcType=VARCHAR},
+      CHINESENAME = #{record.chinesename,jdbcType=VARCHAR},
+      ENGLISHNAME = #{record.englishname,jdbcType=VARCHAR},
+      ISCONTROL = #{record.iscontrol,jdbcType=INTEGER},
+      RELEASEDATE = #{record.releasedate,jdbcType=TIMESTAMP},
+      IMPDATE = #{record.impdate,jdbcType=TIMESTAMP},
+      KEYWORDS = #{record.keywords,jdbcType=VARCHAR},
+      ISBATCH = #{record.isbatch,jdbcType=INTEGER},
+      INPUTUSERID = #{record.inputuserid,jdbcType=INTEGER},
+      INPUTDATE = #{record.inputdate,jdbcType=TIMESTAMP},
+      MODIFYUSERID = #{record.modifyuserid,jdbcType=INTEGER},
+      MODIFYDATE = #{record.modifydate,jdbcType=TIMESTAMP},
+      CLICKCOUNT = #{record.clickcount,jdbcType=INTEGER},
+      DOWNLOADCOUNT = #{record.downloadcount,jdbcType=INTEGER},
+      PRINTCOUNT = #{record.printcount,jdbcType=INTEGER},
+      INFORELEASENAME = #{record.inforeleasename,jdbcType=INTEGER},
+      MEMO = #{record.memo,jdbcType=VARCHAR},
+      SUMMARYINFO = #{record.summaryinfo,jdbcType=VARCHAR},
+      SUBSYSID = #{record.subsysid,jdbcType=INTEGER},
+      STATUSNAME = #{record.statusname,jdbcType=INTEGER},
+      STATUS = #{record.status,jdbcType=INTEGER},
+      APPROVESTATUS = #{record.approvestatus,jdbcType=INTEGER},
+      EXTEND1 = #{record.extend1,jdbcType=VARCHAR},
+      EXTEND2 = #{record.extend2,jdbcType=VARCHAR},
+      EXTEND3 = #{record.extend3,jdbcType=VARCHAR},
+      LSSTATUSNAME = #{record.lsstatusname,jdbcType=VARCHAR},
+      sortno = #{record.sortno,jdbcType=INTEGER}
+    <if test="_parameter != null">
+      <include refid="Update_By_Example_Where_Clause" />
+    </if>
+  </update>
+</mapper>

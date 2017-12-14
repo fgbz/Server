@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:mvc="http://www.springframework.org/schema/mvc" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:p="http://www.springframework.org/schema/p" xmlns:aop="http://www.springframework.org/schema/aop"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:util="http://www.springframework.org/schema/util" xmlns:task="http://www.springframework.org/schema/task"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-4.0.xsd
+	http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-4.0.xsd
+	http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop-4.0.xsd
+	http://www.springframework.org/schema/mvc http://www.springframework.org/schema/mvc/spring-mvc-4.0.xsd
+	http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util-4.0.xsd
+	http://www.springframework.org/schema/task http://www.springframework.org/schema/task/spring-task-4.0.xsd">
+
+	<context:component-scan base-package="phalaenopsis.*">
+		<context:exclude-filter type="annotation"
+			expression="org.springframework.stereotype.Controller" />
+	</context:component-scan>
+
+	<context:property-placeholder location="classpath:conf/jdbc.properties,classpath:conf/mongo.properties" />
+
+
+	<aop:aspectj-autoproxy proxy-target-class="true" />
+
+	<import resource="classpath:conf/applicationContext_datasource.xml" />
+	
+	<import resource="classpath:conf/applicationContext_dao.xml" />
+	
+	
+     <!--  
+	 <import resource="classpath:conf/spring-data-mongo.xml" />   -->
+     <import resource="classpath:conf/spring-mongodb.xml" />
+
+	<!--<import resource="metrics-spring.xml"/>-->
+
+
+	<bean id="exceptionHandler" class="phalaenopsis.common.method.MyExceptionHandler" />
+
+	<!-- 加载配置属性文件 -->
+	<bean id="propertyConfigurer"
+		class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
+		<property name="fileEncoding" value="UTF-8" />
+	</bean>
+
+	<!-- 自动加载.properties配置文件 -->
+	<!-- <util:properties id="configSettings" location="classpath:conf/config.properties"
+		/> -->
+
+	<!--<bean id="checkUserOnline" class="phalaenopsis.common.method.CheckUserOnline" />-->
+	<!--&lt;!&ndash; 调度配置 &ndash;&gt;-->
+	<!--&lt;!&ndash; 开启这个配置，Spring才能识别@Scheduled注解 &ndash;&gt;-->
+	<!--<task:scheduled-tasks>-->
+		<!--<task:scheduled ref="taskJob" method="job" cron="0 * * * * ?" /> -->
+		<!--<task:scheduled ref="testSendMsg" method="sendMsg" cron="0/30 * * * * ?" /> -->
+		<!--<task:scheduled ref="CoordiateJob" method="deleteFiles" cron="* * 23 * * ?" />-->
+		<!--<task:scheduled ref="checkUserOnline" method="taskstart" cron="0/30 * * * * ?" />-->
+	<!--</task:scheduled-tasks>-->
+
+
+	<!-- 缓存配置 <bean id="cacheManagerFactory" class="org.springframework.cache.ehcache.EhCacheManagerFactoryBean"> 
+		<property name="configLocation" value="classpath:conf/ehcache.xml"></property> 
+		</bean> <bean id="cacheManager" class="org.springframework.cache.ehcache.EhCacheCacheManager"> 
+		<property name="cacheManager" ref="cacheManagerFactory"></property> </bean> -->
+
+
+	<bean id="cacheManager"
+		class="org.springframework.cache.ehcache.EhCacheManagerFactoryBean">
+		<property name="configLocation" value="classpath:conf/ehcache.xml" />
+	</bean>
+
+
+	<bean id="controllerMethodInterceptor" class="phalaenopsis.common.interceptor.ControllerMethodInterceptor"/>
+
+	<aop:config proxy-target-class="true">
+		<aop:pointcut id="controllerMethodPointcut" expression="execution(* phalaenopsis.common.controller..*(..))"/>
+		<aop:advisor advice-ref="controllerMethodInterceptor" pointcut-ref="controllerMethodPointcut"/>
+	</aop:config>
+
+
+
+
+
+	<mvc:annotation-driven />
+	<bean id="multipartResolver"
+		class="org.springframework.web.multipart.commons.CommonsMultipartResolver">
+		<!-- set the max upload size100MB -->
+		<property name="maxUploadSize">
+			<value>104857600</value>
+		</property>
+		<property name="maxInMemorySize">
+			<value>4096</value>
+		</property>
+	</bean>
+</beans>

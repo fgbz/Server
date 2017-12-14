@@ -1,0 +1,498 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="phalaenopsis.fgbz.dao.LawstandardDao" >
+
+    <select id="testCount" resultType="int">
+        SELECT count(1) from m_bs_lawstandard
+    </select>
+
+    <!--查询法规标准类别 -->
+    <select id="SelectLawstandardType" resultType="LawstandardType">
+           SELECT
+        t.ID,
+        t.TYPENAME,
+        t.PARENTID,
+        CASE
+    WHEN (
+        SELECT
+            count(1)
+        FROM
+            m_bs_lawstandard_type link
+        WHERE
+            link.LAWSTYPEID = t.id) = 0 then 'candelete' else 'unabledelete' end as iscandelete
+        FROM
+            m_bs_lawstandardtype t
+    </select>
+
+    <!--删除法规标准类别-->
+    <delete id="DeleteLawstandardType" parameterType="LawstandardType">
+        DELETE from m_bs_lawstandardtype where id = #{id}
+    </delete>
+
+    <!--新增或修改法规标准类别-->
+    <insert id="AddOrUpdateLawstandardType" parameterType="LawstandardType">
+        <selectKey keyProperty="count" resultType="int" order="BEFORE">
+            select count(1) from m_bs_lawstandardtype t where t.ID=#{id}
+        </selectKey>
+
+        <if test="count==0">
+            INSERT into m_bs_lawstandardtype  (ID,TYPENAME, PARENTID ) VALUES (#{id},#{typename},#{parentid});
+        </if>
+        <if test="count==1">
+            UPDATE  m_bs_lawstandardtype t  SET t.TYPENAME = #{typename,jdbcType=VARCHAR} where t.ID = #{id}
+        </if>
+    </insert>
+
+    <select id="getChildNode" parameterType="String" resultType="LawstandardType">
+        select t.id,t.TYPENAME from m_bs_lawstandardtype t where t.PARENTID=#{id}
+    </select>
+
+    <!--查询法律标准列表-->
+    <select id="getLawstandardList" parameterType="map" resultType="Lawstandard">
+        select t.ID,t.`CODE`,t.CHINESENAME,t.APPROVESTATUS,sta.STATUSNAME ,t.IMPDATE,n.TYPENAME,t.CLICKCOUNT  from
+        m_bs_lawstandard t
+        left join m_sa_lawstandardstatus sta on t.`STATUS` = sta.ID
+        left join m_bs_lawstandard_pubdep pub on t.id = pub.SID
+        left join m_bs_lawstandard_type m on m.SID = t.id
+        left join m_bs_lawstandardtype n on n.id = m.LAWSTYPEID
+        where 1=1
+        <include refid="queryLawstandard"></include>
+        order by t.istop desc,t.RELEASEDATE desc
+        LIMIT #{startRow},#{endRow}
+    </select>
+
+    <!-- 查询列表的总数 -->
+    <select id="getLawstandardListCount" resultType="int">
+        select count(1) from m_bs_lawstandard t where 1=1
+        <include refid="queryLawstandard"></include>
+    </select>
+
+    <sql id="queryLawstandard">
+        <if test="Number != null and Number != ''">
+            and instr(t.CODE,#{Number})> 0
+        </if>
+        <if test="Title != null and Title != ''">
+            and instr(t.CHINESENAME,#{Title})> 0
+        </if>
+        <if test="FiledTimeStart != null and FiledTimeStart != ''">
+            and Date(t.RELEASEDATE) <![CDATA[  >=  ]]> #{FiledTimeStart}
+        </if>
+        <if test="FiledTimeEnd != null and FiledTimeEnd != ''">
+            and Date(t.RELEASEDATE) <![CDATA[  <=  ]]> #{FiledTimeEnd}
+        </if>
+        <if test="State != null and State != ''">
+            and t.`STATUS` = #{State}
+        </if>
+        <if test="organization != null and organization != ''">
+            and pub.PUBDEPID = #{organization}
+        </if>
+        <if test="MaterialTmeStart != null and MaterialTmeStart != ''">
+            and Date(t.IMPDATE) <![CDATA[  >=  ]]> #{MaterialTmeStart}
+        </if>
+        <if test="MaterialTmeEnd != null and MaterialTmeEnd != ''">
+            and Date(t.IMPDATE) <![CDATA[  <=  ]]> #{MaterialTmeEnd}
+        </if>
+        <if test="TreeValue !=null and TreeValue!=''" >
+            and t.id in (select lt.SID from m_bs_lawstandard_type lt where lt.LAWSTYPEID in
+            <foreach collection="TreeValue" item="item" open="(" close=")" separator=",">
+                #{item.id}
+            </foreach>
+            )
+        </if>
+        <if test="KeyWords != null and KeyWords != ''">
+            and instr(t.KEYWORDS,#{KeyWords})> 0
+        </if>
+        <if test="ApproveStatus != null and ApproveStatus != ''">
+            and t.APPROVESTATUS = #{ApproveStatus}
+        </if>
+    </sql>
+
+    <delete id="deleteLawstandardById" parameterType="String">
+        DELETE from m_bs_lawstandard WHERE  ID = #{id}
+    </delete>
+
+
+    <!--获取发布部门-->
+    <select id="getPublishDep" resultType="FgbzDictory">
+        SELECT t.ID,t.PUBDEPNAME as name  from m_sa_publishdep t
+    </select>
+
+    <!--获取法规状态-->
+    <select id="getLawstandardState" resultType="FgbzDictory">
+        SELECT t.id,t.STATUSNAME as name  from m_sa_lawstandardstatus t
+    </select>
+
+    <!--新增或编辑法规标准-->
+    <insert id="SaveOrUpdateLawstandard" parameterType="Lawstandard">
+
+        <selectKey keyProperty="count" resultType="int" order="BEFORE">
+            select count(1) from m_bs_lawstandard t where t.ID=#{id}
+        </selectKey>
+
+        <if test="count == 0">
+            insert into m_bs_lawstandard
+            <trim prefix="(" suffix=")" suffixOverrides=",">
+                <if test="id != null">
+                    ID,
+                </if>
+                <if test="code != null">
+                    CODE,
+                </if>
+                <if test="chinesename != null">
+                    CHINESENAME,
+                </if>
+                <if test="englishname != null">
+                    ENGLISHNAME,
+                </if>
+                <if test="releasedate != null">
+                    RELEASEDATE,
+                </if>
+                <if test="impdate != null">
+                    IMPDATE,
+                </if>
+                <if test="keywords != null">
+                    KEYWORDS,
+                </if>
+                <if test="isbatch != null">
+                    ISBATCH,
+                </if>
+                <if test="inputuserid != null">
+                    INPUTUSERID,
+                </if>
+                <if test="inputdate != null">
+                    INPUTDATE,
+                </if>
+                <if test="modifyuserid != null">
+                    MODIFYUSERID,
+                </if>
+                <if test="modifydate != null">
+                    MODIFYDATE,
+                </if>
+                <if test="clickcount != null">
+                    CLICKCOUNT,
+                </if>
+                <if test="downloadcount != null">
+                    DOWNLOADCOUNT,
+                </if>
+                <if test="printcount != null">
+                    PRINTCOUNT,
+                </if>
+                <if test="istop != null">
+                    ISTOP,
+                </if>
+                <if test="memo != null">
+                    MEMO,
+                </if>
+                <if test="summaryinfo != null">
+                    SUMMARYINFO,
+                </if>
+                <if test="statusname != null">
+                    STATUSNAME,
+                </if>
+                <if test="status != null">
+                    STATUS,
+                </if>
+                <if test="approvestatus != null">
+                    APPROVESTATUS,
+                </if>
+            </trim>
+            <trim prefix="values (" suffix=")" suffixOverrides=",">
+                <if test="id != null">
+                    #{id,jdbcType=VARCHAR},
+                </if>
+                <if test="code != null">
+                    #{code,jdbcType=VARCHAR},
+                </if>
+                <if test="chinesename != null">
+                    #{chinesename,jdbcType=VARCHAR},
+                </if>
+                <if test="englishname != null">
+                    #{englishname,jdbcType=VARCHAR},
+                </if>
+                <if test="releasedate != null">
+                    #{releasedate,jdbcType=TIMESTAMP},
+                </if>
+                <if test="impdate != null">
+                    #{impdate,jdbcType=TIMESTAMP},
+                </if>
+                <if test="keywords != null">
+                    #{keywords,jdbcType=VARCHAR},
+                </if>
+                <if test="isbatch != null">
+                    #{isbatch,jdbcType=INTEGER},
+                </if>
+                <if test="inputuserid != null">
+                    #{inputuserid,jdbcType=VARCHAR},
+                </if>
+                <if test="inputdate != null">
+                    #{inputdate,jdbcType=TIMESTAMP},
+                </if>
+                <if test="modifyuserid != null">
+                    #{modifyuserid,jdbcType=VARCHAR},
+                </if>
+                <if test="modifydate != null">
+                    #{modifydate,jdbcType=TIMESTAMP},
+                </if>
+                <if test="clickcount != null">
+                    #{clickcount,jdbcType=INTEGER},
+                </if>
+                <if test="downloadcount != null">
+                    #{downloadcount,jdbcType=INTEGER},
+                </if>
+                <if test="printcount != null">
+                    #{printcount,jdbcType=INTEGER},
+                </if>
+                <if test="istop != null">
+                    #{istop,jdbcType=INTEGER},
+                </if>
+                <if test="memo != null">
+                    #{memo,jdbcType=VARCHAR},
+                </if>
+                <if test="summaryinfo != null">
+                    #{summaryinfo,jdbcType=VARCHAR},
+                </if>
+                <if test="statusname != null">
+                    #{statusname,jdbcType=VARCHAR},
+                </if>
+                <if test="status != null">
+                    #{status,jdbcType=VARCHAR},
+                </if>
+                <if test="approvestatus != null">
+                    #{approvestatus,jdbcType=INTEGER},
+                </if>
+            </trim>
+
+        </if>
+        <if test="count>0">
+            update  m_bs_lawstandard set
+            <trim prefix="" suffix="" suffixOverrides=",">
+
+                <if test="code != null">
+                    CODE = #{code,jdbcType=VARCHAR},
+                </if>
+                <if test="chinesename != null">
+                    CHINESENAME = #{chinesename,jdbcType=VARCHAR},
+                </if>
+                <if test="englishname != null">
+                    ENGLISHNAME = #{englishname,jdbcType=VARCHAR},
+                </if>
+                <if test="releasedate != null">
+                    RELEASEDATE =#{releasedate,jdbcType=TIMESTAMP},
+                </if>
+                <if test="impdate != null">
+                    IMPDATE= #{impdate,jdbcType=TIMESTAMP},
+                </if>
+                <if test="keywords != null">
+                    KEYWORDS=#{keywords,jdbcType=VARCHAR},
+                </if>
+                <if test="isbatch != null">
+                    ISBATCH=   #{isbatch,jdbcType=INTEGER},
+                </if>
+                <if test="inputuserid != null">
+                    INPUTUSERID =  #{inputuserid,jdbcType=VARCHAR},
+                </if>
+                <if test="inputdate != null">
+                    INPUTDATE =  #{inputdate,jdbcType=DATE},
+                </if>
+                <if test="modifyuserid != null">
+                    MODIFYUSERID= #{modifyuserid,jdbcType=VARCHAR},
+                </if>
+                <if test="modifydate != null">
+                    MODIFYDATE= #{modifydate,jdbcType=DATE},
+                </if>
+                <if test="clickcount != null">
+                    CLICKCOUNT= #{clickcount,jdbcType=INTEGER},
+                </if>
+                <if test="downloadcount != null">
+                    DOWNLOADCOUNT= #{downloadcount,jdbcType=INTEGER},
+                </if>
+                <if test="printcount != null">
+                    PRINTCOUNT= #{printcount,jdbcType=INTEGER},
+                </if>
+                <if test="memo != null">
+                    MEMO= #{memo,jdbcType=VARCHAR},
+                </if>
+                <if test="summaryinfo != null">
+                    SUMMARYINFO=#{summaryinfo,jdbcType=VARCHAR},
+                </if>
+                <if test="statusname != null">
+                    STATUSNAME= #{statusname,jdbcType=VARCHAR},
+                </if>
+                <if test="status != null">
+                    STATUS=#{status,jdbcType=VARCHAR},
+                </if>
+                <if test="approvestatus != null">
+                    APPROVESTATUS= #{approvestatus,jdbcType=INTEGER},
+                </if>
+            </trim>
+            where ID=#{id}
+
+
+        </if>
+    </insert>
+
+    <!--获取法规标准-->
+    <select id="getLawstandardById" parameterType="String" resultType="Lawstandard">
+        SELECT
+        t.ID,
+        t.`CODE`,
+        t.CHINESENAME,
+        t.ENGLISHNAME,
+        t.RELEASEDATE,
+        t.IMPDATE,
+        t.KEYWORDS,
+        t.MEMO,
+        t.SUMMARYINFO,
+        t.`STATUS`,
+        t.APPROVESTATUS ,
+        t.CLICKCOUNT,
+        t.istop,
+        sta.STATUSNAME,
+        dep.ID as organization,
+        dep.PUBDEPNAME,
+        n.TYPENAME,
+        n.id as lawtype
+        FROM
+        `m_bs_lawstandard` t
+        left join m_sa_lawstandardstatus sta on t.`STATUS` = sta.ID
+        left join m_bs_lawstandard_pubdep pub on t.id = pub.SID
+        left join m_sa_publishdep dep on dep.ID = pub.PUBDEPID
+        left join m_bs_lawstandard_type m on m.SID = t.id
+        left join m_bs_lawstandardtype n on n.id = m.LAWSTYPEID
+
+        where t.id =#{id}
+
+    </select>
+
+    <!--更新附件与法规的关系-->
+    <update id="SaveFileLink" parameterType="Lawstandard">
+        update m_sa_fileinfo t set t.REFID = #{id} where t.id IN
+        <foreach collection="fileids" item="item" open="(" close=")" separator=",">
+            #{item}
+        </foreach>
+    </update>
+
+    <!--获取引用关系-->
+    <select id="getRefenceList" parameterType="String" resultType="Lawstandard">
+        SELECT
+        t.ID,
+        t.`CODE`,
+        t.CHINESENAME,
+        t.ENGLISHNAME,
+        t.RELEASEDATE,
+        t.IMPDATE,
+        t.KEYWORDS,
+        t.MEMO,
+        t.SUMMARYINFO,
+        t.`STATUS`,
+        t.APPROVESTATUS
+
+        FROM
+        m_bs_lsrelatedrelation re
+        left join m_bs_lawstandard t on re.RelatedID = t.ID
+        where re.SID =#{id}
+        ORDER BY t.RELEASEDATE desc
+    </select>
+
+    <!--获取替代关系-->
+    <select id="getReplaceList" parameterType="String" resultType="Lawstandard">
+        SELECT
+        t.ID,
+        t.`CODE`,
+        t.CHINESENAME,
+        t.ENGLISHNAME,
+        t.RELEASEDATE,
+        t.IMPDATE,
+        t.KEYWORDS,
+        t.MEMO,
+        t.SUMMARYINFO,
+        t.`STATUS`,
+        t.APPROVESTATUS ,
+        sta.STATUSNAME,
+        n.TYPENAME
+
+        FROM
+        m_bs_lsreplacerelation re
+        left join m_bs_lawstandard t on re.SID = t.ID
+        left join m_sa_lawstandardstatus sta on sta.id= t.`STATUS`
+        left join m_bs_lawstandard_type m on m.SID = t.id
+        left join m_bs_lawstandardtype n on n.id = m.LAWSTYPEID
+        where re.PID =#{id}
+        ORDER BY t.RELEASEDATE desc
+
+    </select>
+
+    <!--删除引用关系-->
+    <delete id="deleteRefence" parameterType="String">
+        delete from m_bs_lsrelatedrelation  where SID = #{id}
+    </delete>
+
+    <!--删除替代关系-->
+    <delete id="deleteReplace" parameterType="String">
+        delete from m_bs_lsreplacerelation  where PID = #{id}
+    </delete>
+
+
+    <!-- 插入引用关系 -->
+    <insert id="addRefence" parameterType="RefenceOrReplace">
+        insert  into m_bs_lsrelatedrelation (ID,SID,RelatedID) values
+        (#{id,jdbcType=VARCHAR},#{sid,jdbcType=VARCHAR},#{relatedid,jdbcType=VARCHAR})
+    </insert>
+
+    <!-- 插入引用关系 -->
+    <insert id="addReplace" parameterType="RefenceOrReplace" >
+        insert  into m_bs_lsreplacerelation (ID,SID,PID) values
+        (#{id,jdbcType=VARCHAR},#{sid,jdbcType=VARCHAR},#{relatedid,jdbcType=VARCHAR})
+    </insert>
+
+    <!--建立类别与法规文件关联-->
+    <insert id="SaveOrUpdateLawAndType" parameterType="Lawstandard">
+        <selectKey keyProperty="count" resultType="int" order="BEFORE">
+            select count(1) from m_bs_lawstandard_type t where t.SID=#{id}
+        </selectKey>
+
+        <if test="count == 0">
+            insert into m_bs_lawstandard_type  (ID,SID,LAWSTYPEID) VALUES
+            (uuid(),#{id},#{lawtype,jdbcType=VARCHAR})
+        </if>
+        <if test="count>0" >
+            UPDATE m_bs_lawstandard_type t set t.LAWSTYPEID = #{lawtype,jdbcType=VARCHAR}
+            where t.sid = #{id}
+        </if>
+
+    </insert>
+
+    <!--删除类别与法规文件关联-->
+    <delete id="DeleteLawAndType" parameterType="String">
+        delete from m_bs_lawstandard_type  where SID= #{id}
+    </delete>
+
+    <insert id="SaveOrUpdateLawAndPublish" parameterType="Lawstandard">
+        <selectKey keyProperty="count" resultType="int" order="BEFORE">
+            select count(1) from m_bs_lawstandard_pubdep t where t.SID=#{id}
+        </selectKey>
+
+        <if test="count == 0 and organization!=null and organization!=''">
+            insert into m_bs_lawstandard_pubdep  (ID,SID,PUBDEPID) VALUES
+            (uuid(),#{id},#{organization,jdbcType=VARCHAR})
+        </if>
+        <if test="count>0 and organization!=null and organization!=''" >
+            UPDATE m_bs_lawstandard_pubdep t set t.PUBDEPID = #{organization,jdbcType=VARCHAR}
+            where t.sid = #{id}
+        </if>
+
+    </insert>
+
+    <!--点击次数加一-->
+    <update id="AddLawstandardCount" parameterType="Lawstandard">
+        update m_bs_lawstandard t set t.CLICKCOUNT = #{clickcount}
+        where t.id = #{id}
+    </update>
+
+    <!--置顶-->
+    <update id="LawstandardIsTop" parameterType="Lawstandard">
+        update m_bs_lawstandard t set t.istop = #{istop}
+        where t.id = #{id}
+    </update>
+
+</mapper>

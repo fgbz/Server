@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="utf-8"?>
+<xs:schema id="WorkflowEngine-schema"
+	targetNamespace="http://WorkflowEngine.org/WorkflowEngine-schema.xsd"
+	elementFormDefault="qualified"
+	xmlns="http://WorkflowEngine.org/WorkflowEngine-schema.xsd"
+	xmlns:mstns="http://WorkflowEngine.org/WorkflowEngine-schema.xsd"
+	xmlns:xs="http://www.w3.org/2001/XMLSchema"
+>
+  <xs:element name="workflows">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element name="workflow" minOccurs="0" maxOccurs="unbounded">
+          <xs:complexType>
+            <xs:all>
+              <xs:element name="nodes" minOccurs="1" maxOccurs="1">
+                <xs:complexType>
+                  <xs:sequence>
+                    <xs:element name="node" type="workflow-node" minOccurs="0" maxOccurs="unbounded"></xs:element>
+                    <xs:element name="finished-node" type="workflow-finished-node" minOccurs="0" maxOccurs="1"></xs:element>
+                  </xs:sequence>
+                </xs:complexType>
+              </xs:element>
+              <xs:element name="graphs" minOccurs="1" maxOccurs="1">
+                <xs:complexType>
+                  <xs:sequence>
+                    <xs:element name="graph" type="workflow-graph" minOccurs="0" maxOccurs="unbounded"></xs:element>
+                  </xs:sequence>
+                </xs:complexType>
+              </xs:element>
+            </xs:all>
+            <xs:attribute name="mapID" use="required" type="xs:string">
+              <xs:annotation>
+                <xs:documentation>流程图ID</xs:documentation>
+              </xs:annotation>
+            </xs:attribute>
+            <xs:attribute name="keep" use="required"  type="xs:boolean">
+            	<xs:annotation>
+            		<xs:documentation>回退时，是否保留走过的节点</xs:documentation>
+            	</xs:annotation>
+            </xs:attribute>
+          </xs:complexType>
+        </xs:element>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+
+  <xs:complexType name="workflow-node">
+    <xs:attribute name="nodeID" use="required" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>流程节点ID</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="classType" use="required" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>流程节点的实现类的类型的程序集限定名，格式为：命名空间.类名,程序集名</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="nodeType" use="optional" default="default">
+      <xs:annotation>
+        <xs:documentation>流程节点的类型。默认为普通节点。</xs:documentation>
+      </xs:annotation>
+      <xs:simpleType>
+        <xs:restriction base="xs:string">
+          <xs:enumeration value="start" />
+          <xs:enumeration value="end" />
+          <xs:enumeration value="default" />
+        </xs:restriction>
+      </xs:simpleType>
+    </xs:attribute>
+  </xs:complexType>
+
+  <xs:complexType name="workflow-finished-node">
+    <xs:attribute name="nodeID" use="required" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>标记流程已经完结的节点ID。该节点不属于流程图。</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+  </xs:complexType>
+
+  <xs:complexType name="workflow-graph">
+    <xs:sequence>
+      <xs:element name="branch" type="workflow-branch" minOccurs="0" maxOccurs="unbounded"></xs:element>
+    </xs:sequence>
+    <xs:attribute name="nodeID" use="required" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>流程节点ID</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="next" use="optional" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>下一步节点ID</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="branch-selector" use="optional" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>当下一步有分支时，节点的分支选择器的类型。如果没有，则使用默认的分支选择器。（根据分支表达式）</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+  </xs:complexType>
+
+  <xs:complexType name="workflow-branch">
+    <xs:sequence>
+      <xs:element name="next" minOccurs="0" maxOccurs="unbounded">
+        <xs:complexType>
+          <xs:attribute name="nodeID" use="required" type="xs:string"></xs:attribute>
+        </xs:complexType>
+      </xs:element>
+    </xs:sequence>
+    <xs:attribute name="name" use="required" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>分支的名称</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+  </xs:complexType>
+
+</xs:schema>
+
+<!--<xs:attribute name="name" use="optional" type="xs:string">
+  <xs:annotation>
+    <xs:documentation>
+      该条节点连线的的名称。用于流程流转时的分支路径选择。
+      可以定义多个相同nodeID的next节点以给一条路线定义多个名称。未命名的作为公共路线。
+    </xs:documentation>
+  </xs:annotation>
+</xs:attribute>-->

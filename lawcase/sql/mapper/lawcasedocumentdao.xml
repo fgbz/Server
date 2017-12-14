@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8" ?>  
+<!DOCTYPE mapper  
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"  
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="phalaenopsis.lawcase.dao.IDocumentDao">
+
+	<!-- 违法案件文档的resultMap -->
+	<resultMap type="CaseDocument" id="CaseDocumentmap">
+		<id column="ID" property="id" />
+		<result column="CASEID" property="caseID" />
+		<result column="TYPE" property="type" jdbcType="NUMERIC"
+			typeHandler="phalaenopsis.common.method.Enum.IntEnumTypeHandler" />
+		<result column="INFO" property="info" jdbcType="BLOB" javaType="byte[]"
+			typeHandler="org.apache.ibatis.type.BlobTypeHandler" />
+	</resultMap>
+
+	<!-- 根据CaseID查询 -->
+	<select id="getDocument" resultMap="CaseDocumentmap">
+		select ID,CASEID, TYPE, INFO
+		from law_CaseDocument where caseID=#{caseID} and type = #{type}
+	</select>
+
+	<insert id="saveOrUpdate" parameterType="CaseDocument">
+		<selectKey keyProperty="count" resultType="int" order="BEFORE">
+			select count(1) from law_CaseDocument t where t.id = #{id}
+		</selectKey>
+		<if test="count==0">
+			insert into
+			law_CaseDocument (id,caseID,type,info)
+			values
+			(
+			#{id,jdbcType=VARCHAR},
+			#{caseID,jdbcType=VARCHAR},
+			#{type,jdbcType=INTEGER, typeHandler=phalaenopsis.common.method.Enum.IntEnumTypeHandler},
+			#{info,jdbcType=BLOB}
+			)
+		</if>
+		<if test="count > 0">
+			update law_CaseDocument set
+			info= #{info,jdbcType=BLOB}
+			where  id = #{id}
+		</if>
+	</insert>
+
+</mapper>
+	

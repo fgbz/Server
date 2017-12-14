@@ -1,0 +1,129 @@
+<?xml version="1.0" encoding="UTF-8" ?>  
+<!DOCTYPE mapper  
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"  
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="auth">
+
+ 	<!-- <cache eviction="FIFO"  flushInterval="3600000"  size="512" readOnly="true" /> -->
+
+	<!--自定义返回对象 -->
+	<resultMap type="phalaenopsis.common.entity.Role" id="rInfo">
+		<result column="RID" property="id" />
+		<result column="RNAME" property="name" />
+		<result column="ISSYS" property="issys" />
+
+		<!-- property: 指的是集合属性的值, ofType：指的是集合中元素的类型 -->
+		<collection property="permissions"
+			ofType="phalaenopsis.common.entity.Permission">
+			<result column="code" property="code" />
+			<result column="PNAME" property="name" />
+			<result column="type" property="type" />
+			<result column="parentCode" property="parentCode" />
+			<result column="url" property="url" />
+		</collection>
+	</resultMap>
+
+	<!-- 用户登录 -->
+	<select id="login" parameterType="map"
+		resultType="phalaenopsis.common.entity.User">
+		select u.id ,u.account ,u.name ,u.password
+		,u.organizationid ,u.remarks
+		,u.signaturephoto
+		,u.isOnline,
+		o.grade as OrgGrade,
+		o.maplayer as MapLayerGrade,
+		o.name as OrganizationName
+		from sys_user u
+		join SYS_ORGANIZATION o on
+		o.id=u.organizationid
+		where upper(account)=#{account} and
+		password=#{password}
+	</select>
+	
+	<!-- 用户登录  浪潮平台-->
+	<select id="loginByAccount" parameterType="String"
+		resultType="phalaenopsis.common.entity.User">
+		select u.id ,u.account ,u.name ,u.password
+		,u.organizationid ,u.remarks
+		,u.signaturephoto
+		,u.isOnline,
+		o.grade as OrgGrade,
+		o.maplayer as MapLayerGrade,
+		o.name as OrganizationName
+		from sys_user u
+		join SYS_ORGANIZATION o on
+		o.id=u.organizationid
+		where upper(account)=#{account}
+	</select>
+
+	<!-- 查询角色对应的权限 -->
+	<select id="getRoleList" parameterType="String" resultMap="rInfo">
+		select r.id RID,r.name RNAME ,r.Issys ISSYS
+		,p.code,p.name
+		PNAME,p.type,p.parentcode,p.url
+		from SYS_ROLE r
+		join SYS_USERROLES ur on
+		ur.roleid=r.id
+		full outer join SYS_ROLEPERMISSIONS pm on pm.roleid=r.id
+		full outer join SYS_PERMISSION p on p.code=pm.permissioncode
+		where
+		ur.userid=#{id}
+	</select>
+
+
+	<!-- 获取系统菜单 -->
+	<select id="getSysMenus" resultType="phalaenopsis.common.entity.Menu">
+		select * from ss_menu where
+		type=2 order by rank
+	</select>
+
+	<!-- 获取当前用户的菜单 -->
+	<select id="getMenus" parameterType="String"
+		resultType="phalaenopsis.common.entity.Menu">
+		select distinct(m.id) as id , m.menuid, m.menuname, m.rank,
+		m.cssclass, m.type,
+		p.parentcode as parentMenuId
+		from SYS_ROLE r
+		join
+		SYS_USERROLES ur on
+		ur.roleid=r.id
+		join SYS_ROLEPERMISSIONS pm on
+		pm.roleid=r.id
+		join
+		SYS_PERMISSION p on p.code=pm.permissioncode
+		join
+		ss_menu m on
+		m.menuid=p.code
+		where ur.userid=#{id} and m.type=1 order
+		by
+		m.rank
+	</select>
+
+
+	<!-- 查询组织部门是否有用户 -->
+	<select id="getUserNumber" parameterType="String" resultType="int">
+		select count(*) from sys_user where ORGANIZATIONID=#{ID}
+	</select>
+	<!-- 查询当前登录用户下级区域列表 -->
+    <select id="getRegionsByUser"  parameterType="int" resultType="phalaenopsis.common.entity.Region">
+    	select * from ss_region where parentid=#{id}
+    </select>
+	<!-- 查询用户对应的行政区域 -->
+	<select id="getUserRegion" parameterType="String"
+		resultType="phalaenopsis.common.entity.Region">
+		select t.REGIONID, t.REGIONNAME, t.PARENTID, t.REGIONTYPE,
+		RANK
+		from SS_REGION t
+		inner join sys_OrgRegions o on o.regionid =
+		t.regionid
+		where o.organizationid = #{organizationid} order by
+		t.regionid
+
+	</select>
+	
+	<select id="getUserGrade"  statementType="CALLABLE"  resultType="map">
+		{ call pro_userGrade(#{gid, mode=IN,jdbcType=VARCHAR},#{grade, mode=OUT,jdbcType=NUMERIC})
+		}
+	</select>
+
+</mapper>

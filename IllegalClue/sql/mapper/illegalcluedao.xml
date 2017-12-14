@@ -1,0 +1,447 @@
+<?xml version="1.0" encoding="UTF-8" ?>  
+<!DOCTYPE mapper  
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"  
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="phalaenopsis.illegalclue.dao.IIllegalClueDao">
+	<!-- 保存基本信息  -->
+	<insert id="saveIllegalClue" parameterType="IllegalClue">
+		insert into
+		CL_CLUE(
+		id,
+		num,
+		clue_source,
+		CLUE_SOURCE_DETAIL,
+		reporter,
+		realname,
+		cardtype,
+		cardnum,
+		contact_province,
+		contact_city,
+		contact_county,
+		contact_town,
+		contact_detail,
+		contact_phone,
+		report_time,
+		informer,
+		problem_province,
+		problem_city,
+		problem_county,
+		problem_town,
+		problem_detail,
+		problem_time,
+		illegal_type,
+		land_area,
+		farmland_area,
+		basicfarmland_area,
+		problem_describe,
+		remark,
+		regist_unit,
+		register,
+		regist_time,
+		report_type,
+		call_phone,
+		call_time,
+		call_situation,
+		call_type,
+		instanceid,
+		node,
+		createuserid,
+		MINE_TYPE,
+		ISDETAILED,
+		CLUE_SOURCE_SUB,
+		ILLEGAL_TYPE_SUB
+		) values (
+		#{id},
+		#{num,jdbcType=VARCHAR},
+		#{clueSource,jdbcType=INTEGER},
+		#{clueSourceDetail,jdbcType=VARCHAR},
+		#{reporter,jdbcType=VARCHAR},
+		#{realName,jdbcType=INTEGER},
+		#{cardType,jdbcType=INTEGER},
+		#{cardNum,jdbcType=VARCHAR},
+		#{contactProvince,jdbcType=INTEGER},
+		#{contactCity,jdbcType=INTEGER},
+		#{contactCounty,jdbcType=INTEGER},
+		#{contactTown,jdbcType=VARCHAR},
+		#{contactDetail,jdbcType=VARCHAR},
+		#{contactPhone,jdbcType=VARCHAR},
+		#{reportTime,jdbcType=TIMESTAMP},
+		#{informer,jdbcType=VARCHAR},
+		#{problemProvince,jdbcType=INTEGER},
+		#{problemCity,jdbcType=INTEGER},
+		#{problemCounty,jdbcType=INTEGER},
+		#{problemTown,jdbcType=VARCHAR},
+		#{problemDetail,jdbcType=VARCHAR},
+		#{problemTime,jdbcType=TIMESTAMP},
+		#{illegalType,jdbcType=INTEGER},
+		#{landArea,jdbcType=FLOAT},
+		#{farmlandArea,jdbcType=FLOAT},
+		#{basicfarmlandArea,jdbcType=FLOAT},
+		#{problemDescribe,jdbcType=VARCHAR},
+		#{remark,jdbcType=VARCHAR},
+		#{registUnit,jdbcType=VARCHAR},
+		#{register,jdbcType=VARCHAR},
+		#{registTime,jdbcType=TIMESTAMP},
+		#{reportType,jdbcType=INTEGER},
+		#{callPhone,jdbcType=VARCHAR},
+		#{callTime,jdbcType=TIMESTAMP},
+		#{callSituation,jdbcType=INTEGER},
+		#{callType,jdbcType=INTEGER},
+		#{instanceId,jdbcType=VARCHAR},
+		#{node,jdbcType=VARCHAR},
+		#{createUserId,jdbcType=VARCHAR},
+		#{mineType,jdbcType=INTEGER},
+		#{isDetailed,jdbcType=INTEGER},
+		#{clueSourceSub,jdbcType=INTEGER},
+		#{illegalTypeSub,jdbcType=INTEGER}
+		)
+	</insert>
+
+	<!-- 更新基本信息 -->
+	<update id="updateIllegalClue" parameterType="IllegalClue">
+		update CL_CLUE set
+		num = #{num,jdbcType=VARCHAR},
+		clue_source = #{clueSource,jdbcType=INTEGER},
+		reporter = #{reporter,jdbcType=VARCHAR},
+		realname = #{realName,jdbcType=INTEGER},
+		cardtype = #{cardType,jdbcType=INTEGER},
+		cardnum = #{cardNum,jdbcType=VARCHAR},
+		contact_province = #{contactProvince,jdbcType=INTEGER},
+		contact_city = #{contactCity,jdbcType=INTEGER},
+		contact_county = #{contactCounty,jdbcType=INTEGER},
+		contact_town = #{contactTown,jdbcType=VARCHAR},
+		contact_detail = #{contactDetail,jdbcType=VARCHAR},
+		contact_phone = #{contactPhone,jdbcType=VARCHAR},
+		report_time = #{reportTime,jdbcType=TIMESTAMP},
+		informer = #{informer,jdbcType=VARCHAR},
+		problem_province = #{problemProvince,jdbcType=INTEGER},
+		problem_city = #{problemCity,jdbcType=INTEGER},
+		problem_county = #{problemCounty,jdbcType=INTEGER},
+		problem_town = #{problemTown,jdbcType=VARCHAR},
+		problem_detail = #{problemDetail,jdbcType=VARCHAR},
+		problem_time = #{problemTime,jdbcType=TIMESTAMP},
+		illegal_type = #{illegalType,jdbcType=INTEGER},
+		land_area = #{landArea,jdbcType=FLOAT},
+		farmland_area = #{farmlandArea,jdbcType=FLOAT},
+		basicfarmland_area = #{basicfarmlandArea,jdbcType=FLOAT},
+		problem_describe = #{problemDescribe,jdbcType=VARCHAR},
+		remark = #{remark,jdbcType=VARCHAR},
+		regist_unit = #{registUnit,jdbcType=VARCHAR},
+		register = #{register,jdbcType=VARCHAR},
+		regist_time = #{registTime,jdbcType=TIMESTAMP},
+		report_type = #{reportType,jdbcType=INTEGER},
+		call_phone = #{callPhone,jdbcType=VARCHAR},
+		call_time = #{callTime,jdbcType=TIMESTAMP},
+		call_situation = #{callSituation,jdbcType=INTEGER},
+		call_type = #{callType,jdbcType=INTEGER},
+		instanceid = #{instanceId,jdbcType=VARCHAR},
+		node = #{node,jdbcType=VARCHAR},
+		createuserid = #{createUserId,jdbcType=VARCHAR},
+		mine_type = #{mineType,jdbcType=INTEGER},
+		isdetailed = #{isDetailed,jdbcType=INTEGER},
+		clue_source_sub = #{clueSourceSub,jdbcType=INTEGER},
+		illegal_type_sub = #{illegalTypeSub,jdbcType=INTEGER},
+		clue_source_detail = #{clueSourceDetail,jdbcType=VARCHAR}
+		where id = #{id}
+	</update>
+
+	<select id="isExistIllegalClue" parameterType="long" resultType="int" >
+		select count(1) from CL_CLUE where id = #{id}
+	</select>
+
+	<update id="updateCurrentNode">
+		update CL_CLUE set node=#{currentNode} where id
+		=#{id}
+	</update>
+
+	<!-- 保存或更新初判信息 -->
+	<insert id="saveOrUpdateClueJudge" parameterType="ClueJudge">
+		<selectKey keyProperty="count" resultType="int" order="BEFORE">
+			select count(1) from CL_JUDGE where id = #{id}
+		</selectKey>
+		<if test="count==0">
+			insert into CL_JUDGE(
+			id,
+			clue_id,
+			judge_type,
+			handle_type,
+			majorclue,
+			handle_opinion,
+			handle_remark,
+			intend_content,
+			judger,
+			judge_time,
+			unhandle_type,
+			unit)
+			values (
+			#{id},
+			#{clueId,jdbcType=INTEGER},
+			#{judgeType,jdbcType=INTEGER},
+			#{handleType,jdbcType=INTEGER},
+			#{majorClue,jdbcType=INTEGER},
+			#{handleOpinion,jdbcType=VARCHAR},
+			#{handleRemark,jdbcType=VARCHAR},
+			#{intendContent,jdbcType=VARCHAR},
+			#{judger,jdbcType=VARCHAR},
+			#{judgeTime,jdbcType=TIMESTAMP},
+			#{unHandleType,jdbcType=INTEGER},
+			#{unit,jdbcType=VARCHAR}
+			)
+		</if>
+		<if test="count > 0">
+			update CL_JUDGE set
+			judge_type = #{judgeType,jdbcType=INTEGER},
+			handle_type = #{handleType,jdbcType=INTEGER},
+			majorclue = #{majorClue,jdbcType=INTEGER},
+			handle_opinion = #{handleOpinion,jdbcType=VARCHAR},
+			handle_remark = #{handleRemark,jdbcType=VARCHAR},
+			intend_content = #{intendContent,jdbcType=VARCHAR},
+			judger = #{judger,jdbcType=VARCHAR},
+			judge_time = #{judgeTime,jdbcType=TIMESTAMP},
+			unhandle_type = #{unHandleType,jdbcType=INTEGER},
+			unit = #{unit,jdbcType=VARCHAR}
+			where id = #{id}
+		</if>
+	</insert>
+
+	<!-- 保存或更新审核信息 -->
+	<insert id="saveOrUpdateClueAudit" parameterType="ClueAudit"  >
+		<selectKey keyProperty="count" resultType="int" order="BEFORE">
+			select count(0) from CL_AUDIT where id = #{id}
+		</selectKey>
+		<if test="count > 0">
+			update CL_AUDIT set
+			clue_id =#{clueId,jdbcType=INTEGER},
+			opinion =#{opinion,jdbcType=INTEGER},
+			require =#{require,jdbcType=VARCHAR},
+			reviewer =#{reviewer,jdbcType=VARCHAR},
+			audit_time =#{auditTime,jdbcType=DATE},
+			node =#{node,jdbcType=VARCHAR}
+			where id = #{id}
+		</if>
+		<if test="count == 0">
+			insert into CL_AUDIT(
+			id,
+			clue_id,
+			opinion,
+			require,
+			reviewer,
+			audit_time,
+			node)
+			values (
+			#{id},
+			#{clueId,jdbcType=INTEGER},
+			#{opinion,jdbcType=INTEGER},
+			#{require,jdbcType=VARCHAR},
+			#{reviewer,jdbcType=VARCHAR},
+			#{auditTime,jdbcType=DATE},
+			#{node,jdbcType=VARCHAR}
+			)
+		</if>
+	</insert>
+
+	<delete id="deleteIllegalClue" parameterType="string">
+		delete CL_CLUE
+		where id = #{id}
+	</delete>
+
+	<resultMap type="ClueDictionary" id="clueDictionaryMap">
+		<id property="id" column="id" />
+		<result property="name" column="name" />
+		<result property="pId" column="pid" />
+		<result property="type" column="type" />
+		<result property="rank" column="rank" />
+		<collection property="childDictionaries" ofType="ClueDictionary">
+			<id property="id" column="c1id" />
+			<result property="name" column="c1name" />
+			<result property="pId" column="c1pid" />
+			<result property="type" column="c1type" />
+			<result property="rank" column="c1rank" />
+			<collection property="childDictionaries" ofType="ClueDictionary">
+				<id property="id" column="c2id" />
+				<result property="name" column="c2name" />
+				<result property="pId" column="c2pid" />
+				<result property="type" column="c2type" />
+				<result property="rank" column="c2rank" />
+			</collection>
+		</collection>
+	</resultMap>
+
+
+
+	<!-- 查询字典 -->
+	<select id="getClueDictionaries" resultMap="clueDictionaryMap">
+		with dictionary as
+		(
+		select * from CL_DICTIONARY t where t.hide is null order by t.rank
+		)
+		select
+		p.*,
+		c1.id "c1id",
+		c1.name "c1name",
+		c1.pId "c1pId",
+		c1.type "c1type",
+		c1.rank "c1rank",
+		c2.id "c2id",
+		c2.name "c2name",
+		c2.pId "c2pId",
+		c2.type "c2type",
+		c2.rank "c2rank"
+		from dictionary p
+		left outer join dictionary c1 on c1.pid = p.id
+		left outer join dictionary c2 on c2.pid = c1.id
+		where p.pid is null order by p.rank, c1.rank, c2.rank
+	</select>
+
+	<sql id="queryIllegalClue">
+		<if test="num != null and num != ''">
+			and t.num like concat('%','#{num}','%')
+		</if>
+		<if test="problemDescribe != null and problemDescribe != ''">
+			and t.problem_describe like concat('%','#{problemDescribe}','%')
+		</if>
+		<if test="informer !=null and informer !=''">
+			and t.informer like concat('%','#{informer}','%')
+		</if>
+		<if test="clueSource !=null and clueSource !=''">
+			and t.clue_source = #{clueSource}
+		</if>
+		<if test="startTime !=null and startTime !=''">
+			and t.PROBLEM_TIME <![CDATA[>=]]>
+			to_date(#{startTime})
+		</if>
+		<if test="endTime!=null and endTime !=''">
+			and t.PROBLEM_TIME <![CDATA[<=]]>
+			to_date(#{endTime})
+		</if>
+		<if test="illegalType!=null and illegalType !=''">
+			and t.ILLEGAL_TYPE_SUB = #{illegalType}
+		</if>
+		<if test="landArea!=null and landArea!=''">
+			and t.land_Area <![CDATA[>=]]>
+			#{landArea}
+		</if>
+		<if test="minetype!=null and minetype!=''">
+			and t.mine_type = #{minetype}
+		</if>
+		<if test="problemCity!=null and problemCity!=''">
+			and t.problem_City = #{problemCity}
+		</if>
+		<if test="problemCounty!=null and problemCounty!=''">
+			and t.problem_County = #{problemCounty}
+		</if>
+		<if test="problemTown!=null and problemTown!=''">
+			and t.problem_Town = #{problemTown}
+		</if>
+		<if test="problemDetail!=null and problemDetail!=''">
+			and t.problem_Detail like
+			concat('%','#{problemDetail}','%')
+		</if>
+	</sql>
+
+	<!-- 查询列表的总数 -->
+	<select id="getIllegalClueCount" resultType="int">
+		select count(1) from CL_CLUE t where 1=1
+		<include refid="queryIllegalClue"  ></include>
+	</select>
+
+	<!-- 查询列表数据 -->
+	<select id="getIllegalClues" resultType="IllegalClue">
+		select l.* from
+		(select rownum as rnum, t.*,
+		(select d.name from cl_dictionary d where d.id = (case when t.clue_source_sub
+		>0 then t.clue_source_sub else t.clue_source end )) as clueSourceName,
+		(select r.regionname from ss_region r where r.regionid =
+		t.problem_county) as problemDetailName
+		from CL_CLUE t where 1=1
+		<include refid="queryIllegalClue" ></include>
+		)l where l.rnum between #{startNum} and #{endNum}
+	</select>
+
+	<select id="getNum" resultType="string" parameterType="string">
+		select
+		max(t.num) from CL_CLUE t where t.num like '#{prefixNum}|| %'
+	</select>
+
+	<!-- 查询转交办集合 -->
+	<select id="getHandleOrganizationList" parameterType="string"
+		resultType="Condition">
+	select t.id as Key ,t.name as Value from SYS_ORGANIZATION t where
+    t.parentid=(select case type when 1 then id when 2 then parentid
+    end from SYS_ORGANIZATION  where id =#{id}) and t.type=1
+/*		select t.id as Key ,t.name as Value from SYS_ORGANIZATION t where
+		t.parentid=#{id} and t.type=1*/
+	</select>
+
+	<!-- 保存或更新办结表单 -->
+	<insert id="saveOrUpdateClueEnd" parameterType="ClueEnd">
+		<selectKey keyProperty="count" resultType="int" order="BEFORE">
+			select count(1) from CL_END where id = #{id}
+		</selectKey>
+		<if test="count==0">
+			insert into CL_END(
+			id,
+			handle_type,
+			endcase,
+			response_opinion,
+			remark,
+			intend_content,
+			register,
+			registe_time,
+			clue_id
+			) values (
+			#{id},
+			#{handleType,jdbcType=INTEGER},
+			#{endcase,jdbcType=INTEGER},
+			#{responseOpinion,jdbcType=INTEGER},
+			#{remark,jdbcType=VARCHAR},
+			#{intendContent,jdbcType=VARCHAR},
+			#{register,jdbcType=VARCHAR},
+			#{registeTime,jdbcType=TIMESTAMP},
+			#{clueId,jdbcType=INTEGER}
+			)
+		</if>
+		<if test="count==0">
+			update CL_END set
+			id = #{id,jdbcType=INTEGER},
+			handle_type =
+			#{handleType,jdbcType=INTEGER},
+			endcase = #{endCase,jdbcType=INTEGER},
+			response_opinion = #{responseOpinion,jdbcType=INTEGER},
+			remark =
+			#{remark,jdbcType=VARCHAR},
+			intend_content =
+			#{intendContent,jdbcType=VARCHAR},
+			register =
+			#{register,jdbcType=VARCHAR},
+			registe_time =
+			#{registeTime,jdbcType=DATE}
+		</if>
+	</insert>
+
+	<select id="getIllegalClue" parameterType="string" resultType="IllegalClue">
+		select * from CL_CLUE where id = #{id}
+	</select>
+	
+	<!-- 查询审理信息 -->
+	<select id="getClueAuditByClueId"  parameterType="long"  resultType="ClueAudit">
+		select * from CL_AUDIT where clue_id = #{clueId}
+	</select>
+	
+	<!-- 查询办结表单信息 -->
+	<select id="getClueEndByClueId"  parameterType="long"  resultType="ClueEnd">
+		select * from CL_END where clue_id =#{clueId}
+	</select>
+
+	<!-- 根据线索id获取初判信息 -->
+	<select id="getClueJudgeByClueId" parameterType="long"
+		resultType="ClueJudge">
+		select * from CL_JUDGE where CLUE_ID=#{clueId}
+	</select>
+
+	<!-- 根据流程实例Id获取线索列表 -->
+	<select id="getCluesByInstanceID" resultType="IllegalClue">
+		select * from
+		CL_CLUE where INSTANCEID = #{instanceId}
+	</select>
+</mapper>

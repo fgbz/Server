@@ -1,0 +1,958 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper  
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"  
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="phalaenopsis.allWeather.dao.IallWeatherCitydao">
+
+	<!-- 根据组织机构ID查询上报信息列表 -->
+	<select id="getLogs" parameterType="List" resultType="SwLog">
+		select * from SW_LOG t 
+		where t.regionParent=#{id}  and t.YEAR=#{year} and t.period=#{period}
+		<!-- 标记mark -->
+		<choose>
+		    <when test="mark !=null and mark !=''">
+		       and t.MARK =#{mark}
+		    </when>
+		    <otherwise>
+		       and t.MARK is null
+		    </otherwise>
+		</choose>
+	</select>
+	<!-- 根据当前登录用户获取上报信息 -->
+	<select id="getLog" resultType="SwLog">	
+		select * from SW_LOG t 
+		where t.region=#{id}  and t.YEAR=#{year} and t.period=#{period}
+		<!-- 标记mark -->
+		<choose>
+		    <when test="mark !=null and mark !=''">
+		       and t.MARK =#{mark}
+		    </when>
+		    <otherwise>
+		       and t.MARK is null
+		    </otherwise>
+		</choose>
+		<!-- <if test="mark !=null and mark !=''">
+			 and t.MARK =#{mark}
+		</if> -->
+	</select>
+	<!-- 获取单个图斑 -->
+	<select id="getSwMapspot"  resultType="SwMapspot">
+		select * from Sw_Mapspot where id = #{id}
+	</select>
+	<!-- 获取历史核查期数 -->	
+	<select id="getHistoryPeroid" resultType="YearAndPeriod">
+	  select 
+        distinct year,
+        checkperiod from 
+     sw_mapspot t  order by year desc,checkperiod desc
+	</select>
+	<!-- 获取历史下发期数 -->	
+	<select id="getHistoryxfPeroid" resultType="YearAndPeriod">
+	  select 
+        distinct year,
+        t.period from 
+     sw_mapspot t  order by year desc,t.period desc
+	</select>
+	<!-- 修改上报信息的历史审核状态 -->
+	<update id="updateLogState" parameterType="SwLog">
+		update SW_LOG set
+				historyState=#{historyState}
+			where id=#{id}
+	</update>
+	<!-- 修改上报信息为回退 -->
+	<insert id="saveOrUpdateSwLog" parameterType="SwLog">
+		<selectKey keyProperty="count" resultType="int" order="BEFORE">
+			select count(1) from SW_LOG t where t.REGION = #{region}  and t.YEAR=#{year} and t.period=#{period}
+			<!-- 标记mark -->
+			<!-- <if test="mark !=null and mark !=''">
+				 and t.MARK =#{mark}
+			</if> -->
+			<choose>
+			    <when test="mark !=null and mark !=''">
+			       and t.MARK =#{mark}
+			    </when>
+			    <otherwise>   
+				    <if test="type!=2">
+						and t.MARK is null  
+					</if>
+					<if test="type==2 and organizationGrade==2">
+					 	<!-- and t.REGIONPARENT	<![CDATA[<]]> <![CDATA[>]]>   '370000' -->
+					 	and  nvl(t.MARK,0) not in (select mark from SW_LOG s where s.REGION =#{regionParent}  and s.YEAR=#{year} and s.period=#{period} and s.REGIONPARENT = '370000' and s.TYPE='1')
+					</if>
+					<if test="type==2 and organizationGrade==3">
+					 	and  nvl(t.MARK,0) not in (select mark from SW_LOG s where  s.YEAR=#{year} and s.period=#{period} and s.REGIONPARENT = #{region} and s.TYPE=#{type})
+					</if>
+			    </otherwise>
+			</choose>
+		</selectKey>
+		<if test="count==0">
+			insert into SW_LOG(
+				ID,
+				YEAR,
+				REGION,
+				TYPE,
+				OPERATIONTIME,
+				ORGANIZATION,
+				OPERATERNAME,
+				OPERATER,
+				PERIOD,
+				REGIONPARENT,
+				MARK
+			)
+			values (
+				#{id,jdbcType=INTEGER},
+				#{year,jdbcType=INTEGER},
+				#{region,jdbcType=INTEGER},
+				#{type,jdbcType=INTEGER},
+				#{operationtime,jdbcType=TIMESTAMP},
+				#{organization,jdbcType=VARCHAR},
+				#{operatername,jdbcType=VARCHAR},
+				#{operater,jdbcType=VARCHAR},
+				#{period,jdbcType=INTEGER},
+				#{regionParent,jdbcType=VARCHAR},
+				#{mark,jdbcType=VARCHAR}
+			)
+		</if>
+		<if test="count>0">
+			update SW_LOG t set
+				t.REGION=#{region,jdbcType=INTEGER},
+				t.BACKTIME=#{backtime,jdbcType=TIMESTAMP},
+				t.DESCRIPTION=#{description,jdbcType=VARCHAR},
+				t.TYPE=#{type,jdbcType=INTEGER},
+				t.OPERATIONTIME=#{operationtime,jdbcType=TIMESTAMP},
+				t.OPERATERNAME=#{operatername,jdbcType=VARCHAR},
+				t.OPERATER=#{operater,jdbcType=VARCHAR}
+			where t.REGION = #{region} and t.YEAR=#{year} and t.period=#{period}
+			<!-- 标记mark -->
+			<!-- <if test="mark !=null and mark !=''">
+				 and MARK =#{mark}
+			</if> -->
+			 <choose>
+			    <when test="mark !=null and mark !=''">
+			       and t.MARK =#{mark}
+			    </when>
+			    <otherwise>
+			        <if test="type!=2"> 
+						and t.MARK is null
+					</if>
+					<if test="type==2 and organizationGrade==2">
+					 	<!-- and t.REGIONPARENT	<![CDATA[<]]> <![CDATA[>]]>   '370000' -->
+					 	and  nvl(t.MARK,0) not in (select mark from SW_LOG s where s.REGION =#{regionParent}  and s.YEAR=#{year} and s.period=#{period} and s.REGIONPARENT = '370000' and s.TYPE='1')
+					</if>
+					<if test="type==2 and organizationGrade==3">
+					 	and  nvl(t.MARK,0) not in (select mark from SW_LOG s where  s.YEAR=#{year} and s.period=#{period} and s.REGIONPARENT = #{region} and s.TYPE=#{type} )
+					</if>
+			    </otherwise>
+			</choose> 
+		</if>
+	</insert>
+	<!-- 上报到省级修改图斑状态 -->
+	<update id="batchUpdateAppear">
+		update SW_MAPSPOT set 
+			node=node+2,
+			provinceauditpersonid=null,
+	 		provinceauditpersonname=null,
+	 		provinceaudittime=null,
+	 		provinceauditremarks=null,
+	 		provinceauditispass=null
+		 where node in(6,7) and city = #{city} 
+		 and YEAR=#{year} and checkperiod=#{period}
+		 and nvl(ISDELETE,0) <![CDATA[<]]> <![CDATA[>]]> 1
+		 <!-- 标记mark -->
+		 <choose>
+		    <when test="mark !=null and mark !=''">
+		       and MARK like '%'||#{mark}||'%' 
+		    </when>
+		    <otherwise>
+		       and MARK is null 
+		    </otherwise>
+		 </choose>  
+	</update>
+	
+	<!-- 上报到省级修改图斑状态 -->
+	<update id="batchUpdateAppearLevel">
+		update SW_MAPSPOT set 
+	 		MAPSPOTLEVEL = '3'
+		 where  city = #{city} 
+		 and MAPSPOTLEVEL = '2' 
+		 and YEAR=#{year} and checkperiod=#{period}
+		 and nvl(ISDELETE,0) <![CDATA[<]]> <![CDATA[>]]> 1
+		 <!-- 标记mark -->
+		 <choose>
+		    <when test="mark !=null and mark !=''">
+		       and MARK like '%'||#{mark}||'%' 
+		    </when>
+		    <otherwise>
+		       and MARK is null 
+		    </otherwise>
+		 </choose> 
+	</update>
+	
+	<!-- 根据ID删除swLog -->
+	<delete id="deleteById">
+		delete  from sw_log where id=#{id}
+	</delete>
+	<!-- 批量修改图斑信息 -->
+	<update id="batchUpdate" parameterType="java.util.List">
+	 	update SW_MAPSPOT set 
+	 	<!-- 市级用户退回 -->
+	 	<if test="organizationGrade==2">
+	 		node = '0'
+	 	</if>
+	 	<!-- 省级用户退回 -->
+	 	<if test="organizationGrade==3">
+	 	     node=case when node=9 then 7 
+	 				   when node=8 then 6
+	 				   when node=0 then 0
+	 				   end
+	 		<!-- cityauditispass=null,
+	 		iscityaudit=null,
+	 		cityauditpersonid=null,
+	 		cityauditpersonname=null,
+	 		cityaudittime=null,
+	 		cityauditremarks=null -->
+	 	</if> 
+	 	where id in
+		 <foreach collection="ids" item="item" open="(" separator="," close=")">
+		   		#{item}
+		 </foreach>
+	 </update>
+	 
+	 
+	 <!-- 批量修改图斑信息 -->
+	<update id="batchUpdateLevel" parameterType="java.util.List">
+	 	update SW_MAPSPOT set 
+	 	<!-- 市级用户退回 -->
+	 	<if test="organizationGrade==2">
+	 		MAPSPOTLEVEL='1'
+	 	</if>
+	 	<!-- 省级用户退回 -->
+	 	<if test="organizationGrade==3">
+	 	   MAPSPOTLEVEL='2'
+	 	</if> 
+	 	where id in
+		 <foreach collection="ids" item="item" open="(" separator="," close=")">
+		   		#{item}
+		 </foreach>
+	 </update>
+	<!--根据组织机构ID查询审核未通过的图斑信息列表-->
+	<select id="getMapSpotByNoPass" resultType="SwMapspot">
+		select 
+			t.*
+		from SW_MAPSPOT t  
+		where 1=1
+		<choose>
+		    <when test="organizationGrade !=null and organizationGrade ==2">
+		       and  (t.node is null or t.node=0 or (t.node<![CDATA[>]]> 1 and t.node<![CDATA[<]]>8))
+		    </when>
+		    <otherwise>
+		       and  (t.node is null or t.node=0 or t.node<![CDATA[>]]>1)
+		    </otherwise>
+		</choose>
+		 <!-- 标记mark -->
+		 <if test="mark !=null and mark !=''">
+				 and t.MARK like '%'||#{mark}||'%' 
+		 </if>
+		<!-- 市--> <!-- 对于市级省级审核不通过的数据或者市级审核不通过的数据要能直接回退到区县 -->
+		<if test="organizationGrade !=null and organizationGrade ==2">
+			and t.county=#{id} and (t.cityauditispass=2 or t.provinceauditispass=2)
+		</if>
+		<!-- 省 -->
+		<if test="organizationGrade !=null and organizationGrade ==3">
+			and t.city=#{id} and t.provinceauditispass=2
+		</if>
+		and t.YEAR=#{year} and t.checkperiod=#{period} and nvl(t.ISDELETE,0) <![CDATA[<]]> <![CDATA[>]]> 1
+	</select>
+	
+	
+	<select id="getMapSpotLevel" resultType="SwMapspot">
+		select 
+			t.*
+		from SW_MAPSPOT t  
+		where 1=1
+		 <!-- 标记mark -->
+		 <if test="mark !=null and mark !=''">
+				 and t.MARK like '%'||#{mark}||'%' 
+		 </if>
+		<!-- 市--> <!-- 对于市级省级审核不通过的数据或者市级审核不通过的数据要能直接回退到区县 -->
+		<if test="organizationGrade !=null and organizationGrade ==2">
+			and t.county=#{id} and MAPSPOTLEVEL='2'
+		</if>
+		<!-- 省 -->
+		<if test="organizationGrade !=null and organizationGrade ==3">
+			and t.city=#{id} and MAPSPOTLEVEL='3'
+		</if>
+		and t.YEAR=#{year} and t.checkperiod=#{period} and nvl(t.ISDELETE,0) <![CDATA[<]]> <![CDATA[>]]> 1
+	</select>
+	
+	<!-- 根据组织机构ID查询图斑信息列表 -->
+	<select id="getAllMapSpotByRegion" resultType="HandleProgress">
+		select 
+			<if test="organizationGrade==2">
+				county regionId,
+				count(*) denominator,
+				count(case when t.cityauditispass in(1,2) then 1 end) numerator,<!-- 分子 -->
+      			count(case when t.cityauditispass in(1) then 2 end) auditCount, <!-- 市级审核通过数量-->
+      			count(case when t.provinceauditispass in(2) then 3 end) proUnAuditCount <!-- 省级审核不通过数量 -->
+			</if>
+			<if test="organizationGrade==3">
+				city regionId,
+				count(*) denominator,<!-- 总数 分母 -->
+				count(case when t.provinceauditispass in(1,2) then 1 end) numerator,<!-- 分子 -->
+      			count(case when t.provinceauditispass in(1) then 2 end) auditCount,<!-- 省级审核通过数量-->
+				count(case when t.provinceauditispass in(2) then 3 end) proUnAuditCount <!-- 省级审核不通过数量 -->
+			</if>
+		from SW_MAPSPOT t
+		where (t.node=0 or t.node is null or t.node>1) and nvl(t.ISDELETE,0) <![CDATA[<]]> <![CDATA[>]]> 1
+		<!-- 标记mark -->
+		<if test="mark !=null and mark !=''">
+			and t.MARK like '%'||#{mark}||'%' 
+		</if>
+		<if test="year !=null and year !='' and year!=0">
+			and t.year=#{year}
+		</if>
+		<if test="period !=null and period !='' and period!=0">
+			and t.checkperiod=#{period}
+		</if>
+   	    <!-- 市 -->
+		<if test="organizationGrade !=null and organizationGrade ==2">
+			and t.city=#{id}  group by t.county
+		</if>
+		<!-- 省 -->
+		<if test="organizationGrade !=null and organizationGrade ==3">
+			and t.province=#{id} group by t.city
+		</if>
+	</select>
+	<!--根据组织机构ID查询图斑信息列表-->
+	<select id="getAllMapSpot" resultType="SwMapspot" fetchSize="1000">
+		select 
+			t.county county,
+			t.city city,
+			t.iscityaudit iscityaudit,
+			t.cityauditispass cityauditispass,
+			t.provinceauditispass provinceauditispass
+		from SW_MAPSPOT t 
+		where (t.node is null or t.node=0 or t.node>1) and nvl(t.ISDELETE,0) <![CDATA[<]]> <![CDATA[>]]> 1
+		<if test="year !=null and year !='' and year!=0">
+			and t.year=#{year}
+		</if>
+		<if test="period !=null and period !='' and period!=0">
+			and t.checkperiod=#{period}
+		</if>
+		<!-- 区县 -->
+		<if test="organizationGrade !=null and organizationGrade ==1">
+			and t.county=#{id}
+   	    </if>
+   	    <!-- 市 -->
+		<if test="organizationGrade !=null and organizationGrade ==2">
+			and t.city=#{id}
+		</if>
+		<!-- 省 -->
+		<if test="organizationGrade !=null and organizationGrade ==3">
+			and t.province=#{id}
+		</if>
+	</select>
+	<!-- 查询列表的总数 -->
+	<select id="getMapspotCount" resultType="int">
+		select count(1) from SW_MAPSPOT t 
+		<include refid="querySwMapspot"></include>
+	</select>
+	<!-- 获取最新期数 -->
+	<select id="getNewPeroid" resultType="int">
+		select max(year||checkperiod) as maxYear from sw_mapspot t
+	</select>
+	<!-- 批量审核 -->
+	<update id="saveAudits" parameterType="java.util.List" >  
+	     update SW_MAPSPOT set 
+	            <if test="organizationGrade !=null and organizationGrade ==2">
+	            	iscityaudit=1,
+	            	cityauditispass=#{isPassOrNo},
+ 					CITYAUDITPERSONID=#{operater,jdbcType=VARCHAR},			 
+					CITYAUDITPERSONNAME=#{operatername,jdbcType=VARCHAR},			 
+					CITYAUDITTIME=#{operationtime,jdbcType=TIMESTAMP}
+	            </if>
+	            <if test="organizationGrade !=null and organizationGrade ==3">
+	                <!-- 第一次审核通过 -->
+	            	<if test="historyState==null and isPassOrNo==1">provinceauditispass=1,NODE=NODE+2,</if>
+	            	<!-- 第一次审核不通过 -->
+	            	<if test="historyState==null and isPassOrNo==2">provinceauditispass=2,</if>
+	            	<!-- 先通过再不通过 -->
+	            	<if test="historyState==1 and isPassOrNo==2">provinceauditispass=2,NODE=NODE-2,</if>
+	            	<!-- 先不通过，再通过 -->
+	            	<if test="historyState==2 and isPassOrNo==1">provinceauditispass=1,NODE=NODE+2,</if>
+	            	<if test="historyState==1 and isPassOrNo==1">provinceauditispass=1,NODE=NODE+2,</if>
+	            	<if test="historyState==2 and isPassOrNo==2">provinceauditispass=2,NODE=NODE-2,</if>
+	            	PROVINCEAUDITPERSONID=#{operater,jdbcType=VARCHAR},			 
+ 					PROVINCEAUDITPERSONNAME=#{operatername,jdbcType=VARCHAR},			 
+ 					PROVINCEAUDITTIME=#{operationtime,jdbcType=TIMESTAMP}			 
+	            </if>			 
+	            where  YEAR=#{year} and checkperiod=#{period} and nvl(ISDELETE,0) <![CDATA[<]]> <![CDATA[>]]> 1
+	            <if test="organizationGrade !=null and organizationGrade ==2">
+					and county=#{id} and node in(6,7)
+			   </if>
+			   <!-- 省 -->
+			   <if test="organizationGrade !=null and organizationGrade ==3">
+					and city=#{id}
+					<if test="historyState==1 and isPassOrNo==2">
+						and node in(10,11)
+					</if>
+					<if test="historyState==1 and isPassOrNo==1">
+						and node in(8,9)
+					</if>
+					<if test="historyState==2 and isPassOrNo==2">
+						and node in(10,11)
+					</if>
+					<if test="historyState==2 and isPassOrNo==1">
+						and node in(8,9)
+					</if>
+					<if test="historyState==null">
+						and node in(8,9)
+					</if>
+			   </if>
+	</update>   
+	<!-- 审核 -->
+	<update id="saveOrUpdateSwAudit" parameterType="SwAuditspot">
+		update SW_MAPSPOT set 
+		            <!-- 市级 -->
+		            <if test="organizationType==1">
+						CITYAUDITISPASS=#{cityauditispass,jdbcType=INTEGER},			 			 
+	 					CITYAUDITPERSONID=#{cityauditpersonid,jdbcType=VARCHAR},			 
+	 					ISCITYAUDIT=#{iscityaudit,jdbcType=INTEGER},			 
+	 					CITYAUDITPERSONNAME=#{cityauditpersonname,jdbcType=VARCHAR},			 
+	 					CITYAUDITTIME=#{cityaudittime,jdbcType=TIMESTAMP},			 
+	 					CITYAUDITREMARKS=#{cityauditremarks,jdbcType=VARCHAR}
+ 					</if>
+ 					<!-- 省级 -->
+ 					<if test="organizationType==2">
+ 						<!-- 省级通过并且是第一次审核的时候才改变node值 -->
+			            <if test="provinceauditispass==1 and nowNode==8">NODE=10,</if>
+			            <if test="provinceauditispass==1 and nowNode==9">NODE=11,</if>
+			            <!-- 省级审核不通过并且是审核通过以后再点击改变node值 -->
+			            <if test="provinceauditispass==2 and nowNode==10">NODE=8,</if>
+			            <if test="provinceauditispass==2 and nowNode==11">NODE=9,</if>
+	 					PROVINCEAUDITPERSONID=#{provinceauditpersonid,jdbcType=VARCHAR},			 
+	 					PROVINCEAUDITPERSONNAME=#{provinceauditpersonname,jdbcType=VARCHAR},			 
+	 					PROVINCEAUDITTIME=#{provinceaudittime,jdbcType=TIMESTAMP},			 
+	 					PROVINCEAUDITREMARKS=#{provinceauditremarks,jdbcType=VARCHAR},			 
+	 					PROVINCEAUDITISPASS=#{provinceauditispass,jdbcType=INTEGER}
+ 					</if>	 
+					where id = #{mapspotid}
+	</update>
+	<!-- 全天候图斑统计列表条数查询 -->
+	<select id="getStatisticCount" resultType="int">
+		select count(1) from SW_MAPSPOT t 
+		<include refid="queryStatistic"></include>
+	</select>
+	<!-- 全天候图斑审核情况统计列表 -->
+	<select id="getAuditStatistic"  parameterType="SwMapSpotAuditStatistic" resultType="SwMapSpotAuditStatistic">
+		select * from (select rownum rn,m.* from (
+			select 
+		      t.city as cityId,
+		      <if test="selectCounty!=null or selectCity!=null">
+			     <!--区分管理区和行政区-->
+		      	  <if test="areaType==2">
+		      	  		t.county as countyId,
+			      		t.countyname as countyName,
+		      	  </if>
+		      	  <if test="areaType==1">
+		      	  		t.districtcounty as districtcounty,
+			            t.districtcountyname as districtcountyName,
+		      	  </if>
+		      </if>
+		       count(case when nvl(t.ISDELETE,0)<![CDATA[<]]> <![CDATA[>]]>1 then 1 end) as mapSpotNum,
+		      <!-- 市级审核情况 -->
+		      <if test="checkType!=null and checkType==2">
+		      	 count(case when nvl(t.ISDELETE,0)<![CDATA[<]]> <![CDATA[>]]>1 and t.node in(6,7) and nvl(t.cityauditispass,0)=0 then 1  end) as unAuditCountAll,
+		      	 count(case when nvl(t.ISDELETE,0)<![CDATA[<]]> <![CDATA[>]]>1 and t.cityauditispass=1 then 1  end) as passAuditCountAll,
+		      	 count(case when nvl(t.ISDELETE,0)<![CDATA[<]]> <![CDATA[>]]>1 and t.cityauditispass=2 then 1  end) as nopassAuditCountAll,
+		      	 count(case when nvl(t.ISDELETE,0)<![CDATA[<]]> <![CDATA[>]]>1 and  nvl(t.provinceauditispass,0)=2  then 1  end) as suspectedIllegalNum,
+			     sum(case when nvl(t.ISDELETE,0)<![CDATA[<]]> <![CDATA[>]]>1 and nvl(t.provinceauditispass,0)=2 then nvl(t.spotarea,0) else 0 end) as suspectedIllegalSumArea,
+			     sum(case when nvl(t.ISDELETE,0)<![CDATA[<]]> <![CDATA[>]]>1 and nvl(t.provinceauditispass,0)=2 then nvl(t.arableacreage,0) else 0 end) as suspectedIllegalArableacreage,
+			     sum(case when  nvl(t.ISDELETE,0)<![CDATA[<]]> <![CDATA[>]]>1 and nvl(t.provinceauditispass,0)=2 then nvl(t.adjustablearea,0) else 0 end) as suspectedIllegalAdjustablearea,
+		      </if>
+		      <!-- 省级审核情况 -->
+		      <if test="checkType!=null and checkType==1">
+		      	 count(case when nvl(t.ISDELETE,0)<![CDATA[<]]> <![CDATA[>]]>1 and t.node in(8,9) and nvl(t.provinceauditispass,0)=0 then 1 end) as unAuditCountAll,
+		      	 count(case when nvl(t.ISDELETE,0)<![CDATA[<]]> <![CDATA[>]]>1 and t.provinceauditispass=1 then 1 end) as passAuditCountAll,
+		      	 count(case when nvl(t.ISDELETE,0)<![CDATA[<]]> <![CDATA[>]]>1 and t.provinceauditispass=2 then 1 end) as nopassAuditCountAll,
+		      	 count(case when  nvl(t.ISDELETE,0)<![CDATA[<]]> <![CDATA[>]]>1 and nvl(t.provinceauditispass,0)=2 then 1  end) as suspectedIllegalNum,
+			     sum(case when  nvl(t.ISDELETE,0)<![CDATA[<]]> <![CDATA[>]]>1 and  nvl(t.provinceauditispass,0)=2 then nvl(t.spotarea,0) else 0 end) as suspectedIllegalSumArea,
+			     sum(case when  nvl(t.ISDELETE,0)<![CDATA[<]]> <![CDATA[>]]>1 and nvl(t.provinceauditispass,0)=2 then nvl(t.arableacreage,0) else 0 end) as suspectedIllegalArableacreage,
+			     sum(case when  nvl(t.ISDELETE,0)<![CDATA[<]]> <![CDATA[>]]>1 and nvl(t.provinceauditispass,0)=2 then nvl(t.adjustablearea,0) else 0 end) as suspectedIllegalAdjustablearea,
+		      </if>
+		      sum(case when nvl(t.ISDELETE,0)<![CDATA[<]]> <![CDATA[>]]>1 then nvl(t.spotarea,0) else 0 end) as mapSpotSumArea,
+		      sum(case when nvl(t.ISDELETE,0)<![CDATA[<]]> <![CDATA[>]]>1 then nvl(t.arableacreage,0) else 0 end) as mapSpotSumArableacreage,
+		      sum(case when nvl(t.ISDELETE,0)<![CDATA[<]]> <![CDATA[>]]>1 then nvl(t.adjustablearea,0) else 0 end) as mapSpotSumAdjustablearea,
+		      count(case when node = 1 and nvl(t.ISDELETE,0)<![CDATA[<]]> <![CDATA[>]]>1 then 1 end) as illegalNum,
+		      sum(case when node = 1 and nvl(t.ISDELETE,0)<![CDATA[<]]> <![CDATA[>]]>1 then nvl(t.spotarea,0) else 0 end) as illegalSumArea,
+		      sum(case when node = 1 and nvl(t.ISDELETE,0)<![CDATA[<]]> <![CDATA[>]]>1 then nvl(t.arableacreage,0) else 0 end) as illegalArableacreage,
+		      sum(case when node = 1 and nvl(t.ISDELETE,0)<![CDATA[<]]> <![CDATA[>]]>1 then nvl(t.adjustablearea,0) else 0 end) as illegalAdjustablearea,
+		      count(case when node in(10) and nvl(t.ISDELETE,0)<![CDATA[<]]> <![CDATA[>]]>1 then 1 end) as legitimateNum,
+		      sum(case when node in(10) and nvl(t.ISDELETE,0)<![CDATA[<]]> <![CDATA[>]]>1 then nvl(t.spotarea,0) else 0  end) as legitimateSumArea,
+		      sum(case when node in(10) and nvl(t.ISDELETE,0)<![CDATA[<]]> <![CDATA[>]]>1 then nvl(t.arableacreage,0) else 0 end) as legitimateArableacreage,
+		      sum(case when node in(10) and nvl(t.ISDELETE,0)<![CDATA[<]]> <![CDATA[>]]>1 then nvl(t.adjustablearea,0) else 0 end) as legitimateAdjustablearea,
+		      count(case when node in(11) and nvl(t.ISDELETE,0)<![CDATA[<]]> <![CDATA[>]]>1 then 1 end) as notNewMapSpotNum,
+		      sum(case when node in(11) and nvl(t.ISDELETE,0)<![CDATA[<]]> <![CDATA[>]]>1 then nvl(t.spotarea,0) else 0 end) as notNewMapSpotSumArea,
+		      sum(case when node in(11) and nvl(t.ISDELETE,0)<![CDATA[<]]> <![CDATA[>]]>1 then nvl(t.arableacreage,0) else 0 end) as notNewMapSpotArableacreage,
+		      sum(case when node in(11) and nvl(t.ISDELETE,0)<![CDATA[<]]> <![CDATA[>]]>1 then nvl(t.adjustablearea,0) else 0 end) as notNewMapSpotAdjustablearea
+			from SW_MAPSPOT t
+			<include refid="queryMapSpotStatistic"></include>
+      		group by t.city
+      		<if test="selectCounty!=null or selectCity!=null">
+      			,<if test="areaType==2">
+      				t.county,t.countyname
+      			</if>
+      			<if test="areaType==1">
+      				t.districtcounty,t.districtcountyname
+      			</if>
+      		</if>) m) n   where n.rn between #{startNum} and #{endNum}
+	</select>
+	<!-- 全天候图斑审核情况统计条数 -->
+	<select id="getAuditStatisticCount" resultType="int">
+		select count(*) from (select rownum rn,m.* from (
+			select 
+		      t.city as cityId,
+		      <if test="selectCounty!=null or selectCity!=null">
+		      	  <!--区分管理区和行政区-->
+		      	  <if test="areaType==2">
+		      	  		t.county as countyId,
+			      		t.countyname as countyName,
+		      	  </if>
+		      	  <if test="areaType==1">
+		      	  		t.districtcounty as districtcounty,
+			            t.districtcountyname as districtcountyName,
+		      	  </if>
+		      </if>
+		       count(case when nvl(t.ISDELETE,0)<![CDATA[<]]> <![CDATA[>]]>1 then 1 end) as mapSpotNum,
+		      <!-- 市级审核情况 -->
+		      <if test="checkType!=null and checkType==2">
+		      	 count(case when nvl(t.ISDELETE,0)<![CDATA[<]]> <![CDATA[>]]>1 and t.node in(6,7) and nvl(t.cityauditispass,0)=0 then 1  end) as unAuditCountAll,
+		      	 count(case when nvl(t.ISDELETE,0)<![CDATA[<]]> <![CDATA[>]]>1 and t.cityauditispass=1 then 1  end) as passAuditCountAll,
+		      	 count(case when nvl(t.ISDELETE,0)<![CDATA[<]]> <![CDATA[>]]>1 and t.cityauditispass=2 then 1  end) as nopassAuditCountAll,
+		      	 count(case when nvl(t.ISDELETE,0)<![CDATA[<]]> <![CDATA[>]]>1 and  t.provinceauditispass=2  then 1  end) as suspectedIllegalNum,
+			     sum(case when nvl(t.ISDELETE,0)<![CDATA[<]]> <![CDATA[>]]>1 and t.provinceauditispass=2 then nvl(t.spotarea,0) else 0 end) as suspectedIllegalSumArea,
+			     sum(case when nvl(t.ISDELETE,0)<![CDATA[<]]> <![CDATA[>]]>1 and t.provinceauditispass=2 then nvl(t.arableacreage,0) else 0 end) as suspectedIllegalArableacreage,
+			     sum(case when  nvl(t.ISDELETE,0)<![CDATA[<]]> <![CDATA[>]]>1 and t.provinceauditispass=2 then nvl(t.adjustablearea,0) else 0 end) as suspectedIllegalAdjustablearea,
+		      </if>
+		      <!-- 省级审核情况 -->
+		      <if test="checkType!=null and checkType==1">
+		      	 count(case when nvl(t.ISDELETE,0)<![CDATA[<]]> <![CDATA[>]]>1 and t.node in(8,9) and nvl(t.provinceauditispass,0)=0 then 1 end) as unAuditCountAll,
+		      	 count(case when nvl(t.ISDELETE,0)<![CDATA[<]]> <![CDATA[>]]>1 and t.provinceauditispass=1 then 1 end) as passAuditCountAll,
+		      	 count(case when nvl(t.ISDELETE,0)<![CDATA[<]]> <![CDATA[>]]>1 and t.provinceauditispass=2 then 1 end) as nopassAuditCountAll,
+		      	 count(case when nvl(t.ISDELETE,0)<![CDATA[<]]> <![CDATA[>]]>1 and t.provinceauditispass=2 then 1 end) as suspectedIllegalNum,
+			     sum(case when  nvl(t.ISDELETE,0)<![CDATA[<]]> <![CDATA[>]]>1 and  t.provinceauditispass=2 then nvl(t.spotarea,0) else 0 end) as suspectedIllegalSumArea,
+			     sum(case when  nvl(t.ISDELETE,0)<![CDATA[<]]> <![CDATA[>]]>1 and t.provinceauditispass=2 then nvl(t.arableacreage,0) else 0 end) as suspectedIllegalArableacreage,
+			     sum(case when  nvl(t.ISDELETE,0)<![CDATA[<]]> <![CDATA[>]]>1 and t.provinceauditispass=2 then nvl(t.adjustablearea,0) else 0 end) as suspectedIllegalAdjustablearea,
+		      </if>
+		      sum(case when nvl(t.ISDELETE,0)<![CDATA[<]]> <![CDATA[>]]>1 then nvl(t.spotarea,0) else 0 end) as mapSpotSumArea,
+		      sum(case when nvl(t.ISDELETE,0)<![CDATA[<]]> <![CDATA[>]]>1 then nvl(t.arableacreage,0) else 0 end) as mapSpotSumArableacreage,
+		      sum(case when nvl(t.ISDELETE,0)<![CDATA[<]]> <![CDATA[>]]>1 then nvl(t.adjustablearea,0) else 0 end) as mapSpotSumAdjustablearea,
+		      count(case when node = 1 and nvl(t.ISDELETE,0)<![CDATA[<]]> <![CDATA[>]]>1 then 1 end) as illegalNum,
+		      sum(case when node = 1 and nvl(t.ISDELETE,0)<![CDATA[<]]> <![CDATA[>]]>1 then nvl(t.spotarea,0) else 0 end) as illegalSumArea,
+		      sum(case when node = 1 and nvl(t.ISDELETE,0)<![CDATA[<]]> <![CDATA[>]]>1 then nvl(t.arableacreage,0) else 0 end) as illegalArableacreage,
+		      sum(case when node = 1 and nvl(t.ISDELETE,0)<![CDATA[<]]> <![CDATA[>]]>1 then nvl(t.adjustablearea,0) else 0 end) as illegalAdjustablearea,
+		      count(case when node in(10) and nvl(t.ISDELETE,0)<![CDATA[<]]> <![CDATA[>]]>1 then 1 end) as legitimateNum,
+		      sum(case when node in(10) and nvl(t.ISDELETE,0)<![CDATA[<]]> <![CDATA[>]]>1 then nvl(t.spotarea,0) else 0  end) as legitimateSumArea,
+		      sum(case when node in(10) and nvl(t.ISDELETE,0)<![CDATA[<]]> <![CDATA[>]]>1 then nvl(t.arableacreage,0) else 0 end) as legitimateArableacreage,
+		      sum(case when node in(10) and nvl(t.ISDELETE,0)<![CDATA[<]]> <![CDATA[>]]>1 then nvl(t.adjustablearea,0) else 0 end) as legitimateAdjustablearea,
+		      count(case when node in(11) and nvl(t.ISDELETE,0)<![CDATA[<]]> <![CDATA[>]]>1 then 1 end) as notNewMapSpotNum,
+		      sum(case when node in(11) and nvl(t.ISDELETE,0)<![CDATA[<]]> <![CDATA[>]]>1 then nvl(t.spotarea,0) else 0 end) as notNewMapSpotSumArea,
+		      sum(case when node in(11) and nvl(t.ISDELETE,0)<![CDATA[<]]> <![CDATA[>]]>1 then nvl(t.arableacreage,0) else 0 end) as notNewMapSpotArableacreage,
+		      sum(case when node in(11) and nvl(t.ISDELETE,0)<![CDATA[<]]> <![CDATA[>]]>1 then nvl(t.adjustablearea,0) else 0 end) as notNewMapSpotAdjustablearea
+			from SW_MAPSPOT t
+			<include refid="queryMapSpotStatistic"></include>
+      		group by t.city
+      		<if test="selectCounty!=null or selectCity!=null">
+      			,<if test="areaType==2">
+      				t.county,t.countyname
+      			</if>
+      			<if test="areaType==1">
+      				t.districtcounty,t.districtcountyname
+      			</if>
+      		</if>) m) n 
+	</select>
+	<!-- 全天候图斑举证情况统计列表 条数查询-->
+	<select id="getLegalproofStatisticCount" resultType="int">
+		select count(*) from (select rownum rn,m.* from (
+			select 
+		      t.city as cityId,
+		      <!-- 查询全部 -->
+		      <if test="selectCounty!=null or selectCity!=null">
+			      <!--区分管理区和行政区-->
+		      	  <if test="areaType==2">
+		      	  		t.county as countyId,
+			      		t.countyname as countyName,
+		      	  </if>
+		      	  <if test="areaType==1">
+		      	  		t.districtcounty as districtcounty,
+			            t.districtcountyname as districtcountyName,
+		      	  </if>
+		      </if>
+		      count(case when nvl(t.ISDELETE,0)<![CDATA[<]]> <![CDATA[>]]>1 then 1 end) as mapSpotNum,
+		      sum(case when nvl(t.ISDELETE,0)<![CDATA[<]]> <![CDATA[>]]>1 then nvl(t.spotarea,0) else 0 end) as mapSpotSumArea,
+		      sum(case when nvl(t.ISDELETE,0)<![CDATA[<]]> <![CDATA[>]]>1 then nvl(t.arableacreage,0) else 0 end) as mapSpotSumArableacreage,
+		      sum(case when nvl(t.ISDELETE,0)<![CDATA[<]]> <![CDATA[>]]>1 then nvl(t.adjustablearea,0) else 0 end) as mapSpotSumAdjustablearea,
+		      count(case when (t.node = 0 or t.node is null) and nvl(t.ISDELETE,0)<![CDATA[<]]> <![CDATA[>]]>1 then 1 end) as unLegalproofNum,
+		      sum(case when (t.node = 0 or t.node is null) and nvl(t.ISDELETE,0)<![CDATA[<]]> <![CDATA[>]]>1 then nvl(t.spotarea,0) else 0 end) as unLegalproofSumArea,
+		      sum(case when (t.node = 0 or t.node is null) and nvl(t.ISDELETE,0)<![CDATA[<]]> <![CDATA[>]]>1 then nvl(t.arableacreage,0) else 0 end) as unLegalproofArableacreage,
+		      sum(case when (t.node = 0 or t.node is null) and nvl(t.ISDELETE,0)<![CDATA[<]]> <![CDATA[>]]>1 then nvl(t.adjustablearea,0) else 0 end) as unLegalproofAdjustablearea,
+		      count(case when node = 1 and nvl(t.ISDELETE,0)<![CDATA[<]]> <![CDATA[>]]>1 then 1 end) as illegalNum,
+		      sum(case when node = 1 and nvl(t.ISDELETE,0)<![CDATA[<]]> <![CDATA[>]]>1 then nvl(t.spotarea,0) else 0 end) as illegalSumArea,
+		      sum(case when node = 1 and nvl(t.ISDELETE,0)<![CDATA[<]]> <![CDATA[>]]>1 then nvl(t.arableacreage,0) else 0 end) as illegalArableacreage,
+		      sum(case when node = 1 and nvl(t.ISDELETE,0)<![CDATA[<]]> <![CDATA[>]]>1 then nvl(t.adjustablearea,0) else 0 end) as illegalAdjustablearea,
+		      count(case when node in(2,4,6,8,10) and nvl(t.ISDELETE,0)<![CDATA[<]]> <![CDATA[>]]>1 then 1 end) as legitimateNum,
+		      sum(case when node in(2,4,6,8,10) and nvl(t.ISDELETE,0)<![CDATA[<]]> <![CDATA[>]]>1 then nvl(t.spotarea,0) else 0  end) as legitimateSumArea,
+		      sum(case when node in(2,4,6,8,10) and nvl(t.ISDELETE,0)<![CDATA[<]]> <![CDATA[>]]>1 then nvl(t.arableacreage,0) else 0 end) as legitimateArableacreage,
+		      sum(case when node in(2,4,6,8,10) and nvl(t.ISDELETE,0)<![CDATA[<]]> <![CDATA[>]]>1 then nvl(t.adjustablearea,0) else 0 end) as legitimateAdjustablearea,
+		      count(case when node in(3,5,7,9,11) and nvl(t.ISDELETE,0)<![CDATA[<]]> <![CDATA[>]]>1 then 1 end) as notNewMapSpotNum,
+		      sum(case when node in(3,5,7,9,11) and nvl(t.ISDELETE,0)<![CDATA[<]]> <![CDATA[>]]>1 then nvl(t.spotarea,0) else 0 end) as notNewMapSpotSumArea,
+		      sum(case when node in(3,5,7,9,11) and nvl(t.ISDELETE,0)<![CDATA[<]]> <![CDATA[>]]>1 then nvl(t.arableacreage,0) else 0 end) as notNewMapSpotArableacreage,
+		      sum(case when node in(3,5,7,9,11) and nvl(t.ISDELETE,0)<![CDATA[<]]> <![CDATA[>]]>1 then nvl(t.adjustablearea,0) else 0 end) as notNewMapSpotAdjustablearea
+			from SW_MAPSPOT t
+			<include refid="queryMapSpotStatistic"></include>
+      		group by t.city
+      		<if test="selectCounty!=null or selectCity!=null">
+      			,<if test="areaType==2">
+      				t.county,t.countyname
+      			</if>
+      			<if test="areaType==1">
+      				t.districtcounty,t.districtcountyname
+      			</if>
+      		</if>) m) n 
+	</select>
+	<!-- 全天候图斑举证情况统计查询 -->
+	<select id="getLegalproofStatistic" parameterType="SwMapSpotStatistic" resultType="SwMapSpotStatistic">
+		select * from (select rownum rn,m.* from (
+			select 
+		      t.city as cityId,
+		      <if test="selectCounty!=null or selectCity!=null">
+			       <!--区分管理区和行政区-->
+		      	  <if test="areaType==2">
+		      	  		t.county as countyId,
+			      		t.countyname as countyName,
+		      	  </if>
+		      	  <if test="areaType==1">
+		      	  		t.districtcounty as districtcounty,
+			            t.districtcountyname as districtcountyName,
+		      	  </if>
+		      </if>
+		      count(case when nvl(t.ISDELETE,0)<![CDATA[<]]> <![CDATA[>]]>1 then 1 end) as mapSpotNum,
+		      sum(case when nvl(t.ISDELETE,0)<![CDATA[<]]> <![CDATA[>]]>1 then nvl(t.spotarea,0) else 0 end) as mapSpotSumArea,
+		      sum(case when nvl(t.ISDELETE,0)<![CDATA[<]]> <![CDATA[>]]>1 then nvl(t.arableacreage,0) else 0 end) as mapSpotSumArableacreage,
+		      sum(case when nvl(t.ISDELETE,0)<![CDATA[<]]> <![CDATA[>]]>1 then nvl(t.adjustablearea,0) else 0 end) as mapSpotSumAdjustablearea,
+		      count(case when (t.node = 0 or t.node is null) and nvl(t.ISDELETE,0)<![CDATA[<]]> <![CDATA[>]]>1 then 1 end) as unLegalproofNum,
+		      sum(case when (t.node = 0 or t.node is null) and nvl(t.ISDELETE,0)<![CDATA[<]]> <![CDATA[>]]>1 then nvl(t.spotarea,0) else 0 end) as unLegalproofSumArea,
+		      sum(case when (t.node = 0 or t.node is null) and nvl(t.ISDELETE,0)<![CDATA[<]]> <![CDATA[>]]>1 then nvl(t.arableacreage,0) else 0 end) as unLegalproofArableacreage,
+		      sum(case when (t.node = 0 or t.node is null) and nvl(t.ISDELETE,0)<![CDATA[<]]> <![CDATA[>]]>1 then nvl(t.adjustablearea,0) else 0 end) as unLegalproofAdjustablearea,
+		      count(case when node = 1 and nvl(t.ISDELETE,0)<![CDATA[<]]> <![CDATA[>]]>1 then 1 end) as illegalNum,
+		      sum(case when node = 1 and nvl(t.ISDELETE,0)<![CDATA[<]]> <![CDATA[>]]>1 then nvl(t.spotarea,0) else 0 end) as illegalSumArea,
+		      sum(case when node = 1 and nvl(t.ISDELETE,0)<![CDATA[<]]> <![CDATA[>]]>1 then nvl(t.arableacreage,0) else 0 end) as illegalArableacreage,
+		      sum(case when node = 1 and nvl(t.ISDELETE,0)<![CDATA[<]]> <![CDATA[>]]>1 then nvl(t.adjustablearea,0) else 0 end) as illegalAdjustablearea,
+		      count(case when node in(2,4,6,8,10) and nvl(t.ISDELETE,0)<![CDATA[<]]> <![CDATA[>]]>1 then 1 end) as legitimateNum,
+		      sum(case when node in(2,4,6,8,10) and nvl(t.ISDELETE,0)<![CDATA[<]]> <![CDATA[>]]>1 then nvl(t.spotarea,0) else 0  end) as legitimateSumArea,
+		      sum(case when node in(2,4,6,8,10) and nvl(t.ISDELETE,0)<![CDATA[<]]> <![CDATA[>]]>1 then nvl(t.arableacreage,0) else 0 end) as legitimateArableacreage,
+		      sum(case when node in(2,4,6,8,10) and nvl(t.ISDELETE,0)<![CDATA[<]]> <![CDATA[>]]>1 then nvl(t.adjustablearea,0) else 0 end) as legitimateAdjustablearea,
+		      count(case when node in(3,5,7,9,11) and nvl(t.ISDELETE,0)<![CDATA[<]]> <![CDATA[>]]>1 then 1 end) as notNewMapSpotNum,
+		      sum(case when node in(3,5,7,9,11) and nvl(t.ISDELETE,0)<![CDATA[<]]> <![CDATA[>]]>1 then nvl(t.spotarea,0) else 0 end) as notNewMapSpotSumArea,
+		      sum(case when node in(3,5,7,9,11) and nvl(t.ISDELETE,0)<![CDATA[<]]> <![CDATA[>]]>1 then nvl(t.arableacreage,0) else 0 end) as notNewMapSpotArableacreage,
+		      sum(case when node in(3,5,7,9,11) and nvl(t.ISDELETE,0)<![CDATA[<]]> <![CDATA[>]]>1 then nvl(t.adjustablearea,0) else 0 end) as notNewMapSpotAdjustablearea
+			from SW_MAPSPOT t
+			<include refid="queryMapSpotStatistic"></include>
+      		group by t.city
+      		<if test="selectCounty!=null or selectCity!=null">
+      			,<if test="areaType==2">
+      				t.county,t.countyname
+      			</if>
+      			<if test="areaType==1">
+      				t.districtcounty,t.districtcountyname
+      			</if>
+      		</if>) m) n   where n.rn between #{startNum} and #{endNum}
+	</select>
+	<!-- 全天候图斑举证情况统计查询条件 -->
+	<sql id="queryMapSpotStatistic">
+		where nvl(t.ISDELETE,0) <![CDATA[<]]> <![CDATA[>]]> 1
+		<!-- 年份 -->
+		<if test="year!=null and year !='' and year!=0">
+			and t.year =#{year}
+		</if>
+		<!-- 核查期数 -->
+		<if test="checkperiod!=null and checkperiod !='' and checkperiod!=0">
+			and t.checkperiod =#{checkperiod}
+		</if>
+		<!-- 下发期数 -->
+		<if test="period!=null and period !='' and period!=0">
+			and t.period =#{period}
+		</if>
+		<!-- 市级 -->
+		<if test="selectCity!=null and selectCity!='' and selectCity!=0">
+			and t.city=#{selectCity}
+		</if>
+		<!-- 区县 -->
+		<if test="selectCounty!=null and selectCounty!='' and selectCounty!=0">
+			<!-- 行政区 -->
+			<if test="areaType==1">
+				and t.districtcounty=#{selectCounty}
+			</if>
+			<!-- 管理区 -->
+			<if test="areaType==2">
+				and t.county=#{selectCounty}
+			</if>
+			<if test="areaType==null and areaType==''">
+				and t.county=#{selectCounty}
+			</if>
+		</if>
+		<if test="mark!=null and mark!=''">
+        	and t.mark like '%'||#{mark}||'%' 
+        </if>
+	</sql>
+	<!-- 图斑统计合计 -->
+	<select id="getSumSpotStatistic" resultType="SwMapSpotStatistic">
+		select 
+		      count(case when nvl(t.ISDELETE,0)<![CDATA[<]]> <![CDATA[>]]>1 then 1 end) as mapSpotNum,
+		      sum(case when nvl(t.ISDELETE,0)<![CDATA[<]]> <![CDATA[>]]>1 then nvl(t.spotarea,0) else 0 end) as mapSpotSumArea,
+		      sum(case when nvl(t.ISDELETE,0)<![CDATA[<]]> <![CDATA[>]]>1 then nvl(t.arableacreage,0) else 0 end) as mapSpotSumArableacreage,
+		      sum(case when nvl(t.ISDELETE,0)<![CDATA[<]]> <![CDATA[>]]>1 then nvl(t.adjustablearea,0) else 0 end) as mapSpotSumAdjustablearea,
+		      count(case when (t.node = 0 or t.node is null) and nvl(t.ISDELETE,0)<![CDATA[<]]> <![CDATA[>]]>1 then 1 end) as unLegalproofNum,
+		      sum(case when (t.node = 0 or t.node is null) and nvl(t.ISDELETE,0)<![CDATA[<]]> <![CDATA[>]]>1 then nvl(t.spotarea,0) else 0 end) as unLegalproofSumArea,
+		      sum(case when (t.node = 0 or t.node is null) and nvl(t.ISDELETE,0)<![CDATA[<]]> <![CDATA[>]]>1 then nvl(t.arableacreage,0) else 0 end) as unLegalproofArableacreage,
+		      sum(case when (t.node = 0 or t.node is null) and nvl(t.ISDELETE,0)<![CDATA[<]]> <![CDATA[>]]>1 then nvl(t.adjustablearea,0) else 0 end) as unLegalproofAdjustablearea,
+		      count(case when node = 1 and nvl(t.ISDELETE,0)<![CDATA[<]]> <![CDATA[>]]>1 then 1 end) as illegalNum,
+		      sum(case when node = 1 and nvl(t.ISDELETE,0)<![CDATA[<]]> <![CDATA[>]]>1 then nvl(t.spotarea,0) else 0 end) as illegalSumArea,
+		      sum(case when node = 1 and nvl(t.ISDELETE,0)<![CDATA[<]]> <![CDATA[>]]>1 then nvl(t.arableacreage,0) else 0 end) as illegalArableacreage,
+		      sum(case when node = 1 and nvl(t.ISDELETE,0)<![CDATA[<]]> <![CDATA[>]]>1 then nvl(t.adjustablearea,0) else 0 end) as illegalAdjustablearea,
+		      count(case when node in(2,4,6,8,10) and nvl(t.ISDELETE,0)<![CDATA[<]]> <![CDATA[>]]>1 then 1 end) as legitimateNum,
+		      sum(case when node in(2,4,6,8,10) and nvl(t.ISDELETE,0)<![CDATA[<]]> <![CDATA[>]]>1 then nvl(t.spotarea,0) else 0  end) as legitimateSumArea,
+		      sum(case when node in(2,4,6,8,10) and nvl(t.ISDELETE,0)<![CDATA[<]]> <![CDATA[>]]>1 then nvl(t.arableacreage,0) else 0 end) as legitimateArableacreage,
+		      sum(case when node in(2,4,6,8,10) and nvl(t.ISDELETE,0)<![CDATA[<]]> <![CDATA[>]]>1 then nvl(t.adjustablearea,0) else 0 end) as legitimateAdjustablearea,
+		      count(case when node in(3,5,7,9,11) and nvl(t.ISDELETE,0)<![CDATA[<]]> <![CDATA[>]]>1 then 1 end) as notNewMapSpotNum,
+		      sum(case when node in(3,5,7,9,11) and nvl(t.ISDELETE,0)<![CDATA[<]]> <![CDATA[>]]>1 then nvl(t.spotarea,0) else 0 end) as notNewMapSpotSumArea,
+		      sum(case when node in(3,5,7,9,11) and nvl(t.ISDELETE,0)<![CDATA[<]]> <![CDATA[>]]>1 then nvl(t.arableacreage,0) else 0 end) as notNewMapSpotArableacreage,
+		      sum(case when node in(3,5,7,9,11) and nvl(t.ISDELETE,0)<![CDATA[<]]> <![CDATA[>]]>1 then nvl(t.adjustablearea,0) else 0 end) as notNewMapSpotAdjustablearea
+			from SW_MAPSPOT t
+			<include refid="queryMapSpotStatistic"></include>
+	</select>
+	<!-- 图斑审核情况合计 -->
+	<select id="getSumAuditStatistic" resultType="SwMapSpotAuditStatistic">
+		select 
+		      count(case when nvl(t.ISDELETE,0)<![CDATA[<]]> <![CDATA[>]]>1 then 1 end) as mapSpotNum,
+		      <!-- 市级审核情况 -->
+		      <if test="checkType!=null and checkType==2">
+		      	 count(case when nvl(t.ISDELETE,0)<![CDATA[<]]> <![CDATA[>]]>1 and t.node in(6,7) and nvl(t.cityauditispass,0)=0 then 1  end) as unAuditCountAll,
+		      	 count(case when nvl(t.ISDELETE,0)<![CDATA[<]]> <![CDATA[>]]>1 and t.cityauditispass=1 then 1  end) as passAuditCountAll,
+		      	 count(case when nvl(t.ISDELETE,0)<![CDATA[<]]> <![CDATA[>]]>1 and t.cityauditispass=2 then 1  end) as nopassAuditCountAll,
+		      	 count(case when nvl(t.ISDELETE,0)<![CDATA[<]]> <![CDATA[>]]>1 and  t.provinceauditispass=2  then 1 end) as suspectedIllegalNum,
+			     sum(case when nvl(t.ISDELETE,0)<![CDATA[<]]> <![CDATA[>]]>1 and t.provinceauditispass=2 then nvl(t.spotarea,0) else 0 end) as suspectedIllegalSumArea,
+			     sum(case when nvl(t.ISDELETE,0)<![CDATA[<]]> <![CDATA[>]]>1 and t.provinceauditispass=2 then nvl(t.arableacreage,0) else 0 end) as suspectedIllegalArableacreage,
+			     sum(case when  nvl(t.ISDELETE,0)<![CDATA[<]]> <![CDATA[>]]>1 and t.provinceauditispass=2 then nvl(t.adjustablearea,0) else 0 end) as suspectedIllegalAdjustablearea,
+		      </if>
+		      <!-- 省级审核情况 -->
+		      <if test="checkType!=null and checkType==1">
+		      	 count(case when nvl(t.ISDELETE,0)<![CDATA[<]]> <![CDATA[>]]>1 and t.node in(8,9) and nvl(t.provinceauditispass,0)=0 then 1 end) as unAuditCountAll,
+		      	 count(case when nvl(t.ISDELETE,0)<![CDATA[<]]> <![CDATA[>]]>1 and t.provinceauditispass=1 then 1 end) as passAuditCountAll,
+		      	 count(case when nvl(t.ISDELETE,0)<![CDATA[<]]> <![CDATA[>]]>1 and t.provinceauditispass=2 then 1 end) as nopassAuditCountAll,
+		      	 count(case when  nvl(t.ISDELETE,0)<![CDATA[<]]> <![CDATA[>]]>1 and t.provinceauditispass=2 then 1  end) as suspectedIllegalNum,
+			     sum(case when  nvl(t.ISDELETE,0)<![CDATA[<]]> <![CDATA[>]]>1 and  t.provinceauditispass=2 then nvl(t.spotarea,0) else 0 end) as suspectedIllegalSumArea,
+			     sum(case when  nvl(t.ISDELETE,0)<![CDATA[<]]> <![CDATA[>]]>1 and t.provinceauditispass=2 then nvl(t.arableacreage,0) else 0 end) as suspectedIllegalArableacreage,
+			     sum(case when  nvl(t.ISDELETE,0)<![CDATA[<]]> <![CDATA[>]]>1 and t.provinceauditispass=2 then nvl(t.adjustablearea,0) else 0 end) as suspectedIllegalAdjustablearea,
+		      </if>
+		      sum(case when nvl(t.ISDELETE,0)<![CDATA[<]]> <![CDATA[>]]>1 then nvl(t.spotarea,0) else 0 end) as mapSpotSumArea,
+		      sum(case when nvl(t.ISDELETE,0)<![CDATA[<]]> <![CDATA[>]]>1 then nvl(t.arableacreage,0) else 0 end) as mapSpotSumArableacreage,
+		      sum(case when nvl(t.ISDELETE,0)<![CDATA[<]]> <![CDATA[>]]>1 then nvl(t.adjustablearea,0) else 0 end) as mapSpotSumAdjustablearea,
+		      count(case when node = 1 and nvl(t.ISDELETE,0)<![CDATA[<]]> <![CDATA[>]]>1 then 1 end) as illegalNum,
+		      sum(case when node = 1 and nvl(t.ISDELETE,0)<![CDATA[<]]> <![CDATA[>]]>1 then nvl(t.spotarea,0) else 0 end) as illegalSumArea,
+		      sum(case when node = 1 and nvl(t.ISDELETE,0)<![CDATA[<]]> <![CDATA[>]]>1 then nvl(t.arableacreage,0) else 0 end) as illegalArableacreage,
+		      sum(case when node = 1 and nvl(t.ISDELETE,0)<![CDATA[<]]> <![CDATA[>]]>1 then nvl(t.adjustablearea,0) else 0 end) as illegalAdjustablearea,
+		      count(case when node in(10) and nvl(t.ISDELETE,0)<![CDATA[<]]> <![CDATA[>]]>1 then 1 end) as legitimateNum,
+		      sum(case when node in(10) and nvl(t.ISDELETE,0)<![CDATA[<]]> <![CDATA[>]]>1 then nvl(t.spotarea,0) else 0  end) as legitimateSumArea,
+		      sum(case when node in(10) and nvl(t.ISDELETE,0)<![CDATA[<]]> <![CDATA[>]]>1 then nvl(t.arableacreage,0) else 0 end) as legitimateArableacreage,
+		      sum(case when node in(10) and nvl(t.ISDELETE,0)<![CDATA[<]]> <![CDATA[>]]>1 then nvl(t.adjustablearea,0) else 0 end) as legitimateAdjustablearea,
+		      count(case when node in(11) and nvl(t.ISDELETE,0)<![CDATA[<]]> <![CDATA[>]]>1 then 1 end) as notNewMapSpotNum,
+		      sum(case when node in(11) and nvl(t.ISDELETE,0)<![CDATA[<]]> <![CDATA[>]]>1 then nvl(t.spotarea,0) else 0 end) as notNewMapSpotSumArea,
+		      sum(case when node in(11) and nvl(t.ISDELETE,0)<![CDATA[<]]> <![CDATA[>]]>1 then nvl(t.arableacreage,0) else 0 end) as notNewMapSpotArableacreage,
+		      sum(case when node in(11) and nvl(t.ISDELETE,0)<![CDATA[<]]> <![CDATA[>]]>1 then nvl(t.adjustablearea,0) else 0 end) as notNewMapSpotAdjustablearea
+			from SW_MAPSPOT t
+			<include refid="queryMapSpotStatistic"></include>
+	</select>
+	<!-- 全天候图斑统计列表查询  -->
+	<select id="getStatisticSwMapspots"  resultType="SwMapspot">
+		select * from (select rownum rn,m.* from (select t.* , rownum num from SW_MAPSPOT t 
+		<include refid="queryStatistic"></include>
+		order by  t.county,case when t.spotnumber  like '%-%' then  to_number(replace(t.spotnumber,'-','.')) 
+        else to_number(t.spotnumber) end 
+		) m ) n where n.rn between #{startNum} and #{endNum}
+	</select>
+	<!-- 统计查询条件 -->
+	<sql id="queryStatistic">
+		where nvl(t.ISDELETE,0) <![CDATA[<]]> <![CDATA[>]]> 1
+		<!-- 年份 -->
+		<if test="year!=null and year !='' and year!=0">
+			and t.year =#{year}
+		</if>
+		<!-- 核查期数 -->
+		<if test="checkperiod!=null and checkperiod !='' and checkperiod!=0">
+			and t.checkperiod =#{checkperiod}
+		</if>
+		<!-- 下发期数 -->
+		<if test="period!=null and period !='' and period!=0">
+			and t.period =#{period}
+		</if>
+		<!-- 市级 -->
+		<if test="selectCity!=null and selectCity!='' and selectCity!=0">
+			and t.city=#{selectCity}
+		</if>
+		<!-- 区县 -->
+		<if test="selectCounty!=null and selectCounty!='' and selectCounty!=0">
+			and t.county=#{selectCounty}
+		</if>
+		<if test="mark!=null and mark!=''">
+        	and t.mark like '%'||#{mark}||'%' 
+        </if>
+		<!-- 图斑类型-->
+		<if test="selectType!=null and selectType!='' and selectType!=0">
+			<if test="selectType==1">
+				and t.node=10
+			</if>
+			<if test="selectType==2">
+				and t.node=1
+			</if>
+			<if test="selectType==3">
+				<if test="selectSpotSort!='' and selectSpotSort!=null and selectSpotSort!=0">
+					 and t.notnew_spotclassification=${selectSpotSort}
+				</if>
+				and t.node=11
+			</if>
+			<if test="selectType==4">
+				<if test="selectSpotType!='' and selectSpotType!=null and selectSpotType!=0">
+					 and t.legalprooftype=${selectSpotType}
+				</if>
+				<if test="selectStatus==1 or selectStatus==2">
+					and nvl(t.provinceauditispass,0)=${selectStatus}
+				</if>
+				<if test="selectStatus==3">
+					and nvl(t.provinceauditispass,0)=0
+				</if>
+				<if test="selectCityStatus==1 or selectCityStatus==2">
+					and nvl(t.cityauditispass,0)=${selectCityStatus}
+				</if>
+				<if test="selectCityStatus==3">
+					and nvl(t.cityauditispass,0)=0
+				</if>
+				and t.node in(4,6,8,10)
+			</if>
+			<if test="selectType==5">
+				<if test="selectSpotSort!='' and selectSpotSort!=null and selectSpotSort!=0">
+					 and t.notnew_spotclassification=${selectSpotSort}
+				</if>
+				<if test="selectStatus==1 or selectStatus==2">
+					and nvl(t.provinceauditispass,0)=${selectStatus}
+				</if>
+				<if test="selectStatus==3">
+					and nvl(t.provinceauditispass,0)=0
+				</if>
+				<if test="selectCityStatus==1 or selectCityStatus==2">
+					and nvl(t.cityauditispass,0)=${selectCityStatus}
+				</if>
+				<if test="selectCityStatus==3">
+					and nvl(t.cityauditispass,0)=0
+				</if>
+				and t.node in(3,5,7,9,11)
+			</if>
+		</if>
+	</sql>
+	<!-- 查询列表数据 -->
+	<select id="getSwMapspots"  resultType="SwMapspot">
+		select * from (select rownum rn,m.* from (select t.* , rownum num from SW_MAPSPOT t 
+		<include refid="querySwMapspot"></include>
+		order by  case when t.spotnumber  like '%-%' then  to_number(replace(t.spotnumber,'-','.')) 
+        else to_number(t.spotnumber) end 
+		) m ) n where n.rn between #{startNum} and #{endNum}
+	</select>
+	<sql id="querySwMapspot">
+		where nvl(t.ISDELETE,0)<![CDATA[<]]><![CDATA[>]]> 1
+		<!-- 标记mark -->
+		<if test="mark !=null and mark !=''">
+			and t.MARK  like  '%'||#{mark}||'%' 
+		</if>
+	    <!-- 图斑编号 -->
+		<if test="searchNumber!=null and searchNumber !='' and searchNumber!=0">
+			and t.spotnumber like '%'||#{searchNumber}||'%'
+		</if>
+		<!-- 年份 -->
+		<if test="year!=null and year !='' and year!=0">
+			and t.year =#{year}
+		</if>
+		<!-- 期数 -->
+		<if test="period!=null and period !='' and period!=0">
+			and t.checkperiod =#{period}
+		</if>
+		<!-- 待办 -->
+   	    <!-- 市 -->
+	    <if test="isDaiban==1 and organizationGrade !=null and organizationGrade ==1">
+	    	and t.node!=1
+			<if test="progressSelect!=null">and t.county=#{progressSelect}</if>
+			<!-- 待处理 -->
+			<if test="processState==1">and t.node in(6,7) and iscityaudit is null</if>
+			<!-- 已处理 -->
+			<if test="processState==2 and passState==1"> <!-- and t.node>=6 --> and t.cityauditispass=1</if>
+			<if test="processState==2 and passState==2"> <!-- and t.node>=6 --> and t.cityauditispass=2</if>
+			<if test="processState==2 and passState==0"> <!-- and t.node>=6 --> and t.cityauditispass in(1,2)</if>
+			<!-- 合法和非新增 -->
+			<if test="juzhengType!=0">
+			<!-- 	and t.node=#{juzhengType} -->
+				<if test="juzhengType==6 and spotType==0">and nvl(t.legalprooftype,0) <![CDATA[<]]><![CDATA[>]]> 0</if>
+				<if test="juzhengType==7 and spotType==0">and nvl(t.notnew_spotclassification,0) <![CDATA[<]]><![CDATA[>]]> 0</if>
+				<if test="juzhengType==6 and spotType!=0">and t.legalprooftype=${spotType}</if>
+				<if test="juzhengType==7 and spotType!=0">and t.notnew_spotclassification=${spotType}</if>
+			</if>
+   	    </if>
+		<!-- 省 -->
+		<if test="isDaiban==1 and organizationGrade !=null and organizationGrade ==2">
+			and t.node!=1
+			<if test="progressSelect!=null">and t.city=#{progressSelect}</if>
+			<if test="countySelect!=null">and t.county=#{countySelect}</if>
+			<!-- 待办理图斑 -->
+			<if test="processState==1">and t.node in(8,9) and provinceauditispass is null</if>
+			<!-- 已处理图斑 -->
+			<if test="processState==2 and passState==1">and t.provinceauditispass=1 and t.cityauditispass=1</if>
+			<if test="processState==2 and passState==2">and t.provinceauditispass=2 and t.cityauditispass=1</if>
+			<if test="processState==2 and passState==0">and t.provinceauditispass in(1,2) and t.cityauditispass=1</if>
+			<!-- 合法和非新增 -->
+			<if test="juzhengType!=0">
+				<if test="juzhengType==6 and spotType==0">and nvl(t.legalprooftype,0) <![CDATA[<]]> <![CDATA[>]]> 0 </if>
+				<if test="juzhengType==7 and spotType==0">and nvl(t.notnew_spotclassification,0) <![CDATA[<]]> <![CDATA[>]]> 0 </if>
+				<if test="juzhengType==6 and spotType!=0">and t.legalprooftype=${spotType}</if>
+				<if test="juzhengType==7 and spotType!=0">and t.notnew_spotclassification=${spotType}</if>
+			</if>
+			<!-- <if test="juzhengType==0">and t.node in(8,9)</if> -->
+		</if>
+		<!-- 已办 -->
+		<!-- 市 -->
+		<if test="isDaiban==2 and organizationGrade !=null and organizationGrade ==1">
+			<if test="loginRegionId!=null">and t.city=#{loginRegionId}</if>
+			<if test="countySelect!=null">and t.county=#{countySelect}</if>
+			<if test="juzhengType!=0">
+				and t.node=#{juzhengType}
+				<if test="juzhengType==10 and spotType==0">and nvl(t.legalprooftype,0) <![CDATA[<]]> <![CDATA[>]]> 0 </if>
+				<if test="juzhengType==11 and spotType==0">and nvl(t.notnew_spotclassification,0) <![CDATA[<]]> <![CDATA[>]]> 0 </if>
+				<if test="juzhengType==10 and spotType!=0">and t.legalprooftype=${spotType}</if>
+				<if test="juzhengType==11 and spotType!=0">and t.notnew_spotclassification=${spotType}</if>
+			</if>
+			<if test="juzhengType==0">and t.node in(1,10,11)</if>
+		</if>
+		<!-- 省级 -->
+		<if test="isDaiban==2 and organizationGrade !=null and organizationGrade ==2">
+			<if test="loginRegionId!=null">and t.province=#{loginRegionId}</if>
+			<if test="countySelect!=null">and t.county=#{countySelect}</if> 
+			<if test="citySelect!=null">and t.city=#{citySelect}</if>
+			<if test="juzhengType!=0">
+				and t.node=#{juzhengType}
+				<if test="juzhengType==10 and spotType==0">and nvl(t.legalprooftype,0) <![CDATA[<]]> <![CDATA[>]]> 0 </if>
+				<if test="juzhengType==11 and spotType==0">and nvl(t.notnew_spotclassification,0) <![CDATA[<]]> <![CDATA[>]]> 0 </if>
+				<if test="juzhengType==10 and spotType!=0">and t.legalprooftype=${spotType}</if>
+				<if test="juzhengType==11 and spotType!=0">and t.notnew_spotclassification=${spotType}</if>
+			</if>
+			<if test="juzhengType==0">and t.node in(1,10,11)</if>
+		</if>
+	</sql>
+</mapper>
+  

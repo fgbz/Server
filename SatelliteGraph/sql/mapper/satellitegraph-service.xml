@@ -1,0 +1,688 @@
+<?xml version="1.0" encoding="UTF-8" ?>  
+<!DOCTYPE mapper  
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"  
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="satellitegraphservice">
+	<!-- 自定义返回MapSpot2016对象
+	<resultMap type="phalaenopsis.satellitegraph.entity.MapSpot2016" id="mapSpot2016">
+		<result column="LegalProofType" property="LegalProofType" javaType = "int" jdbcType = "NUMERIC"/>
+		<result column="His_IsNestedSuccess" property="His_IsNestedSuccess" javaType = “double” jdbcType = “NUMERIC”/>
+		<result column="His_IsConfirmPlanning" property="His_IsConfirmPlanning" javaType = “double” jdbcType = “NUMERIC”/>
+	</resultMap>  -->
+	<!-- queryList  -->
+	<select id="queryListForMobile" resultType="phalaenopsis.satellitegraph.entity.MapSpot2016">
+		${value}
+	</select>
+	
+	<select id="backlogCount"  parameterType="String" resultType="int">
+		${value} 
+	</select>
+	
+	<!-- queryCountForMobile -->
+	<select id="queryCountForMobile" resultType="phalaenopsis.satellitegraph.entity.MapSpot2016">
+		${value}
+	</select>
+	
+	<!-- queryDemolition -->
+	<select id="queryDemolition" resultType="phalaenopsis.satellitegraph.entity.MapSpot2016">
+		${value}
+	</select>
+	
+	<!-- 通过ID获取图斑信息 GetMapSpot2016ByShapeInfoIds -->
+	<select id="getMapSpot2016ByShapeInfoIds" resultType="phalaenopsis.satellitegraph.entity.MapSpot2016">
+		${value}
+	</select>
+	
+	<!-- 获取SpotSDE对象（移动端） getSpotSDE -->
+	<select id="getSpotSDE" resultType="phalaenopsis.satellitegraph.entity.SpotSDE">
+		${value}
+	</select>
+	
+	<!--获取附件  getAttachment-->
+	<select id="getAttachment" resultType="phalaenopsis.common.entity.Attachment.Attachment">
+		${value}
+	</select>
+	
+	
+	<!--获取字典数据 getAllDictionaries -->
+	<select id="getAllDictionaries" resultType="phalaenopsis.common.entity.DataDictionaryItem">
+		${value}
+	</select>
+	
+	<!-- 更新图斑（移动端）updateMapSpot -->
+	<update id="updateMapSpot" >
+		${value}
+	</update>
+	<!-- 查询图斑流程（移动端）nodeCanUpload -->
+	<select id="nodeCanUpload" resultType="phalaenopsis.satellitegraph.entity.MapSpot2016">
+		${value}
+	</select>
+	
+	<!--保存图斑（移动端）  saveMapSpot-->
+	<select id="saveMapSpotForMobile" resultType="phalaenopsis.satellitegraph.entity.MapSpot2016">
+		${value}
+	</select>
+	<!--获取单个图斑by图斑号(移动端) getSpotBySpotID -->
+	<select id="getSpotBySpotID" resultType="phalaenopsis.satellitegraph.entity.MapSpot2016">
+		${value}
+	</select>
+	
+	<!--查询图斑号（移动端）  querySpotNumbers-->
+	<select id="querySpotNumbers" resultType="phalaenopsis.satellitegraph.entity.MapSpot2016">
+		${value}
+	</select>
+	<!-- 查询各个列表数组总数(移动端)  getTabTotal-->
+	<select id="getTabTotal" resultType="phalaenopsis.satellitegraph.entity.MapSpot2016">
+		${value}
+	</select>
+	<!-- <select id="queryCountForMobile"  parameterType="String" resultType="int">
+		${value} 
+	</select> -->
+	<select id="getDemolitionSpotNumber" resultType="phalaenopsis.satellitegraph.entity.MapSpot2016">
+		${value}
+	</select>
+	<select id="getDemolition" resultType="phalaenopsis.satellitegraph.entity.MapSpot2016">
+		${value}
+	</select>
+	
+	
+	<!-- 查询图斑基本信息(移动端) getMapSpot2016FromId-->
+	<select id="getMapSpot2016FromId"  parameterType="long">
+	    select * from SG_MAPSPOT where id=#{id}
+	</select>
+	<!-- 查询图斑列表 (移动端)oilList  -->
+	<select id="oilList"  parameterType="map">
+		select t1.*
+ from SG_MAPSPOT t1 
+left join sr_spotrelation t2 on
+t1.id=t2.spotid 
+left join sr_landreport t3 on
+t2.reportid=t3.id where t3.yichaichu=1 and t3.istemporarystorage=0 and instr(t1.SpotNumber,#{searchText})>0  
+ and instr(#{uncheck},t1.ID)=0  and instr(#{unupload},t1.ID)>0
+  and t1.county in (regionList) or t1.city in (regionList) or t1.province in (regionList)
+	</select>
+	<!-- 查询图斑列表 (移动端) OilList-->
+	<select id="OilList" resultType="phalaenopsis.satellitegraph.entity.MapSpot2016">
+		${value}
+	</select>
+	
+	
+	<!--更新实体Mapspot2016 updateMapSpot2016  -->
+	<update id="updateMapSpot2016" parameterType="phalaenopsis.satellitegraph.entity.MapSpot2016">
+        update sg_mapspot set
+		PROVINCE=#{province,jdbcType=NUMERIC},
+		CITY=#{city,jdbcType=NUMERIC},
+		COUNTY=#{county,jdbcType=NUMERIC},
+		CONSTRUCTIONACREAGE=#{constructionAcreage,jdbcType=NUMERIC},
+		ARABLEACREAGE=#{arableAcreage,jdbcType=NUMERIC},
+		INSTANCEID=#{instanceID,jdbcType=VARCHAR},
+		NODE=#{node,jdbcType=VARCHAR},
+		SPOTNUMBER=#{spotNumber,jdbcType=VARCHAR},
+		LEGALPROOFTYPE=#{legalProofType,jdbcType=NUMERIC},
+		HIS_ISNESTEDSUCCESS=#{hisIsNestedSuccess,jdbcType=NUMERIC},
+		HIS_ISCONFIRMPLANNING=#{hisIsConfirmPlanning,jdbcType=NUMERIC},
+		HIS_APPROVALLEVEL=#{hisApprovalLevel,jdbcType=VARCHAR},
+		HIS_APPROVALNUMBER=#{hisApprovalNumber,jdbcType=VARCHAR},
+		HIS_APPROVALTIME=#{hisApprovalTime,jdbcType=DATE},
+		HIS_APPROVALAREA=#{hisApprovalArea,jdbcType=NUMERIC},
+		HIS_PROVINCIALAUDIT=#{hisProvincialAudit,jdbcType=NUMERIC},
+		HIS_REMARKS=#{hisRemarks,jdbcType=VARCHAR},
+		MAJ_APPROVALLEVEL=#{majApprovalLevel,jdbcType=VARCHAR},
+		MAJ_APPROVALNUMBER=#{majApprovalNumber,jdbcType=VARCHAR},
+		MAJ_APPROVALTIME=#{majApprovalTime,jdbcType=DATE},
+		MAJ_APPROVALAREA=#{majApprovalArea,jdbcType=NUMERIC},
+		MAJ_REMARKS=#{majRemarks,jdbcType=VARCHAR},
+		OIL_ISSUEDNUMBER=#{oilIssuedNumber,jdbcType=VARCHAR},
+		OIL_ISSUEDTIME=#{oilIssuedTime,jdbcType=DATE},
+		OIL_PROJECTNAME=#{oilProjectName,jdbcType=VARCHAR},
+		OIL_REMARKS=#{oilRemarks,jdbcType=VARCHAR},
+		<!-- ZJG_ISNESTEDSUCCESS=#{}, -->
+		ZJG_PROJECTNAME=#{zJGProjectName,jdbcType=VARCHAR},
+		ZJG_PROJECTNUMBER=#{zJGProjectNumber,jdbcType=VARCHAR},
+		ZJG_NEWBLOCKNAME=#{zJGNewBlockName,jdbcType=VARCHAR},
+		ZJG_NEWBLOCKAREA=#{zJGNewBlockArea,jdbcType=NUMERIC},
+		ZJG_REMARKS=#{zJGRemarks,jdbcType=VARCHAR},
+		OTHER_SPOTTYPE=#{otherSpotType,jdbcType=NUMERIC},
+		OTHER_PROJECTNAME=#{otherProjectName,jdbcType=VARCHAR },
+		OTHER_APPROVALLEVEL=#{otherApprovalLevel,jdbcType=VARCHAR},
+		OTHER_APPROVALNUMBER=#{otherApprovalNumber,jdbcType=VARCHAR},
+		OTHER_APPROVALTIME=#{otherApprovalTime,jdbcType=DATE},
+		OTHER_APPROVALAREA=#{otherApprovalArea,jdbcType=NUMERIC},
+		OTHER_REMARKS=#{otherRemarks,jdbcType=VARCHAR},
+		NOTNEW_SPOTCLASSIFICATION=#{notNewSpotClassification,jdbcType=NUMERIC},
+		NOTNEW_REMARKS=#{notNewRemarks,jdbcType=VARCHAR},
+		YEAR=#{year,jdbcType=NUMERIC},
+		HASCUT=#{hasCut,jdbcType=NUMERIC},
+		SOURCETYPE=#{sourceType,jdbcType=NUMERIC},
+		DISTRICTCOUNTY=#{districtCounty,jdbcType=NUMERIC},
+		MAJ_PROJECTNAME=#{majProjectName,jdbcType=VARCHAR},
+		COUNTYNAME=#{countyName,jdbcType=VARCHAR},
+		SPOTTYPE=#{spotType,jdbcType=VARCHAR},
+		TZ=#{tZ,jdbcType=VARCHAR},
+		BEFORETIME=#{beforeTime,jdbcType=VARCHAR},
+		AFTERTIME=#{afterTime,jdbcType=VARCHAR},
+		COORDINATE_X=#{coordinateX,jdbcType=NUMERIC},
+		COORDINATE_Y=#{coordinateY,jdbcType=NUMERIC},
+		SPOTAREA=#{spotArea,jdbcType=NUMERIC},
+		CHANGEDLANDTYPE=#{changedLandType,jdbcType=VARCHAR},
+		CHANGEDRANGE=#{changedRange,jdbcType=VARCHAR},
+		NOTCHANGEDLANDTYPE=#{notChangedLandType,jdbcType=VARCHAR},
+		REMARKS=#{remarks,jdbcType=VARCHAR},
+		DISTRICTCOUNTYNAME=#{districtCountyName,jdbcType=VARCHAR},
+		HIS_CONFORMAREA=#{hisConformArea,jdbcType=NUMERIC},
+		HIS_NOTCONFORMAREA=#{hisNotConformArea,jdbcType=NUMERIC},
+		MAYBENEWSOURCE=#{maybeNewSource,jdbcType=NUMERIC},
+		HIS_APPROVALNAME=#{hisApprovalName,jdbcType=VARCHAR},
+		MAJ_APPROVALNAME=#{majApprovalName,jdbcType=VARCHAR},
+		OTHER_APPROVALNAME=#{otherApprovalName,jdbcType=VARCHAR},
+		LASTUPDATE=#{LastUpdate,jdbcType=DATE},
+		ISFILLREPORT=#{isFillReport,jdbcType=NUMERIC}
+		<!-- SPOTKIND=#{} -->
+		where ID=#{id}  
+	</update>
+	
+	<!--保存实体(WFVerInstance) saveNewWFInstance  -->
+	<insert id="saveNewWFInstance" parameterType="phalaenopsis.satellitegraph.entity.WFVerInstance">
+	    insert into wf_instance(INSTANCEID,MAPID,NODEID,STATE,SEQUENCEPTR,INSTANCEDATA,FLOWDATA,ROUTE)
+	    values(#{InstanceID},#{MapID},#{NodeID},#{State},#{SequencePtr},#{InstanceData},#{FlowData},#{Route})
+	</insert>
+	<!--保存实体(WFVerHistory) saveNewWFVerHistory  -->
+	<insert id="saveNewWFVerHistory" parameterType="phalaenopsis.satellitegraph.entity.WFVerHistory">
+	    insert into wf_history(ID,INSTANCEID,NODEID,SEQUENCE)
+	    values(#{ID},#{InstanceID},#{NodeID},#{Sequence})
+	</insert>
+	
+	
+	<!--保存实体(AuditSpot)    saveAuditSpot  -->
+	<insert id="saveAuditSpot" parameterType="phalaenopsis.satellitegraph.entity.AuditSpot">
+		insert into sg_auditspot(ID,CITYAUDITISPASS,CITYAUDITREMARKS,CITYAUDITTIME,CITYAUDITPERSONNAME,PROVINCEAUDITISPASS,
+		PROVINCEAUDITREMARKS,PROVINCEAUDITTIME,PROVINCEAUDITPERSONNAME,MAPSPOTID,ISCITYAUDIT,CITYAUDITPERSONID,PROVINCEAUDITPERSONID)
+		values(#{id},#{cityAuditIsPass},#{cityAuditRemarks},#{cityAuditTime},#{cityAuditPersonName},#{provinceAuditIsPass},#{provinceAuditRemarks},#{provinceAuditTime},#{provinceAuditPersonName},#{mapSpotId},#{isCityAudit},#{cityAuditPersonID},#{provinceAuditPersonID})
+	</insert>
+	
+	<!--保存克隆的实体(Mapspot2016) saveNewSpot  -->
+	<insert id="saveNewSpot" parameterType="phalaenopsis.satellitegraph.entity.MapSpot2016">
+		insert into sg_mapspot(ID,SPOTNUMBER,INSTANCEID,SPOTAREA,CONSTRUCTIONACREAGE,HIS_ISCONFIRMPLANNING)	
+		values(#{id},#{spotNumber},#{instanceID},#{spotArea},#{constructionAcreage},#{his_IsConfirmPlanning})
+	</insert>
+	
+	<!--流程历史 queryWFVerInstanceHistorys -->
+	<select id="queryWFVerInstanceHistorys"  resultType="phalaenopsis.satellitegraph.entity.WFVerHistory">
+		select * from wf_history 
+	</select>
+	
+	<!--获取流程实例对象集合 queryWFVerInstance  -->
+	<select id="queryWFVerInstance"  resultType="phalaenopsis.satellitegraph.entity.WFVerInstance">
+		select * from wf_instance 
+	</select>
+	
+	<!--规划分析  -->
+	<select id="queryMapSpot2016"  resultType="phalaenopsis.satellitegraph.entity.MapSpot2016">
+		select * from sg_mapspot 
+	</select>
+	
+	<!-- 保存spotlog saveSpotLog-->
+	<insert id="saveSpotLog" parameterType="phalaenopsis.satellitegraph.entity.SpotLog">
+		insert into sg_spotlog (ID,CREATETIME,NOTE,SPOTLOGTYPE,MAPSPOTID,USERID)	
+		values(#{ID},#{CreateTime},#{Note},#{SpotLogType},#{MapSpotId},#{UserID})
+	</insert>
+	
+	<!--保存市级审核信息  saveAuditInfo-->
+	<insert id="saveAuditInfo" parameterType="phalaenopsis.satellitegraph.entity.AuditSpot">
+		insert into sg_auditspot
+		(ID,CITYAUDITISPASS,CITYAUDITREMARKS,
+		CITYAUDITTIME,CITYAUDITPERSONNAME,PROVINCEAUDITISPASS,
+		PROVINCEAUDITREMARKS,PROVINCEAUDITTIME,PROVINCEAUDITPERSONNAME,
+		MAPSPOTID,ISCITYAUDIT,CITYAUDITPERSONID,PROVINCEAUDITPERSONID)
+		values(
+		#{id,jdbcType=NUMERIC},
+		#{cityAuditIsPass,jdbcType=NUMERIC},
+		#{cityAuditRemarks,jdbcType=VARCHAR},
+		#{cityAuditTime,jdbcType=DATE},
+		#{cityAuditPersonName,jdbcType=VARCHAR},
+		#{provinceAuditIsPass,jdbcType=NUMERIC},
+		#{provinceAuditRemarks,jdbcType=VARCHAR},
+		#{provinceAuditTime,jdbcType=DATE},
+		#{provinceAuditPersonName,jdbcType=VARCHAR},
+		#{mapSpotId,jdbcType=NUMERIC},
+		#{isCityAudit,jdbcType=NUMERIC},
+		#{cityAuditPersonID,jdbcType=VARCHAR},
+		#{provinceAuditPersonID,jdbcType=VARCHAR})
+	</insert>
+
+	<!-- 保存审核信息 -->
+	<update id="updateAuditSpot" parameterType="phalaenopsis.satellitegraph.entity.AuditSpot">
+			update sg_auditspot set
+	CITYAUDITISPASS = #{cityAuditIsPass,jdbcType=NUMERIC},
+	CITYAUDITREMARKS = #{cityAuditRemarks,jdbcType=VARCHAR},
+	CITYAUDITTIME = #{cityAuditTime,jdbcType=DATE},
+	CITYAUDITPERSONNAME = #{cityAuditPersonName,jdbcType=VARCHAR},
+	PROVINCEAUDITISPASS = #{provinceAuditIsPass,jdbcType=NUMERIC},
+	PROVINCEAUDITREMARKS = #{provinceAuditRemarks,jdbcType=VARCHAR},
+	PROVINCEAUDITTIME = #{provinceAuditTime,jdbcType=DATE},
+	PROVINCEAUDITPERSONNAME = #{provinceAuditPersonName,jdbcType=VARCHAR},
+	MAPSPOTID = #{mapSpotId,jdbcType=NUMERIC},
+	ISCITYAUDIT = #{isCityAudit,jdbcType=NUMERIC},
+	CITYAUDITPERSONID = #{cityAuditPersonID,jdbcType=VARCHAR},
+	PROVINCEAUDITPERSONID = #{provinceAuditPersonID,jdbcType=VARCHAR}
+	where ID=#{id}
+	</update>
+	
+	<!-- 查询MapSpot2016对象-->
+	
+	<select id="getMapSpot2016" parameterType="int"  resultType="phalaenopsis.satellitegraph.entity.MapSpot2016">
+		select * from SG_MAPSPOT 
+	</select>
+	
+	<resultMap type="phalaenopsis.satellitegraph.entity.MapSpot2016" id="MapSpot2016">
+		<result column="ID" property="id" jdbcType="NUMERIC"/>
+		<result column="PROVINCE" property="province" jdbcType="NUMERIC"/>
+		<result column="CITY" property="city" jdbcType="NUMERIC"/>
+		<result column="COUNTY" property="county" jdbcType="NUMERIC"/>
+		<result column="CONSTRUCTIONACREAGE" property="constructionAcreage" jdbcType="NUMERIC"/>
+		<result column="ARABLEACREAGE" property="arableAcreage" jdbcType="NUMERIC"/>
+		<result column="INSTANCEID" property="instanceID" jdbcType="VARCHAR"/>
+		<result column="NODE" property="node" jdbcType="VARCHAR"/>
+		<result column="SPOTNUMBER" property="spotNumber" jdbcType="VARCHAR"/>
+		<result column="LEGALPROOFTYPE" property="legalProofType" jdbcType="NUMERIC"/>
+		<result column="HIS_ISNESTEDSUCCESS" property="hisIsNestedSuccess" jdbcType="NUMERIC"/>
+		<result column="HIS_ISCONFIRMPLANNING" property="hisIsConfirmPlanning" jdbcType="NUMERIC"/>
+		<result column="HIS_APPROVALLEVEL" property="hisApprovalLevel" jdbcType="VARCHAR"/>
+		<result column="HIS_APPROVALNUMBER" property="hisApprovalNumber" jdbcType="VARCHAR"/>
+		<result column="HIS_APPROVALTIME" property="hisApprovalTime" jdbcType="DATE"/>
+		<result column="HIS_APPROVALAREA" property="hisApprovalArea" jdbcType="NUMERIC"/>
+		<result column="HIS_PROVINCIALAUDIT" property="hisProvincialAudit" jdbcType="NUMERIC"/>
+		<result column="HIS_REMARKS" property="hisRemarks" jdbcType="VARCHAR"/>
+		<result column="MAJ_APPROVALLEVEL" property="majApprovalLevel" jdbcType="VARCHAR"/>
+		<result column="MAJ_APPROVALNUMBER" property="majApprovalNumber" jdbcType="VARCHAR"/>
+		<result column="MAJ_APPROVALTIME" property="majApprovalTime" jdbcType="DATE"/>
+		<result column="MAJ_APPROVALAREA" property="majApprovalArea" jdbcType="NUMERIC"/>
+		<result column="MAJ_REMARKS" property="majRemarks" jdbcType="VARCHAR"/>
+		<result column="OIL_ISSUEDNUMBER" property="oilIssuedNumber" jdbcType="VARCHAR"/>
+		<result column="OIL_ISSUEDTIME" property="oilIssuedTime" jdbcType="DATE"/>
+		<result column="OIL_PROJECTNAME" property="oilProjectName" jdbcType="VARCHAR"/>
+		<result column="OIL_REMARKS" property="oilRemarks" jdbcType="VARCHAR"/>
+		<result column="ZJG_PROJECTNAME" property="zJGProjectName" jdbcType="VARCHAR"/>
+		<result column="ZJG_PROJECTNUMBER" property="zJGProjectNumber" jdbcType="VARCHAR"/>
+		<result column="ZJG_NEWBLOCKNAME" property="zJGNewBlockName" jdbcType="VARCHAR"/>
+		<result column="ZJG_NEWBLOCKAREA" property="zJGNewBlockArea" jdbcType="NUMERIC"/>
+		<result column="ZJG_REMARKS" property="zJGRemarks" jdbcType="VARCHAR"/>
+		<result column="OTHER_SPOTTYPE" property="otherSpotType" jdbcType="NUMERIC"/>
+		<result column="OTHER_PROJECTNAME" property="otherProjectName" jdbcType="VARCHAR"/>
+		<result column="OTHER_APPROVALLEVEL" property="otherApprovalLevel" jdbcType="VARCHAR"/>
+		<result column="OTHER_APPROVALNUMBER" property="otherApprovalNumber" jdbcType="VARCHAR"/>
+		<result column="OTHER_APPROVALTIME" property="otherApprovalTime" jdbcType="DATE"/>
+		<result column="OTHER_APPROVALAREA" property="otherApprovalArea" jdbcType="NUMERIC"/>
+		<result column="OTHER_REMARKS" property="otherRemarks" jdbcType="VARCHAR"/>
+		<result column="NOTNEW_SPOTCLASSIFICATION" property="notNewSpotClassification" jdbcType="NUMERIC"/>
+		<result column="NOTNEW_REMARKS" property="notNew_Remarks" jdbcType="VARCHAR"/>
+		<result column="YEAR" property="year" jdbcType="NUMERIC"/>
+		<result column="HASCUT" property="hasCut" jdbcType="NUMERIC"/>
+		<result column="SOURCETYPE" property="sourceType" jdbcType="NUMERIC"/>
+		<result column="DISTRICTCOUNTY" property="districtCounty" jdbcType="NUMERIC"/>
+		<result column="MAJ_PROJECTNAME" property="majProjectName" jdbcType="VARCHAR"/>
+		<result column="COUNTYNAME" property="countyName" jdbcType="VARCHAR"/>
+		<result column="SPOTTYPE" property="spotType" jdbcType="VARCHAR"/>
+		<result column="TZ" property="tZ" jdbcType="VARCHAR"/>
+		<result column="BEFORETIME" property="beforeTime" jdbcType="VARCHAR"/>
+		<result column="AFTERTIME" property="afterTime" jdbcType="VARCHAR"/>
+		<result column="COORDINATE_X" property="coordinateX" jdbcType="NUMERIC"/>
+		<result column="COORDINATE_Y" property="coordinateY" jdbcType="NUMERIC"/>
+		<result column="SPOTAREA" property="spotArea" jdbcType="NUMERIC"/>
+		<result column="CHANGEDLANDTYPE" property="changedLandType" jdbcType="VARCHAR"/>
+		<result column="CHANGEDRANGE" property="changedRange" jdbcType="VARCHAR"/>
+		<result column="NOTCHANGEDLANDTYPE" property="notChangedLandType" jdbcType="VARCHAR"/>
+		<result column="REMARKS" property="remarks" jdbcType="VARCHAR"/>
+		<result column="DISTRICTCOUNTYNAME" property="districtCountyName" jdbcType="VARCHAR"/>
+		<result column="HIS_CONFORMAREA" property="hisConformArea" jdbcType="NUMERIC"/>
+		<result column="HIS_NOTCONFORMAREA" property="hisNotConformArea" jdbcType="NUMERIC"/>
+		<result column="MAYBENEWSOURCE" property="maybeNewSource" jdbcType="NUMERIC"/>
+		<result column="HIS_APPROVALNAME" property="hisApprovalName" jdbcType="VARCHAR"/>
+		<result column="MAJ_APPROVALNAME" property="majApprovalName" jdbcType="VARCHAR"/>
+		<result column="OTHER_APPROVALNAME" property="otherApprovalName" jdbcType="VARCHAR"/>
+		<result column="LASTUPDATE" property="lastUpdate" jdbcType="DATE"/>
+		<result column="ISFILLREPORT" property="isFillReport" jdbcType="NUMERIC"/>
+		<result column="SPOTKIND" property="spotKind" jdbcType="VARCHAR"/>
+		
+		<association property="theAuditSpot" javaType="phalaenopsis.satellitegraph.entity.AuditSpot">
+			<id column="SG_AUDITSPOT_id" property="id" jdbcType="NUMERIC"/>
+			<id column="CITYAUDITISPASS" property="cityAuditIsPass" jdbcType="NUMERIC"/>
+			<id column="CITYAUDITREMARKS" property="cityAuditRemarks" jdbcType="VARCHAR"/>
+			<id column="CITYAUDITTIME" property="cityAuditTime" jdbcType="DATE"/>
+			<id column="CITYAUDITPERSONNAME" property="cityAuditPersonName" jdbcType="VARCHAR"/>
+			<id column="PROVINCEAUDITISPASS" property="provinceAuditIsPass" jdbcType="NUMERIC"/>
+			<id column="PROVINCEAUDITREMARKS" property="provinceAuditRemarks" jdbcType="VARCHAR"/>
+			<id column="PROVINCEAUDITTIME" property="provinceAuditTime" jdbcType="DATE"/>
+			<id column="PROVINCEAUDITPERSONNAME" property="provinceAuditPersonName" jdbcType="VARCHAR"/>
+			<id column="MAPSPOTID" property="mapSpotId" jdbcType="NUMERIC"/>
+			<id column="ISCITYAUDIT" property="isCityAudit" jdbcType="NUMERIC"/>
+			<id column="CITYAUDITPERSONID" property="cityAuditPersonID" jdbcType="VARCHAR"/>
+			<id column="PROVINCEAUDITPERSONID" property="provinceAuditPersonID" jdbcType="VARCHAR"/>
+		</association>
+	</resultMap>
+	  
+	<!-- 获取满足条件下的图斑总数 -->
+	<select id="getMapSpotsCount" parameterType="map"
+		resultType="int">
+		select count(1)
+		from sg_mapspot d
+		<if test="SearchText != null and SearchText != ''">
+			where d.spotNumber like CONCAT('%',CONCAT(#{SearchText},'%')) 
+		</if> 
+	</select>
+	<!-- 查询图斑列表 ，分页数据 -->
+	<select id="getMapSpotList" parameterType="map"
+		resultType="phalaenopsis.satellitegraph.entity.MapSpot">
+		select * from sg_mapspot
+		<if test="SearchText != null and SearchText != ''">
+			where d.spotNumber like CONCAT('%',CONCAT(#{SearchText},'%')) 
+		</if> 
+		 where rn between #{startNum}  and  #{endNum}
+	</select>
+
+	<!--获取图斑详细信息  -->
+	<select id="getMapSpotDetail" resultType="phalaenopsis.satellitegraph.entity.MapSpot">
+		select * from sg_mapspot  where year=#{year} and id=#{id}
+	</select>
+	<!-- 保存图斑信息   -->
+	<update id="saveMapSpot" parameterType="phalaenopsis.satellitegraph.entity.MapSpot">
+		update sg_mapspot set
+		province=#{province},city=#{city},county=#{county},countyName=#{countyName,jdbcType=VARCHAR},
+		districtCounty=#{districtCounty},districtCountyName=#{districtCountyName,jdbcType=VARCHAR},
+		spotType=#{spotType,jdbcType=VARCHAR},tZ=#{tZ,jdbcType=VARCHAR},
+		beforeTime=#{beforeTime,jdbcType=VARCHAR},
+		afterTime=#{afterTime,jdbcType=VARCHAR},
+		coordinate_X=#{coordinateX,jdbcType=NUMERIC,javaType=double},
+		coordinate_Y=#{coordinateY,jdbcType=NUMERIC,javaType=double},
+		spotArea=#{spotArea,jdbcType=NUMERIC,javaType=double},changedLandType=#{changedLandType,jdbcType=VARCHAR},
+		changedRange=#{changedRange,jdbcType=VARCHAR},notChangedLandType=#{notChangedLandType,jdbcType=VARCHAR},
+		remarks=#{remarks,jdbcType=VARCHAR},
+		constructionAcreage=#{constructionAcreage,jdbcType=NUMERIC,javaType=double},
+		arableAcreage=#{arableAcreage,jdbcType=NUMERIC,javaType=double},
+		spotNumber=#{spotNumber,jdbcType=VARCHAR},
+		year=#{year},hasCut=#{hasCut,jdbcType=NUMERIC,javaType=boolean}
+		where id=#{id}
+	</update>
+	<!-- 判断图斑号是否存在 isSpotExists-->
+	<select id="isSpotExists" parameterType="map"
+	   resultType="String">
+		select spotnumber from sg_mapspot  where year=#{year} and districtcounty=#{regionID}
+	</select>
+	
+	<select id="getYears" resultType="Integer">
+		select year from sg_mapspot  where year is not null  group by year order by year desc
+	</select>
+
+	<select id="getRemoteSpotCount" parameterType="map"
+		resultType="phalaenopsis.satellitegraph.entity.StaticItem">
+		select r.RegionName as Key,nvl(m.Count,0) as Value from ss_region r
+		left join
+		( select ${Code} as Code,count(*) as Count from
+		sg_mapspot
+		where year =
+		#{year}
+		group by ${Code} ) m on
+		r.RegionID = m.Code
+		where 1=1 
+		<if test="OrgGrade ==3"> <!-- 省 -->
+			and r.Rank = 1
+		</if>
+
+		<if test="OrgGrade ==2">
+			and  
+			<if test="regiontype=='管理区'">
+				r.ParentID =
+				#{cityRegion} and r.Rank = 2 and
+				(r.RegionType = 1 or
+				r.RegionType
+				= 2)
+			</if>
+			<if test="regiontype!='管理区'">
+				r.ParentID = #{cityRegion} and r.Rank = 2
+				and
+				(r.RegionType = 0 or r.RegionType
+				= 2)
+			</if>
+		</if>
+		<if test="OrgGrade ==1">
+			and r.Rank = 2 and
+			r.RegionID in
+			<foreach item="item" index="index" collection="regions" open="("
+				separator="," close=")"> #{item} </foreach>
+		</if>
+	</select>
+
+	<select id="getIllegalSpotCount" parameterType="map"
+		resultType="phalaenopsis.satellitegraph.entity.StaticItem">
+		select r.RegionName as Key,nvl(m.Count,0) as Value from ss_region r
+		left
+		join
+		( select ${Code} as Code,count(*) as Count from
+			sg_mapspot
+			o where o.year
+			= #{year}
+			and o.node = #{node} group by ${Code}
+			) m on
+			r.RegionID =
+			m.Code 
+		<if test="OrgGrade ==3">
+			 where r.Rank = 1
+		</if>
+		<if test="OrgGrade ==2">
+			<if test="regiontype=='管理区'">
+				where r.ParentID = #{cityRegion}
+				and
+				r.Rank =
+				2 and
+				(r.RegionType = 1 or r.RegionType = 2)
+			</if>
+			<if test="regiontype!='管理区'">
+				where r.ParentID =
+				#{cityRegion} and r.Rank = 2 and
+				(r.RegionType
+				= 0 or r.RegionType =
+				2)
+			</if>
+		</if>
+		<if test="OrgGrade ==1">
+			where r.Rank =
+			2 and
+			r.RegionID in
+			<foreach item="item" index="index" collection="regions" open="("
+				separator="," close=")"> #{item} </foreach>
+		</if>
+	</select>
+
+	<select id="getIllegalSpotPercent" parameterType="map"
+		resultType="phalaenopsis.satellitegraph.entity.StaticItem">
+		select s.regionname as Key, cast(sum(case when node=#{node} 
+		then
+		1 else 0 end )/count(*) as number(5,4)) as Value from sg_mapspot t inner
+		join
+		ss_region
+		s
+		<if test="OrgGrade ==3">
+			on s.regionid=city where 1=1 and year=#{year}
+			and city in
+			<foreach item="item" index="index" collection="parentids"
+				open="(" separator="," close=")"> #{item} </foreach>
+			group by city,s.regionname
+		</if>
+		<if test="OrgGrade ==2">
+			<if test="regiontype=='管理区'">
+				on s.regionid=county
+				where 1=1 and year=#{year} and county
+				in(
+				select
+				t.regionid from ss_region t where t.parentid =
+				#{cityRegion} and (
+				t.regiontype = 1 or t.regiontype = 2 )
+				) group by
+				county,s.regionname
+			</if>
+			<if test="regiontype!='管理区'">
+				on s.regionid=districtcounty
+				where 1=1 and year=#{year}
+				and districtcounty in(
+				select
+				t.regionid from ss_region t where
+				t.parentid = #{cityRegion} and (
+				t.regiontype = 0 or t.regiontype = 2
+				)
+				) group by districtcounty,s.regionname
+			</if>
+		</if>
+		<if test="OrgGrade ==1">
+			on s.regionid=county where 1=1 and year=#{year}
+			and county in
+			<foreach item="item" index="index" collection="regionIds"
+				open="(" separator="," close=")"> #{item} </foreach>
+			group by county,s.regionname
+		</if>
+	</select>
+	
+	<select id="getBuildSpotCount" parameterType="map" resultType="int">
+		select count(1) from sg_mapspot where 
+			Node = #{Node} and year = #{year}
+		<if test="OrgGrade==2" >
+			and city = #{City}
+		</if>
+		<if test="OrgGrade==1">
+			and County in 
+			<foreach item="item" index="index" collection="regions" open="(" separator="," close=")">
+				#{item}
+			</foreach>
+		</if>
+		
+	</select>
+	
+	<!-- 是否已经进行过规划分析 -->
+	<select id="isPlanningAnalysis" parameterType="map" resultType="int">
+	        select count(1) from sg_mapspot where
+	          city = #{City} and legalprooftype = #{LegalProofType} and
+	          his_isconfirmplanning is not null
+	</select>
+	
+	<!-- 获取回退原因 -->
+	<select id="getSendBackReason" parameterType="map" resultType="phalaenopsis.satellitegraph.entity.OperationLog">
+	  select * from sg_log  where id =
+	   (select max(id) from sg_log where region = #{Region} and year = #{Year})
+	</select>
+
+	<!-- 查询区县级上报信息 -->
+	<select id="queryReportedCounty" parameterType="map" resultType="phalaenopsis.satellitegraph.entity.OperationLog">
+	  select * from sg_log  where id =
+	   (select max(id) from sg_log where region in
+	   <foreach collection="regions" item="item" index="index" open="("
+			separator="," close=")">
+			#{item}
+		</foreach> 
+			and year = #{year})
+	</select>
+
+	<!-- 查询市级上报信息 -->
+	<select id="queryReportedCity" parameterType="map" resultType="phalaenopsis.satellitegraph.entity.OperationLog">
+	  select * from sg_log  where id =
+	   (select max(id) from sg_log where region = #{region} and year = #{year})
+	</select>
+
+	<!-- 判断市级审核是否通过 -->
+	<select id="queryRefuseReported" parameterType="map" resultType="int">
+	  select count(*) from sg_mapspot m  left  join sg_auditspot a
+	  on m.ID=a.MapSpotId 
+	  where m.year = #{year} and m.county in
+	    <foreach collection="regions" item="item" index="index" open="("
+			separator="," close=")">
+			#{item}
+		</foreach> 
+		 and m.node in
+		<foreach collection="nodeStates" item="item" index="index" open="("
+			separator="," close=")">
+			#{item}
+		</foreach> 
+		and ( a.CityAuditIsPass is null or a.CityAuditIsPass = #{approveState})
+	  
+	</select>
+	
+	<!-- 是否已经导入图斑 -->
+	<select id="isImportMapSpot" parameterType="String" resultType="int">
+		select count(1) from sg_mapspot where year = #{year}
+	</select>
+	<!-- 区县级图斑处理进度 -->
+	<select id="queryReportDetailCounty" parameterType="map" resultType="phalaenopsis.satellitegraph.entity.ReportDetail">
+	 select r.regionid RegionId,r.regionname Name,nvl(s.未处理,0) Amount,nvl(s.Total,0) Total,null Type,null PassCount 
+     from ss_region r left join (
+     select county,sum(case when Node in ('DoubtIllegal','DoubtNotNew','ProofingLegal','ProofingNotNew','ProofingMaybeNew') then 1 else 0 end) 未处理,count(*) Total
+     from sg_mapspot where year = #{year}
+     and county in (select regionid from sys_orgregions where organizationid = #{organizationID}) 
+     and Node in ('DoubtIllegal','DoubtNotNew','ProofingLegal','ProofLegal','ReallyIllegal','ProofingNotNew','ProofNotNew','ProofingMaybeNew','ProofMaybeNew','NotNewSpot')
+     group by county) s on r.regionid=s.county
+     where r.rank=2 and r.regionid in 
+     (select regionid from sys_orgregions where organizationid = #{organizationID})
+	</select>
+	<!--市级审核进度 -->
+	<select id="queryReportDetailCity" parameterType="map" resultType="phalaenopsis.satellitegraph.entity.ReportDetail">
+		select r.regionid RegionId,r.regionname Name,nvl(s.未审核,0)
+		Amount,nvl(s.Total,0) Total,g.type Type,nvl(s.审核通过,0) PassCount
+		from ss_region r left join (
+		select m.county,sum(case when a.IsCityAudit is null then 1 else 0 end)
+		未审核,count(*) Total,
+		sum(case when a.IsCityAudit=1 and a.CityAuditIsPass=1 then 1 else 0 end) 审核通过
+		from sg_mapspot m left join sg_auditspot a on m.ID=a.MapSpotID
+		where m.year=#{year}
+		and m.county in (select regionid from sys_orgregions where organizationid = #{organizationID})
+		and m.Node in ('ProofLegalCity','ProofNotNewCity','ProofMaybeNewCity')
+		group by county)
+		s on r.regionid=s.county
+		left join(
+		select o.region,o.type from sg_log o
+		where o.id in
+		(select max(l.id) from sg_log l where year = #{year} group by l.region)) g on g.region = r.regionid
+		where r.rank=2 and r.regionid in
+		(select regionid from sys_orgregions where organizationid =#{organizationID})
+	</select>
+	<!--省级审核进度 -->
+	<select id="queryReportDetailProvince" parameterType="String" resultType="phalaenopsis.satellitegraph.entity.ReportDetail">
+	select r.regionid RegionId,r.regionname Name,nvl(s.未审核,0)Amount,nvl(s.Total,0) Total,g.type Type,null PassCount
+	from ss_region r left join (
+	select m.city,sum(case when a.ProvinceAuditIsPass is null then 1 else 0 end)未审核,count(*) Total
+	from sg_mapspot m left join sg_auditspot a on m.ID=a.MapSpotID
+	where m.year=#{year}
+	and m.Node in ('ProofLegalProvince','ProofNotNewProvince','ProofMaybeNewProvince')
+	group by city) s on r.regionid=s.city
+	left join(
+	select o.region,o.type from sg_log o
+	where o.id in
+	(select max(l.id) from sg_log l where year = #{year} group by l.region)) g on g.region = r.regionid
+	where r.rank=1
+	</select>
+
+	<!-- 查询下级工作进度树 -->
+	<select id="queryLowerTreeNodes" resultType="phalaenopsis.satellitegraph.entity.LowerTreeNode">
+	   select RegionID ,RegionName as Name from ss_region p where p.rank = 1 order by p.RegionID
+	</select>
+	<select id="queryLowerTreeLeafs" parameterType="String" resultType="phalaenopsis.satellitegraph.entity.LowerTreeLeaf">
+	select regionid,parentid,name,g.type,case when Total=0 then 100 else
+	cast((1-Amount/Total)*100 as number(3,0)) end Percent from (
+	select r.regionid RegionId,r.parentid,r.regionname Name,nvl(s.未处理,0)
+	Amount,nvl(s.Total,0) Total
+	from ss_region r left join (
+	select county,sum(case when Node in
+	('DoubtIllegal','DoubtNotNew','ProofingLegal','ProofingNotNew','ProofingMaybeNew')
+	then 1 else 0 end) 未处理,count(*) Total
+	from sg_mapspot where year = #{year}
+	and Node in
+	('DoubtIllegal','DoubtNotNew','ProofLegal','ReallyIllegal','ProofNotNew','ProofMaybeNew','NotNewSpot','ProofLegalCity','ProofNotNewCity','ProofMaybeNewCity','ProofingLegal','ProofingNotNew','ProofingMaybeNew','ProofLegalProvince','ProofNotNewProvince','ProofMaybeNewProvince')
+	group by county
+	) s on r.regionid=s.county
+	where r.rank=2
+	) t
+	left join(
+	select o.region,o.type from sg_log o
+	where o.id in
+	(select max(l.id) from sg_log l where year = #{year} group by l.region)
+	) g on g.region = regionid
+	order by parentid,regionid
+	</select>
+	
+</mapper>

@@ -1,0 +1,126 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:tx="http://www.springframework.org/schema/tx"
+       xmlns:aop="http://www.springframework.org/schema/aop"
+       xmlns:jee="http://www.springframework.org/schema/jee"
+       xsi:schemaLocation="
+        http://www.springframework.org/schema/beans
+        http://www.springframework.org/schema/beans/spring-beans-4.0.xsd
+        http://www.springframework.org/schema/tx 
+        http://www.springframework.org/schema/tx/spring-tx-4.0.xsd
+        http://www.springframework.org/schema/aop 
+        http://www.springframework.org/schema/aop/spring-aop-4.0.xsd
+        http://www.springframework.org/schema/context
+        http://www.springframework.org/schema/context/spring-context-4.0.xsd
+        http://www.springframework.org/schema/jee http://www.springframework.org/schema/jee/spring-jee-4.0.xsd">
+
+
+    <description>Spring数据源配置 </description>
+
+    <!-- 需要引入tx的命名空间 <tx:annotation-driven transaction-manager="transactionManager_mapp"
+        /> -->
+    <!--多数据源 -->
+    <bean id="dbcpm" abstract="true">
+        <property name="initialSize" value="${jdbc.dataSource.initialSize}" />
+        <property name="maxIdle" value="${jdbc.dataSource.maxIdle}" />
+        <property name="minIdle" value="${jdbc.dataSource.minIdle}" />
+        <property name="maxTotal" value="${jdbc.dataSource.maxActive}" />
+        <property name="removeAbandonedOnBorrow" value="${jdbc.dataSource.removeAbandoned}" />
+        <property name="removeAbandonedTimeout" value="${jdbc.dataSource.removeAbandonedTimeout}" />
+        <property name="maxWaitMillis" value="${jdbc.dataSource.maxWait}" />
+        <property name="validationQuery" value="${jdbc.dataSource.validationQuery}" />
+        <property name="testOnBorrow" value="${jdbc.dataSource.testOnBorrow}" />
+    </bean>
+
+
+
+    <!-- modify by liulang add destroy-method -->
+    <bean id="koteidb" parent="dbcpm"
+          class="org.apache.commons.dbcp2.BasicDataSource" destroy-method="close">
+        <property name="driverClassName" value="com.mysql.jdbc.Driver" />
+        <property name="url" value="${jdbc.kotei.url}" />
+        <property name="username" value="${jdbc.kotei.username}" />
+        <property name="password" value="${jdbc.kotei.password}" />
+        <property name="validationQuery" value="select 1 from dual" />
+    </bean>
+
+    <!-- 阿里 druid 数据库连接池 -->
+    <!--<bean id = "dataSource" class = "com.alibaba.druid.pool.DruidDataSource" destroy-method = "close" >-->
+        <!--&lt;!&ndash; 数据库基本信息配置 &ndash;&gt;-->
+        <!--<property name = "url" value = "${url}" />-->
+        <!--<property name = "username" value = "${username}" />-->
+        <!--<property name = "password" value = "${password}" />-->
+        <!--<property name = "driverClassName" value = "${driverClassName}" />-->
+        <!--<property name = "filters" value = "${filters}" />-->
+        <!--&lt;!&ndash; 最大并发连接数 &ndash;&gt;-->
+        <!--<property name = "maxActive" value = "${maxActive}" />-->
+        <!--&lt;!&ndash; 初始化连接数量 &ndash;&gt;-->
+        <!--<property name = "initialSize" value = "${initialSize}" />-->
+        <!--&lt;!&ndash; 配置获取连接等待超时的时间 &ndash;&gt;-->
+        <!--<property name = "maxWait" value = "${maxWait}" />-->
+        <!--&lt;!&ndash; 最小空闲连接数 &ndash;&gt;-->
+        <!--<property name = "minIdle" value = "${minIdle}" />-->
+        <!--&lt;!&ndash; 配置间隔多久才进行一次检测，检测需要关闭的空闲连接，单位是毫秒 &ndash;&gt;-->
+        <!--<property name = "timeBetweenEvictionRunsMillis" value ="${timeBetweenEvictionRunsMillis}" />-->
+        <!--&lt;!&ndash; 配置一个连接在池中最小生存的时间，单位是毫秒 &ndash;&gt;-->
+        <!--<property name = "minEvictableIdleTimeMillis" value ="${minEvictableIdleTimeMillis}" />-->
+        <!--<property name = "validationQuery" value = "${validationQuery}" />-->
+        <!--<property name = "testWhileIdle" value = "${testWhileIdle}" />-->
+        <!--<property name = "testOnBorrow" value = "${testOnBorrow}" />-->
+        <!--<property name = "testOnReturn" value = "${testOnReturn}" />-->
+        <!--<property name = "maxOpenPreparedStatements" value ="${maxOpenPreparedStatements}" />-->
+        <!--&lt;!&ndash; 打开 removeAbandoned 功能 &ndash;&gt;-->
+        <!--<property name = "removeAbandoned" value = "${removeAbandoned}" />-->
+        <!--&lt;!&ndash; 1800 秒，也就是 30 分钟 &ndash;&gt;-->
+        <!--<property name = "removeAbandonedTimeout" value ="${removeAbandonedTimeout}" />-->
+        <!--&lt;!&ndash; 关闭 abanded 连接时输出错误日志 &ndash;&gt;-->
+        <!--<property name = "logAbandoned" value = "${logAbandoned}" />-->
+    <!--</ bean >-->
+
+
+
+
+    <!-- 事务配置 <bean id="transactionManager_mapp" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+        <property name="dataSource"> <ref local="gmapp" /> </property> </bean> -->
+
+    <!-- 开启注解配置 -->
+    <context:annotation-config />
+
+    <!-- 扫描service层 <context:component-scan base-package="com.baby.impl.*" /> -->
+    <!-- 开启事务注解驱动 -->
+    <tx:annotation-driven />
+
+    <!-- 事务管理器 -->
+    <bean id="transactionManager"
+          class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+        <property name="dataSource" ref="koteidb" />
+    </bean>
+    <tx:advice id="txAdvice" transaction-manager="transactionManager">
+        <tx:attributes>
+            <tx:method name="save*" propagation="REQUIRED" />
+            <tx:method name="add*" propagation="REQUIRED" />
+            <tx:method name="create*" propagation="REQUIRED" />
+            <tx:method name="insert*" propagation="REQUIRED" />
+            <tx:method name="update*" propagation="REQUIRED" isolation="READ_COMMITTED"/>
+            <tx:method name="upload*" propagation="REQUIRED" />
+            <tx:method name="merge*" propagation="REQUIRED" />
+            <tx:method name="del*" propagation="REQUIRED" />
+            <tx:method name="next*" propagation="REQUIRED" />
+            <tx:method name="remove*" propagation="REQUIRED" />
+            <tx:method name="clear*" propagation="REQUIRED" />
+            <tx:method name="put*" propagation="REQUIRED" />
+            <tx:method name="use*" propagation="REQUIRED" />
+            <tx:method name="get*" propagation="REQUIRED" read-only="true" />
+            <tx:method name="load*" propagation="REQUIRED" read-only="true" />
+            <tx:method name="count*" propagation="REQUIRED" read-only="true" />
+            <tx:method name="find*" propagation="REQUIRED" read-only="true" />
+            <tx:method name="after*" propagation="REQUIRED" read-only="true" />
+            <tx:method name="list*" propagation="REQUIRED" />
+            <tx:method name="pag*" propagation="REQUIRED" />
+            <tx:method name="query*" propagation="REQUIRED" read-only="true" />
+        </tx:attributes>
+    </tx:advice>
+
+</beans>

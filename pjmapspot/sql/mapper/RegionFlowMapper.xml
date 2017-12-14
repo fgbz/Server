@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="phalaenopsis.pjmapspot.dao.PjRegionFlowDao" >
+
+	<select id="querySeq" resultType="java.lang.Long" >
+		SELECT SEQ_PJ_REGIONFLOW.NEXTVAL FROM DUAL
+	</select>
+
+	<!-- 保存或更新 -->
+	<insert id="saveOrUpdate">
+		<selectKey keyProperty="count" resultType="int" order="BEFORE">
+			SELECT count(*) AS COUNT FROM PJ_REGIONFLOW  	
+			<if test="pjMapSpotBean.regionId != null and pjMapSpotBean.regionId.size()>0 ">
+				WHERE 
+				<if test="pjMapSpotBean.year != null" >
+	               YEAR = #{pjMapSpotBean.year,jdbcType=DECIMAL}  and 
+	            </if>
+		        <foreach item="item" index="index" collection="pjMapSpotBean.regionId" open="(" separator="or" close=")">  
+					 REGION_ID in  #{item}  
+				 </foreach>   
+	   		 </if>
+		</selectKey>
+		<!-- 如果大于0则更新 -->
+		<if test="count>0">
+			update PJ_REGIONFLOW 
+	        <set >
+	       		 
+	            <if test="pjMapSpotBean.state != null" >
+	                STATE = #{pjMapSpotBean.state,jdbcType=DECIMAL},
+	            </if>
+	            <if test="pjMapSpotBean.approveInfo != null" >
+	                APPROVE_INFO = #{pjMapSpotBean.approveInfo,jdbcType=VARCHAR},
+	            </if>
+	            <if test="pjMapSpotBean.approveName != null" >
+	                APPROVE_NAME = #{pjMapSpotBean.approveName,jdbcType=VARCHAR},
+	            </if>
+	            <if test="pjMapSpotBean.year != null" >
+	                YEAR = #{pjMapSpotBean.year,jdbcType=DECIMAL},
+	            </if>
+	            	 APPROVE_TIME = sysdate
+	        </set>
+			<if test="pjMapSpotBean.regionId != null and pjMapSpotBean.regionId.size()>0 ">
+				WHERE
+		        <foreach item="item" index="index" collection="pjMapSpotBean.regionId" open="(" separator="or" close=")">  
+					 REGION_ID in  #{item}  
+				 </foreach>   
+	   		 </if>
+		</if>
+		<!-- 如果等于0则保存 -->
+		<if test="count==0">
+		<!-- <selectKey keyProperty="id" resultType="long" order="BEFORE">    
+			        SELECT SEQ_PJ_REGIONFLOW.NEXTVAL FROM DUAL
+			    </selectKey> -->
+				INSERT INTO PJ_REGIONFLOW(ID,REGION_ID,STATE,APPROVE_INFO,APPROVE_NAME,APPROVE_TIME,YEAR) 
+				SELECT SEQ_PJ_REGIONFLOW.NEXTVAL as ID,A.*
+				FROM(
+					<foreach collection="listPjMapSpotBean" item="item" index="index" separator="UNION ALL" >  
+	       			 	select #{item.regionId} as REGION_ID,
+	       			 	#{item.state} as STATE,#{item.approveInfo} as APPROVE_INFO,
+	       			 	#{item.approveName} as APPROVE_NAME,sysdate as APPROVE_TIME,#{item.year}  as YEAR
+	       			 	FROM DUAL
+	   				</foreach>  
+	   				)A
+		</if>
+		
+	</insert>
+	
+	
+	<select id="getList" parameterType="phalaenopsis.pjmapspot.entity.PjRegionflow" resultType="phalaenopsis.pjmapspot.entity.PjRegionflow" >
+	    SELECT 
+	    	t.ID AS id,
+        	t.REGION_ID AS regionId,
+        	t.STATE AS state,
+        	t.APPROVE_INFO AS approveInfo,
+        	t.APPROVE_NAME AS approveName,
+        	t.APPROVE_TIME AS approveTime,
+        	t.YEAR AS year
+	    FROM PJ_REGIONFLOW t
+	    WHERE 1 = 1 
+	    <if test="regionId != null">
+	        AND t.REGION_ID = #{regionId}
+	    </if>
+	    <if test="year != null">
+	     	AND t.YEAR = #{year}
+	    </if>
+	</select>
+	
+	<update id="updatePJMapSpotInfoState" parameterType="java.util.List" >
+        update PJ_MAPSPOT 
+        <set >
+           CITYIS_AUDIT=null
+        </set>
+        WHERE  CITY_STATE = 3 
+        <if test="regionId != null and regionId.size()>0 ">
+         	AND
+	        <foreach item="item" index="index" collection="regionId" open="(" separator="or" close=")">  
+				 COUNTY in  #{item}  
+			 </foreach>   
+   		 </if>
+    </update>
+</mapper>

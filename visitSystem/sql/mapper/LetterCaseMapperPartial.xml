@@ -1,0 +1,205 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper  
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"  
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="phalaenopsis.visitSystem.dao.LetterCaseMapperPartial">
+
+	<select id="getXfDeal" parameterType="map" resultType="XfDeals">
+		select *
+		from XF_DEALS t where t.createtime =
+		( select max(t.createtime) from
+		XF_DEALS t where t.ORGID = #{orgId} and t.registerid = #{registerId}
+		and t.audittype = 1)
+		and t.registerid = #{registerId}
+	</select>
+
+	<!-- 保存和更新信访流程详细信息 -->
+	<insert id="saveXfDeal" parameterType="XfDeals">
+		<selectKey keyProperty="count" resultType="int" order="BEFORE">
+			select count(*) from XF_DEALS where DEALID = #{dealId}
+		</selectKey>
+		<if test="count == 0">
+
+			insert into XF_DEALS
+			<trim prefix="(" suffix=")" suffixOverrides=",">
+				<if test="dealId != null">
+					DEALID,
+				</if>
+				<if test="dealAdvice != null">
+					DEALADVICE,
+				</if>
+				<if test="dealUserId != null">
+					DEALUSER_ID,
+				</if>
+				<if test="registerId != null">
+					REGISTERID,
+				</if>
+				<if test="createTime != null">
+					CREATETIME,
+				</if>
+				<if test="dealStatus != null">
+					DEALSTATUS,
+				</if>
+				<if test="organizationId != null">
+					ORGANIZATIONID,
+				</if>
+				<if test="expirDate != null">
+					EXPIRDATE,
+				</if>
+				<if test="agree != null">
+					AGREE,
+				</if>
+				<if test="auditType != null">
+					AUDITTYPE,
+				</if>
+				<if test="commit != null">
+					COMMIT,
+				</if>
+				<if test="orgId != null">
+					ORGID,
+				</if>
+				PRIORDEALID,
+			</trim>
+			<trim prefix="values (" suffix=")" suffixOverrides=",">
+				<if test="dealId != null">
+					#{dealId,jdbcType=DECIMAL},
+				</if>
+				<if test="dealAdvice != null">
+					#{dealAdvice,jdbcType=VARCHAR},
+				</if>
+				<if test="dealUserId != null">
+					#{dealUserId,jdbcType=VARCHAR},
+				</if>
+				<if test="registerId != null">
+					#{registerId,jdbcType=DECIMAL},
+				</if>
+				<if test="createTime != null">
+					#{createTime,jdbcType=TIMESTAMP},
+				</if>
+				<if test="dealStatus != null">
+					#{dealStatus,jdbcType=DECIMAL},
+				</if>
+				<if test="organizationId != null">
+					#{organizationId,jdbcType=VARCHAR},
+				</if>
+				<if test="expirDate != null">
+					#{expirDate,jdbcType=TIMESTAMP},
+				</if>
+				<if test="agree != null">
+					#{agree,jdbcType=DECIMAL},
+				</if>
+				<if test="auditType != null">
+					#{auditType,jdbcType=DECIMAL},
+				</if>
+				<if test="commit != null">
+					#{commit,jdbcType=DECIMAL},
+				</if>
+				<if test="orgId != null">
+					#{orgId,jdbcType=VARCHAR},
+				</if>
+				null,
+			</trim>
+		</if>
+		<if test="count  > 0">
+			update XF_DEALS
+			<set>
+				<if test="dealAdvice != null">
+					DEALADVICE = #{dealAdvice,jdbcType=VARCHAR},
+				</if>
+				<if test="dealUserId != null">
+					DEALUSER_ID = #{dealUserId,jdbcType=VARCHAR},
+				</if>
+				<if test="registerId != null">
+					REGISTERID = #{registerId,jdbcType=DECIMAL},
+				</if>
+				<if test="createTime != null">
+					CREATETIME = #{createTime,jdbcType=TIMESTAMP},
+				</if>
+				<if test="dealStatus != null">
+					DEALSTATUS = #{dealStatus,jdbcType=DECIMAL},
+				</if>
+				<if test="organizationId != null">
+					ORGANIZATIONID = #{organizationId,jdbcType=VARCHAR},
+				</if>
+				<if test="expirDate != null">
+					EXPIRDATE = #{expirDate,jdbcType=TIMESTAMP},
+				</if>
+				<if test="agree != null">
+					AGREE = #{agree,jdbcType=DECIMAL},
+				</if>
+				<if test="auditType != null">
+					AUDITTYPE = #{auditType,jdbcType=DECIMAL},
+				</if>
+				<if test="commit != null">
+					COMMIT = #{commit,jdbcType=DECIMAL},
+				</if>
+				<if test="orgId != null">
+					ORGID = #{orgId,jdbcType=VARCHAR},
+				</if>
+			</set>
+			where DEALID = #{dealId}
+		</if>
+	</insert>
+
+	<!-- 更新xf_register表中流程信息 -->
+	<update id="updateXfRegisterAudit" parameterType="map">
+		update XF_REGISTER
+		<set>
+			<if test="PROSTATUS != null ">
+				PROSTATUS =#{PROSTATUS},
+			</if>
+			<if test="CITYSTATUS != null ">
+				CITYSTATUS =#{CITYSTATUS},
+			</if>
+			<if test="STATUS != null ">
+				STATUS =#{STATUS},
+			</if>
+			<if test="TRASLEVEL != null ">
+				TRASLEVEL =#{TRASLEVEL},
+			</if>
+			<if test="PROPATTERN != null ">
+				PROPATTERN =#{PROPATTERN},
+			</if>
+			<if test="CITYPATTERN != null ">
+				CITYPATTERN =#{CITYPATTERN},
+			</if>
+			<if test="COUNTYPATTERN != null ">
+				COUNTYPATTERN =#{COUNTYPATTERN},
+			</if>
+			<if test="TRANSUNIT != null ">
+				TRANSUNIT =#{TRANSUNIT},
+			</if>
+			<if test="EXPIRDATE != null ">
+				EXPIRDATE =#{EXPIRDATE},
+			</if>
+		</set>
+		where REGISTERID = #{registerId}
+	</update>
+
+	<!-- 查询审核详细信息 -->
+	<select id="getXfDeals" parameterType="string"  resultType="XfDeals">
+		select t.*,
+			(select o.grade from sys_organization o where o.id =t.orgid) as orgLevel,
+		           (select o.name from sys_organization o where o.id = t.ORGANIZATIONID) as issueOrgName
+		 from XF_DEALS  t  where t.registerid = #{registerid} order by t.createtime
+	</select>
+	
+	<!-- 获取组织机构Id号 -->
+	<select id="getParentOrgId" parameterType="map"  resultType="string">
+		select distinct t.ORGID from(
+		select t.ORGID,(select o.grade from sys_organization o where o.id = t.ORGID) as grade from xf_deals t where t.registerid = #{registerid}
+		)t where t.grade = (select t.grade from sys_organization t where t.id = #{orgId}) + 1
+	</select>
+	
+	<select id="getNextOrg"  resultType="string">
+		select organizationid from (
+			select t.organizationid, (select o.grade from sys_organization o where o.id = t.organizationid ) grade from XF_DEALS t
+			 where t.organizationid is not null and t.registerid = #{registerid} order by t.createtime  desc
+			) where grade = #{grade}  and rownum = 1
+	</select>
+	
+	<delete id="deleteXfDeals" parameterType="string">
+		delete XF_DEALS t where t.registerid = #{registerid}
+	</delete>
+	
+</mapper>

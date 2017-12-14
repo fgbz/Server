@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="phalaenopsis.systemmanagement.dao.ISsConfigDao">
+	<!-- 保存或修改配置项信息 -->
+	<insert id="saveOrUpdate" parameterType="SsConfig">
+		<selectKey keyProperty="count" resultType="int" order="BEFORE">
+			select count(1) from SS_CONFIG t where t.ID=#{id}
+		</selectKey>
+		<if test="count==0">
+		insert into SS_CONFIG(
+	 					ID,			 
+	 					CONTENT,			 
+	 					MODULAR,			 
+	 					CREATOR,			 
+	 					CREATIME,			 
+	 					MODIFIER,			 
+	 					MODIFITIME,			 
+	 					TYPE			 
+					)
+				values (
+	 					#{id,jdbcType=INTEGER},			 
+	 					#{content,jdbcType=VARCHAR},			 
+	 					#{modular,jdbcType=VARCHAR},			 
+	 					#{creator,jdbcType=VARCHAR},			 
+	 					#{creatime,jdbcType=TIMESTAMP},			 
+	 					#{modifier,jdbcType=VARCHAR},			 
+	 					#{modifitime,jdbcType=TIMESTAMP},			 
+	 					#{type,jdbcType=VARCHAR}			 
+				)
+		</if>
+		<if test="count>0">
+			update SS_CONFIG set
+ 					CONTENT=#{content,jdbcType=VARCHAR},			 
+ 					MODIFIER=#{modifier,jdbcType=VARCHAR},			 
+ 					MODIFITIME=#{modifitime,jdbcType=TIMESTAMP}			 
+			where ID = #{id}
+		</if>
+	</insert>
+	<!-- 查询所有配置项信息 -->
+	<select id="getList" resultType="SsConfig">
+		select * from SS_CONFIG
+	</select>
+	<!-- 查询单个配置根据type查询 -->
+	<select id="getSsConfigByType" resultType="SsConfig">
+		select * from SS_CONFIG where TYPE=#{type}
+	</select>
+</mapper>
