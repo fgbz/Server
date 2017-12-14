@@ -226,5 +226,6 @@ public class AttachmentController {
 	@ResponseBody
 	public boolean delete(@RequestBody List<String> ids) {
 		return service.delete(ids);
+		
 	}
 }
