@@ -44,6 +44,11 @@
         SELECT t.id,t.MENUNAME from m_sa_menu t
     </select>
 
+    <!--获取所有的角色-->
+    <select id="getAllRoles" resultType="FG_Role">
+        select t.id ,t.ROLENAME from m_sa_role t
+    </select>
+
     <resultMap type="FG_Role" id="RoleListMap">
         <id column="id" property="id" />
         <result column="ROLENAME" property="rolename"></result>
@@ -63,11 +68,12 @@
 	men.MENUNAME,
 	case when (select count(1) from m_sa_user_role link where link.ROLEID = t.id)>0 THEN 0 else 1 end as candelete
 FROM
-	m_sa_role t
+    (SELECT  *from
+	m_sa_role order by INPUTDATE desc
+	LIMIT #{startRow},#{endRow}) t
 	LEFT JOIN m_sa_role_menu m ON t.id = m.ROLEID
 	LEFT JOIN m_sa_menu men ON men.id = m.MENUID
-	order by t.INPUTDATE desc
-	LIMIT #{startRow},#{endRow}
+
     </select>
 
     <select id="getRolesCount" resultType="int">
@@ -90,7 +96,7 @@ FROM
         <if test="count == 0">
 
             insert into m_sa_role  (ID,ROLENAME,INPUTUSERID,INPUTDATE) VALUES
-            (#{id},#{rolename,jdbcType=VARCHAR},#{inputuserid,jdbcType=VARCHAR},now()});
+            (#{id},#{rolename,jdbcType=VARCHAR},#{inputuserid,jdbcType=VARCHAR},now());
 
         </if>
         <if test="count > 0">
@@ -105,5 +111,255 @@ FROM
         </foreach>
 
     </insert>
+
+    <!--保存或编辑用户-->
+    <insert id="SaveOrUpdateUser" parameterType="FG_User">
+
+        <selectKey keyProperty="count" resultType="int" order="BEFORE">
+            select count(1) from m_sa_user t where t.id=#{id}
+        </selectKey>
+
+        <if test="count == 0">
+            insert into m_sa_user
+            <trim prefix="(" suffix=")" suffixOverrides=",">
+                <if test="id != null">
+                    ID,
+                </if>
+                <if test="username != null">
+                    USERNAME,
+                </if>
+                <if test="password != null">
+                    PASSWORD,
+                </if>
+                <if test="userrealname != null">
+                    userrealname,
+                </if>
+                <if test="email != null">
+                    email,
+                </if>
+                <if test="mobile != null">
+                    mobile,
+                </if>
+                <if test="orgid != null">
+                    orgid,
+                </if>
+                <if test="inputuserid != null">
+                    inputuserid,
+                </if>
+                <if test="inputdate != null">
+                    INPUTDATE,
+                </if>
+
+                <if test="favoriteid != null">
+                    FAVORITEID,
+                </if>
+
+            </trim>
+            <trim prefix="values (" suffix=")" suffixOverrides=",">
+                <if test="id != null">
+                    #{id,jdbcType=VARCHAR},
+                </if>
+                <if test="username != null">
+                    #{username,jdbcType=VARCHAR},
+                </if>
+                <if test="password != null">
+                    #{password,jdbcType=VARCHAR},
+                </if>
+                <if test="userrealname != null">
+                    #{userrealname,jdbcType=VARCHAR},
+                </if>
+                <if test="email != null">
+                    #{email,jdbcType=VARCHAR},
+                </if>
+                <if test="mobile != null">
+                    #{mobile,jdbcType=VARCHAR},
+                </if>
+                <if test="orgid != null">
+                    #{orgid,jdbcType=VARCHAR},
+                </if>
+                <if test="inputuserid != null">
+                    #{inputuserid,jdbcType=VARCHAR},
+                </if>
+                <if test="inputdate != null">
+                   now(),
+                </if>
+                <if test="favoriteid != null">
+                    #{favoriteid,jdbcType=VARCHAR},
+                </if>
+            </trim>
+
+        </if>
+        <if test="count>0">
+            update  m_sa_user set
+            <trim prefix="" suffix="" suffixOverrides=",">
+
+                <if test="username != null">
+                    username =  #{username,jdbcType=VARCHAR},
+                </if>
+                <if test="password != null">
+                    password =  #{password,jdbcType=VARCHAR},
+                </if>
+                <if test="userrealname != null">
+                    userrealname =#{userrealname,jdbcType=VARCHAR},
+                </if>
+                <if test="email != null">
+                    email = #{email,jdbcType=VARCHAR},
+                </if>
+                <if test="mobile != null">
+                    mobile= #{mobile,jdbcType=VARCHAR},
+                </if>
+                <if test="orgid != null">
+                    orgid=  #{orgid,jdbcType=VARCHAR},
+                </if>
+
+                <if test="favoriteid != null">
+                    favoriteid=   #{favoriteid,jdbcType=VARCHAR},
+                </if>
+
+            </trim>
+            where ID=#{id}
+
+
+        </if>
+
+    </insert>
+
+    <!--创建用户收藏夹-->
+    <insert id="SaveUserFavorite" parameterType="FG_User">
+        INSERT into m_bs_favorite (ID,NAME,PARENTID,INPUTUSERID,INPUTDATE) VALUES (#{favoriteid},'收藏夹',NULL ,#{inputuserid,jdbcType=VARCHAR},now())
+    </insert>
+
+    <!--删除用户角色-->
+    <delete id="DeleteUserRolesByUserID" parameterType="String">
+        delete from m_sa_user_role where USERID=#{id}
+    </delete>
+
+    <!--保存用户角色-->
+    <insert id="SaveUserRoles" parameterType="FG_User">
+        insert into m_sa_user_role  (ID,USERID,ROLEID,INPUTUSERID,INPUTDATE) VALUES
+        <foreach collection="roles" item="item" open="" close="" separator=",">
+            (uuid(),#{id},#{item.id},#{inputuserid,jdbcType=VARCHAR},now())
+        </foreach>
+    </insert>
+
+    <!--获取所有权限-->
+    <select id="getUserMenu" parameterType="FG_User" resultType="FG_Menu">
+        select DISTINCT  t.id ,t.MENUNAME from m_sa_menu t
+         LEFT JOIN m_sa_role_menu m ON t.id = m.MENUID
+	     where m.ROLEID in
+        <foreach collection="roles" item="item" open="(" close=")" separator=",">
+           #{item.id}
+        </foreach>
+
+    </select>
+
+
+    <resultMap type="FG_User" id="usermap">
+        <id column="id" property="id" />
+        <result column="USERNAME" property="username"></result>
+        <result column="PASSWORD" property="password"></result>
+
+        <result column="USERREALNAME" property="userrealname"></result>
+        <result column="EMAIL" property="email"></result>
+        <result column="MOBILE" property="mobile"></result>
+        <result column="ORGID" property="orgid"></result>
+        <result column="ORGNAME" property="orgname"></result>
+        <result column="favoriteid" property="favoriteid"></result>
+        <collection property="roles" column="roleid" ofType="FG_Role">
+            <id column="roleid" property="id" />
+            <result column="ROLENAME" property="rolename"></result>
+        </collection>
+    </resultMap>
+
+    <!--获取用户信息-->
+    <select id="getUserByAccount" parameterType="map" resultMap="usermap">
+        SELECT
+        t.id,
+        t.USERNAME,
+        t.`PASSWORD`,
+        t.USERREALNAME,
+        t.EMAIL,
+        t.MOBILE,
+        t.ORGID,
+        t.favoriteid,
+        org.ORGNAME ,
+        role.ID as roleid,
+        role.ROLENAME
+        FROM
+        m_sa_user t
+        LEFT JOIN m_sa_organization org ON t.ORGID = org.ID
+        left join m_sa_user_role link on link.USERID = t.ID
+        left join m_sa_role role on link.ROLEID = role.ID
+        where t.USERNAME = #{account} and t.PASSWORD = #{password}
+
+    </select>
+
+
+    <!--获取用户列表-->
+    <select id="getUsersList" parameterType="map" resultMap="usermap">
+SELECT
+	t.id,
+	t.USERNAME,
+	t.`PASSWORD`,
+	t.USERREALNAME,
+	t.EMAIL,
+	t.MOBILE,
+	t.ORGID,
+    t.favoriteid,
+	org.ORGNAME ,
+	role.ID as roleid,
+	role.ROLENAME
+FROM
+        (SELECT  *from
+	m_sa_user where 1=1
+        <include refid="queryUser"></include>
+	order by MPDIFYDATE desc
+        LIMIT #{startRow},#{endRow}) t
+	LEFT JOIN m_sa_organization org ON t.ORGID = org.ID
+	left join m_sa_user_role link on link.USERID = t.ID
+	left join m_sa_role role on link.ROLEID = role.ID
+	where 1=1
+
+
+    </select>
+
+    <!--查询列表总数-->
+    <select id="getUserListCount" parameterType="map" resultType="int">
+        select count(1) from m_sa_user t where 1=1
+        <include refid="queryUser"></include>
+    </select>
+
+    <sql id="queryUser">
+        <if test="Name != null and Name != ''">
+            and instr(USERREALNAME,#{Name})> 0
+        </if>
+
+        <if test="TreeValue !=null and TreeValue!=''" >
+            and ORGID  in
+            <foreach collection="TreeValue" item="item" open="(" close=")" separator=",">
+                #{item.id}
+            </foreach>
+        </if>
+
+    </sql>
+
+    <!--删除用户-->
+    <delete id="deleteUser" parameterType="String">
+        delete from m_sa_user where id=#{id}
+    </delete>
+
+    <!--删除收藏夹-->
+    <delete id="deleteUserFav" parameterType="String">
+        delete from m_bs_favorite where id=#{id}
+    </delete>
+
+    <!--验证是否重复-->
+    <select id="checkUserRepeat" parameterType="FG_User" resultType="int">
+          SELECT  count(1) from  m_sa_user t where t.USERNAME = #{username}
+          <if test="id !=null and id !=''">
+              and t.id <![CDATA[  != ]]> #{id}
+          </if>
+    </select>
+
 
 </mapper>

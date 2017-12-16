@@ -3,12 +3,21 @@ package phalaenopsis.fgbz.dao;
 import phalaenopsis.fgbz.entity.FG_Menu;
 import phalaenopsis.fgbz.entity.FG_Organization;
 import phalaenopsis.fgbz.entity.FG_Role;
+import phalaenopsis.fgbz.entity.FG_User;
 
 import java.util.List;
 import java.util.Map;
 
 public interface SystemDao {
 
+     FG_User getUserByAccount(Map<String, Object> map);
+
+    /**
+     * 获取用户所有权限
+     * @param user
+     * @return
+     */
+     List<FG_Menu> getUserMenu(FG_User user);
     /**
      * 获取组织机构
      * @return
@@ -45,6 +54,12 @@ public interface SystemDao {
     List<FG_Menu>  getAllMenus();
 
     /**
+     * 获取所有的角色
+     * @return
+     */
+    List<FG_Role>  getAllRoles();
+
+    /**
      * 获取角色
      * @return
      */
@@ -68,5 +83,64 @@ public interface SystemDao {
      * @return
      */
     int SaveOrEditRole(FG_Role role);
+
+    /**
+     * 获取用户
+     * @param map
+     * @return
+     */
+    List<FG_User> getUsersList(Map<String, Object> map);
+
+    /**
+     * 获取用户个数
+     * @param map
+     * @return
+     */
+    int getUserListCount(Map<String, Object> map);
+    /**
+     * 新增或编辑用户
+     * @return
+     */
+    int SaveOrUpdateUser(FG_User user);
+
+    /**
+     * 绑定用户收藏夹
+     * @param user
+     * @return
+     */
+    int SaveUserFavorite(FG_User user);
+
+    /**
+     * 通过用户id删除用户角色
+     * @param id
+     * @return
+     */
+    int DeleteUserRolesByUserID(String id);
+
+    /**
+     * 保存用户角色
+     * @return
+     */
+    int SaveUserRoles(FG_User user);
+
+    /**
+     * 删除用户
+     * @return
+     */
+    int deleteUser(String id);
+
+    /**
+     * 删除用户收藏夹
+     * @param id
+     * @return
+     */
+    int deleteUserFav(String id);
+
+    /**
+     * 验证用户是否重复
+     * @param user
+     * @return
+     */
+    int checkUserRepeat(FG_User user);
 
 }

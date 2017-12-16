@@ -48,6 +48,8 @@ public class FG_Role {
      */
     private boolean candelete;
 
+    private boolean ischeck=false;
+
     public String getId() {
         return id;
     }
@@ -118,5 +120,13 @@ public class FG_Role {
 
     public void setCandelete(boolean candelete) {
         this.candelete = candelete;
+    }
+
+    public boolean isIscheck() {
+        return ischeck;
+    }
+
+    public void setIscheck(boolean ischeck) {
+        this.ischeck = ischeck;
     }
 }

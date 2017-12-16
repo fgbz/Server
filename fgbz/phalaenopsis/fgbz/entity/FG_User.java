@@ -41,6 +41,10 @@ public class FG_User {
 
     private String orgid;
     /**
+     * 组织名字
+     */
+    private String orgname;
+    /**
      * 录入人ID
      */
 
@@ -92,9 +96,14 @@ public class FG_User {
     private int count;
 
     /**
-     * 用户权限
+     * 用户角色
      */
     private List<FG_Role> roles;
+
+    /**
+     * 用户权限
+     */
+    private List<FG_Menu> menus;
 
 
     public String getId() {
@@ -239,5 +248,21 @@ public class FG_User {
 
     public void setRoles(List<FG_Role> roles) {
         this.roles = roles;
+    }
+
+    public String getOrgname() {
+        return orgname;
+    }
+
+    public void setOrgname(String orgname) {
+        this.orgname = orgname;
+    }
+
+    public List<FG_Menu> getMenus() {
+        return menus;
+    }
+
+    public void setMenus(List<FG_Menu> menus) {
+        this.menus = menus;
     }
 }
