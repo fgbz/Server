@@ -72,9 +72,9 @@ public class LawstandardType {
     private Integer subsysid;
 
     /**
-     * 是否可以删除 'candelete' 可以删除 ‘unabledelete’不能删除
+     * 是否可以删除
      */
-    private String iscandelete;
+    private boolean candelete;
 
     public String getId() {
         return id;
@@ -193,11 +193,11 @@ public class LawstandardType {
         this.count = count;
     }
 
-    public String getIscandelete() {
-        return iscandelete;
+    public boolean isCandelete() {
+        return candelete;
     }
 
-    public void setIscandelete(String iscandelete) {
-        this.iscandelete = iscandelete;
+    public void setCandelete(boolean candelete) {
+        this.candelete = candelete;
     }
 }

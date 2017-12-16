@@ -13,7 +13,7 @@ import java.util.Locale;
 public final class DateUtils {
 
 	/**
-	 * 私有构造器.
+	 * 私有构造器
 	 */
 	private DateUtils() {
 	}

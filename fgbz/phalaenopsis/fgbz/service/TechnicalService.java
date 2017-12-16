@@ -83,7 +83,7 @@ public class TechnicalService {
      * @param page
      * @return
      */
-    public PagingEntity<Technical> getTechnicalList(@RequestBody Page page){
+    public PagingEntity<Technical> getTechnicalList(Page page){
 
         Map<String, Object> conditions = new HashMap<String, Object>();
 

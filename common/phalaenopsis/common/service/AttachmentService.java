@@ -56,6 +56,8 @@ import phalaenopsis.common.method.Basis;
 import phalaenopsis.common.method.Attachment.Multipart;
 import phalaenopsis.common.method.Tools.StrUtil;
 import phalaenopsis.common.util.FileHelper;
+import phalaenopsis.fgbz.common.FileConverter;
+import phalaenopsis.fgbz.common.ItextpdfUtil;
 
 @Service("attachmentService")
 public class AttachmentService extends Basis {
@@ -64,9 +66,9 @@ public class AttachmentService extends Basis {
 
 	@Autowired
 	private IallWeatherCitydao weatherdao;
-	
-    @Autowired
-    private MapServiceDao mapServiceDao; 
+
+	@Autowired
+	private MapServiceDao mapServiceDao;
 
 	@Resource(name = "attachmentDao")
 	public void setDao(IAttachmentDao dao) {
@@ -99,53 +101,53 @@ public class AttachmentService extends Basis {
 		}
 	}
 
-    public List<Attachment> getAttachments(String bizID) {
-        List<Attachment> result = dao.getAttachments(bizID);
+	public List<Attachment> getAttachments(String bizID) {
+		List<Attachment> result = dao.getAttachments(bizID);
 
 //        for (Attachment attachment : result) {
 //            attachment.WGS84ToXian80();
 //        }
 //
 //        calShift(result);
-        return result;
-    }
+		return result;
+	}
 
-    private List<Attachment> calShift(List<Attachment> list) {
-        if (0 == list.size())
-            return list;
+	private List<Attachment> calShift(List<Attachment> list) {
+		if (0 == list.size())
+			return list;
 
-        Double x = null, y = null;
+		Double x = null, y = null;
 
-        outer:
-        for (Attachment attachment : list) {
-            if (attachment.getX() != null && attachment.getY() != null) {
-                x = attachment.getX();
-                y = attachment.getY();
-                break outer;
-            }
-        }
+		outer:
+		for (Attachment attachment : list) {
+			if (attachment.getX() != null && attachment.getY() != null) {
+				x = attachment.getX();
+				y = attachment.getY();
+				break outer;
+			}
+		}
 
-        if (x != null && y != null) {
-            Map<String, Object> map = new HashMap<String, Object>();
-            map.put("x", x);
-            map.put("y", y);
-            AppSettings appSettings = new AppSettings();
-            map.put("GeoWKID", appSettings.getGeoWKID());
-            Map<String, Object> resultMap = mapServiceDao.getPointShift(map);
-            if(null!=resultMap){
-	            x = Double.valueOf(resultMap.get("SHIFTX").toString());
-	            y = Double.valueOf(resultMap.get("SHIFTY").toString());
-	            for (Attachment item : list) {
-	                if (null != item.getX() && null != item.getY()) {
-	                    item.setX(item.getX() + x);
-	                    item.setY(item.getY() + y);
-	                }
-	            }
-            }
-        }
+		if (x != null && y != null) {
+			Map<String, Object> map = new HashMap<String, Object>();
+			map.put("x", x);
+			map.put("y", y);
+			AppSettings appSettings = new AppSettings();
+			map.put("GeoWKID", appSettings.getGeoWKID());
+			Map<String, Object> resultMap = mapServiceDao.getPointShift(map);
+			if(null!=resultMap){
+				x = Double.valueOf(resultMap.get("SHIFTX").toString());
+				y = Double.valueOf(resultMap.get("SHIFTY").toString());
+				for (Attachment item : list) {
+					if (null != item.getX() && null != item.getY()) {
+						item.setX(item.getX() + x);
+						item.setY(item.getY() + y);
+					}
+				}
+			}
+		}
 
-        return list;
-    }
+		return list;
+	}
 	public List<Attachment> getMoblieAttachments(String bizID, int i) {
 		// TODO Auto-generated method stub
 		return dao.getMoblieAttachments(bizID, i);
@@ -168,7 +170,7 @@ public class AttachmentService extends Basis {
 	}
 
 	public FileState mobileUploadToServer(String fileName, String spotid, Double x, Double y, Double angle,
-			HttpServletRequest request) {
+										  HttpServletRequest request) {
 		if (null != fileName && StringUtils.hasLength(fileName)) {
 			Attachment attachment = dao.getAttachmentByBizIdAndFileName(spotid, fileName.toLowerCase());
 			if (null != attachment) {
@@ -179,9 +181,9 @@ public class AttachmentService extends Basis {
 		}
 		return save(fileName, null, spotid, x, y, angle, request, true);
 	}
-	
+
 	public FileState mobileUploadToServer(String fileName, String spotid,String module, String x, String y, String angle,
-			HttpServletRequest request) {
+										  HttpServletRequest request) {
 		if (null != fileName && StringUtils.hasLength(fileName)) {
 			Attachment attachment = dao.getAttachmentByBizIdAndFileName(spotid, fileName.toLowerCase());
 			if (null != attachment) {
@@ -200,6 +202,21 @@ public class AttachmentService extends Basis {
 		String path = Attachment.GetFileStorageFolder(attachment.getActualFile()) + attachment.getActualFile();
 		DownloadAttachment(path, attachment.getFileName(), response);
 	}
+
+	public Map<Object,String> getPreView(String fileID) {
+		Attachment attachment = dao.getAttachmentById(fileID);
+		if (null == attachment)
+			return null;
+		String path = Attachment.GetFileStorageFolder(attachment.getActualFile()) + attachment.getActualFile();
+		path=path.substring( 0,path.lastIndexOf("."));
+		String converfilename = path.replaceAll("\\\\", "/") ;
+
+		Map<Object,String> map = new HashMap<>();
+		map.put("path",converfilename+".swf");
+		return map;
+
+	}
+
 
 	private void DownloadAttachment(String path, String fileName, HttpServletResponse response) {
 		Assert.hasLength(path);
@@ -223,7 +240,7 @@ public class AttachmentService extends Basis {
 
 	/**
 	 * 下载图片缩略图
-	 * 
+	 *
 	 * @param fileID
 	 *            文件ID
 	 * @return
@@ -289,10 +306,29 @@ public class AttachmentService extends Basis {
 				file.mkdirs();
 			multipartFile.transferTo(file);
 
+			if (isDocFile(ext)) {
+				FileConverter converter = new FileConverter(storageFolder + storeFile);
+
+				converter.conver();
+
+				System.out.println(converter.getswfPath());
+			} else if (isPDFFile(ext)) {
+				FileConverter converter = new FileConverter(storageFolder + storeFile);
+
+				converter.converPDF();
+
+				System.out.println(converter.getswfPath());
+			}
+
 			Attachment attachment = new Attachment(guid, fileName, ext, multipartFile.getSize(), storeFile, bizId,
 					Calendar.getInstance().getTime(), module, AttachmentSource.Client);
 			attachment.setPath(storageFolder);
-//			attachment.setIsdelete(IsDelete.VALID.getIndex());// 有效
+
+			//获取pdf中的文字
+			if(ext.equals("pdf")){
+				attachment.setContent(ItextpdfUtil.readPdfToTxt(storageFolder + storeFile));
+			}
+
 			dao.saveFgbz(attachment);
 			return new FileState(true, attachment.getId(), attachment.getUploadTime(), fileName);
 		} catch (Exception e) {
@@ -301,9 +337,24 @@ public class AttachmentService extends Basis {
 		}
 
 	}
+	private boolean isDocFile(String extName) {
+		boolean result = false;
+		String fileExt = ".xls;.xlsx;.doc;.docx;.ppt;.pptx;";
+		result = fileExt.contains(extName.toLowerCase());
+
+		return result;
+	}
+
+	private boolean isPDFFile(String extName) {
+		boolean result = false;
+		String fileExt = ".pdf";
+		result = fileExt.contains(extName.toLowerCase());
+
+		return result;
+	}
 
 	private FileState save(String fileName, String explain, String bizID, double x, double y, double angle,
-			HttpServletRequest request, boolean IsMobile) {
+						   HttpServletRequest request, boolean IsMobile) {
 		String guid = UUID.randomUUID().toString();
 
 		// 得到上传文件
@@ -325,7 +376,7 @@ public class AttachmentService extends Basis {
 			// 保存文件
 			String storageFolder = Attachment.GetFileStorageFolder(guid);
 			String fileSavePath = storageFolder + storeFile; // guid + "." +
-																// ext;
+			// ext;
 			File file = new File(fileSavePath);
 
 			if (!file.exists()) {
@@ -357,9 +408,9 @@ public class AttachmentService extends Basis {
 
 		return new FileState(true, attachment.getId(), attachment.getUploadTime(), fileName);
 	}
-	
+
 	private FileState save(String fileName, String explain, String bizID, String module, String x, String y, String angle,
-			HttpServletRequest request, boolean IsMobile) {
+						   HttpServletRequest request, boolean IsMobile) {
 		String guid = UUID.randomUUID().toString();
 
 		// 得到上传文件
@@ -381,7 +432,7 @@ public class AttachmentService extends Basis {
 			// 保存文件
 			String storageFolder = Attachment.GetFileStorageFolder(guid);
 			String fileSavePath = storageFolder + storeFile; // guid + "." +
-																// ext;
+			// ext;
 			File file = new File(fileSavePath);
 
 			if (!file.exists()) {
@@ -412,7 +463,7 @@ public class AttachmentService extends Basis {
 				e.printStackTrace();
 			}
 		}
-		
+
 		if (IsMobile) {
 			if(x != null && y != null && !x.equals("") && !y.equals("")){
 				Double X = null;
@@ -435,7 +486,7 @@ public class AttachmentService extends Basis {
 				}
 				attachment.setAngle(Z);
 			}
-			
+
 		}
 
 		if (!postProcess(attachment))
@@ -452,7 +503,7 @@ public class AttachmentService extends Basis {
 
 		// 文件名中是否包含无效字符
 		char[] invalidChars = { '\\', '/', ':', '*', '?', '<', '>', '|' }; // 无效字符串
-																			// \/:*?"<>|
+		// \/:*?"<>|
 
 		for (char c : invalidChars) {
 			if (fileName.indexOf(c) > 0)
@@ -469,7 +520,7 @@ public class AttachmentService extends Basis {
 
 	/**
 	 * 文件上传成功的后续处理工作
-	 * 
+	 *
 	 * @param file
 	 */
 	private boolean postProcess(Attachment attachment) {
@@ -489,7 +540,7 @@ public class AttachmentService extends Basis {
 
 	/**
 	 * 生成图片缩略图并保存
-	 * 
+	 *
 	 * @param fs
 	 * @param maxWidth
 	 *            缩略图最大宽度
@@ -535,5 +586,5 @@ public class AttachmentService extends Basis {
 		}
 		return  true;
 
-	}  
+	}
 }

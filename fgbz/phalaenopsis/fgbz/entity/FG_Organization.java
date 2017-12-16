@@ -2,57 +2,43 @@ package phalaenopsis.fgbz.entity;
 
 import java.util.Date;
 
-public class TechnicalType {
+public class FG_Organization {
+
     /**
-     * 主键id
+     * 组织主键
      */
 
     private String id;
     /**
-     * 类别名称
+     * 组织名称
      */
 
-    private String typename;
+    private String orgname;
     /**
-     * 上级类别编号
+     * 上级组织ID
      */
 
     private String parentid;
+
+    private String inputuserid;
+
+    private Date inputdate;
+
+    private Integer status;
     /**
      * 备注
      */
 
     private String memo;
-    /**
-     * 录入人ID
-     */
-
-    private Integer inputuserid;
-    /**
-     * 录入时间
-     */
-
-    private Date inputdate;
-    /**
-     * 记录状态
-     */
-
-    private Integer status;
-    /**
-     * 子系统ID
-     */
 
     private Integer subsysid;
 
-    private String tectype;
-
     /**
-     * 是否可以删除
+     * 辅助字段
      */
-    private boolean candelete;
-
     private int count;
 
+    private boolean candelete;
 
     public String getId() {
         return id;
@@ -62,12 +48,12 @@ public class TechnicalType {
         this.id = id;
     }
 
-    public String getTypename() {
-        return typename;
+    public String getOrgname() {
+        return orgname;
     }
 
-    public void setTypename(String typename) {
-        this.typename = typename;
+    public void setOrgname(String orgname) {
+        this.orgname = orgname;
     }
 
     public String getParentid() {
@@ -78,19 +64,11 @@ public class TechnicalType {
         this.parentid = parentid;
     }
 
-    public String getMemo() {
-        return memo;
-    }
-
-    public void setMemo(String memo) {
-        this.memo = memo;
-    }
-
-    public Integer getInputuserid() {
+    public String getInputuserid() {
         return inputuserid;
     }
 
-    public void setInputuserid(Integer inputuserid) {
+    public void setInputuserid(String inputuserid) {
         this.inputuserid = inputuserid;
     }
 
@@ -110,6 +88,14 @@ public class TechnicalType {
         this.status = status;
     }
 
+    public String getMemo() {
+        return memo;
+    }
+
+    public void setMemo(String memo) {
+        this.memo = memo;
+    }
+
     public Integer getSubsysid() {
         return subsysid;
     }
@@ -118,12 +104,12 @@ public class TechnicalType {
         this.subsysid = subsysid;
     }
 
-    public String getTectype() {
-        return tectype;
+    public int getCount() {
+        return count;
     }
 
-    public void setTectype(String tectype) {
-        this.tectype = tectype;
+    public void setCount(int count) {
+        this.count = count;
     }
 
     public boolean isCandelete() {
@@ -132,13 +118,5 @@ public class TechnicalType {
 
     public void setCandelete(boolean candelete) {
         this.candelete = candelete;
-    }
-
-    public int getCount() {
-        return count;
-    }
-
-    public void setCount(int count) {
-        this.count = count;
     }
 }

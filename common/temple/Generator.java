@@ -31,7 +31,7 @@ public class Generator {
 		AutoGenerator mpg = new AutoGenerator();
 		// 全局配置
 		GlobalConfig gc = new GlobalConfig();
-		gc.setOutputDir("D://createFile");
+		gc.setOutputDir("C://createFile");
 		gc.setFileOverride(false);
 		gc.setActiveRecord(false);
 		gc.setEnableCache(false);// XML 二级缓存
@@ -55,11 +55,11 @@ public class Generator {
 		dsc.setPassword("buzhidao");
 		dsc.setUrl("jdbc:mysql://127.0.0.1:3306/iBase4J?characterEncoding=utf8");*/
 		
-		dsc.setDbType(DbType.ORACLE);
-		dsc.setDriverName("oracle.jdbc.driver.OracleDriver");
-		dsc.setUsername("Phalaenopsisjava");
-		dsc.setPassword("8888888");
-		dsc.setUrl("jdbc:oracle:thin:@192.168.5.15:1521/zf");
+		dsc.setDbType(DbType.MYSQL);
+		dsc.setDriverName("com.mysql.jdbc.Driver");
+		dsc.setUsername("root");
+		dsc.setPassword("kotei$88");
+		dsc.setUrl("jdbc:mysql://localhost:3306/fgbz");
 		
 		
 		mpg.setDataSource(dsc);

@@ -86,6 +86,8 @@ public class Technical {
 
     private String tectype;
 
+    private int approvestatus;
+
     private List<String> fileids;
 
     public int getCount() {
@@ -238,5 +240,13 @@ public class Technical {
 
     public void setFileids(List<String> fileids) {
         this.fileids = fileids;
+    }
+
+    public int getApprovestatus() {
+        return approvestatus;
+    }
+
+    public void setApprovestatus(int approvestatus) {
+        this.approvestatus = approvestatus;
     }
 }

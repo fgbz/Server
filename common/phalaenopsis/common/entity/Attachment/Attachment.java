@@ -19,7 +19,7 @@ import phalaenopsis.common.util.XYZCoordinate;
 public class Attachment implements Serializable   {
 
 	/**
-	 * 
+	 *
 	 */
 	private static final long serialVersionUID = 1L;
 
@@ -115,7 +115,7 @@ public class Attachment implements Serializable   {
 	 */
 	@JsonProperty("Angle")
 	private Double angle;
-	
+
 	/**
 	 * 附件附加信息
 	 */
@@ -130,7 +130,11 @@ public class Attachment implements Serializable   {
 
 	private String path;
 
-	
+	private String content;
+
+	private Date modifydate;
+
+
 	public Integer getIsdelete() {
 		return isdelete;
 	}
@@ -254,7 +258,7 @@ public class Attachment implements Serializable   {
 	public void setAngle(Double angle) {
 		this.angle = angle;
 	}
-	
+
 
 	public String getExtraInfo() {
 		return extraInfo;
@@ -273,9 +277,26 @@ public class Attachment implements Serializable   {
 		this.path = path;
 	}
 
+
+	public String getContent() {
+		return content;
+	}
+
+	public void setContent(String content) {
+		this.content = content;
+	}
+
+	public Date getModifydate() {
+		return modifydate;
+	}
+
+	public void setModifydate(Date modifydate) {
+		this.modifydate = modifydate;
+	}
+
 	/**
 	 * 获取附件存储文件夹 以文件名首字符创建文件夹
-	 * 
+	 *
 	 * @param actualFile
 	 * @return
 	 */
@@ -290,7 +311,7 @@ public class Attachment implements Serializable   {
 		String path = String.format("%s%s/%s/", webInfPath, actualFile.charAt(0), actualFile.charAt(1));
 		return path;
 	}
-	
+
 	public Attachment() {
 		super();
 	}
@@ -298,7 +319,7 @@ public class Attachment implements Serializable   {
 
 
 	public Attachment(String id, String fileName, String fileExt, Long fileSize, String actualFile, String explain,
-			String bizID, Date uploadTime, int source) {
+					  String bizID, Date uploadTime, int source) {
 		super();
 		this.id = id;
 		this.fileName = fileName;
@@ -312,7 +333,7 @@ public class Attachment implements Serializable   {
 	}
 
 	public Attachment(String id, String fileName, String fileExt, long fileSize, String actualFile, String bizID,
-			Date uploadTime, String module, Integer source) {
+					  Date uploadTime, String module, Integer source) {
 		super();
 		this.id = id;
 		this.fileName = fileName;
@@ -325,19 +346,19 @@ public class Attachment implements Serializable   {
 		this.source = source;
 	}
 
-	 public void WGS84ToXian80()
-     {
-         Param7Config param7 = new Param7Config();
-         param7 = param7.GetConfig();
-         
-         if (this.source == AttachmentSource.Moblie && null != this.x && null != this.y) {
-             BLHCoordinate blh_84 = new BLHCoordinate(this.x, this.y, 0d);
-             XYZCoordinate xyz_84 = CoordinateHelper.BLHtoXYZ(blh_84, CoordinateHelper.WGS84Datum);
-             XYZCoordinate xyz_80 = CoordinateHelper.Param7(xyz_84, param7.DeltaX, param7.DeltaY, param7.DeltaZ, param7.Rx, param7.Ry, param7.Rz, param7.K);
-             BLHCoordinate blh_80 = CoordinateHelper.XYZtoBLH(xyz_80, CoordinateHelper.Xian80Datum);
-             this.x = blh_80.getLongitude();// .Longitude;
-             this.y = blh_80.getLatitude();//.Latitude;
-         }
-     }
+	public void WGS84ToXian80()
+	{
+		Param7Config param7 = new Param7Config();
+		param7 = param7.GetConfig();
+
+		if (this.source == AttachmentSource.Moblie && null != this.x && null != this.y) {
+			BLHCoordinate blh_84 = new BLHCoordinate(this.x, this.y, 0d);
+			XYZCoordinate xyz_84 = CoordinateHelper.BLHtoXYZ(blh_84, CoordinateHelper.WGS84Datum);
+			XYZCoordinate xyz_80 = CoordinateHelper.Param7(xyz_84, param7.DeltaX, param7.DeltaY, param7.DeltaZ, param7.Rx, param7.Ry, param7.Rz, param7.K);
+			BLHCoordinate blh_80 = CoordinateHelper.XYZtoBLH(xyz_80, CoordinateHelper.Xian80Datum);
+			this.x = blh_80.getLongitude();// .Longitude;
+			this.y = blh_80.getLatitude();//.Latitude;
+		}
+	}
 
 }

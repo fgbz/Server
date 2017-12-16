@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="phalaenopsis.fgbz.dao.SystemDao" >
+
+    <!--获取发布部门-->
+    <select id="getOrganizationList" resultType="FG_Organization">
+        select t.ID,t.ORGNAME,t.PARENTID,
+        CASE
+        WHEN (
+        SELECT
+        count(1)
+        FROM
+       m_sa_user link
+        WHERE
+        link.ORGID = t.id) = 0 then 1 else 0 end as candelete from m_sa_organization t
+    </select>
+
+    <!--删除技术标准类别-->
+    <delete id="DeleteOrganization" parameterType="FG_Organization">
+        DELETE from m_sa_organization where id = #{id}
+    </delete>
+
+    <!--新增或修改法规标准类别-->
+    <insert id="AddOrUpdateOrganizationType" parameterType="FG_Organization">
+        <selectKey keyProperty="count" resultType="int" order="BEFORE">
+            select count(1) from m_sa_organization t where t.ID=#{id}
+        </selectKey>
+
+        <if test="count==0">
+            INSERT into m_sa_organization  (ID,ORGNAME, PARENTID ) VALUES (#{id},#{orgname},#{parentid});
+        </if>
+        <if test="count==1">
+            UPDATE  m_sa_organization t  SET t.ORGNAME = #{orgname,jdbcType=VARCHAR} where t.ID = #{id}
+        </if>
+    </insert>
+
+    <!--获取子节点-->
+    <select id="getChildNode" parameterType="String" resultType="FG_Organization">
+        select t.ID,t.ORGNAME,t.PARENTID from m_sa_organization t where t.PARENTID=#{id}
+    </select>
+
+    <!--获取所有的菜单权限-->
+    <select id="getAllMenus" resultType="FG_Menu">
+        SELECT t.id,t.MENUNAME from m_sa_menu t
+    </select>
+
+    <resultMap type="FG_Role" id="RoleListMap">
+        <id column="id" property="id" />
+        <result column="ROLENAME" property="rolename"></result>
+        <result column="candelete" property="candelete"></result>
+        <collection property="menus" column="menuid" ofType="FG_Menu">
+            <id column="menuid" property="id" />
+            <result column="MENUNAME" property="menuname"></result>
+        </collection>
+    </resultMap>
+
+    <!--获取角色列表-->
+    <select id="getRoles" parameterType="map" resultMap="RoleListMap">
+        SELECT
+	t.ID,
+	t.ROLENAME,
+	men.ID AS menuid,
+	men.MENUNAME,
+	case when (select count(1) from m_sa_user_role link where link.ROLEID = t.id)>0 THEN 0 else 1 end as candelete
+FROM
+	m_sa_role t
+	LEFT JOIN m_sa_role_menu m ON t.id = m.ROLEID
+	LEFT JOIN m_sa_menu men ON men.id = m.MENUID
+	order by t.INPUTDATE desc
+	LIMIT #{startRow},#{endRow}
+    </select>
+
+    <select id="getRolesCount" resultType="int">
+        SELECT count(1) FROM m_sa_role t
+    </select>
+
+    <!--删除权限-->
+    <delete id="deleteRoleByID" parameterType="String">
+		DELETE  from m_sa_role where id=#{id};
+		DELETE  from m_sa_role_menu where ROLEID=#{id};
+    </delete>
+
+    <!--新增或编辑角色-->
+    <insert id="SaveOrEditRole" parameterType="FG_Role">
+
+        <selectKey keyProperty="count" resultType="int" order="BEFORE">
+            select count(1) from m_sa_role t where t.id=#{id}
+        </selectKey>
+
+        <if test="count == 0">
+
+            insert into m_sa_role  (ID,ROLENAME,INPUTUSERID,INPUTDATE) VALUES
+            (#{id},#{rolename,jdbcType=VARCHAR},#{inputuserid,jdbcType=VARCHAR},now()});
+
+        </if>
+        <if test="count > 0">
+            UPDATE m_sa_role set ROLENAME = #{rolename,jdbcType=VARCHAR} where id=#{id};
+        </if>
+
+        DELETE  from m_sa_role_menu where ROLEID=#{id};
+
+        insert into m_sa_role_menu  (ID,ROLEID,MENUID,INPUTUSERID,INPUTDATE) VALUES
+        <foreach collection="menus" item="item" open="" close="" separator=",">
+            (uuid(),#{id},#{item.id},#{inputuserid,jdbcType=VARCHAR},now())
+        </foreach>
+
+    </insert>
+
+</mapper>

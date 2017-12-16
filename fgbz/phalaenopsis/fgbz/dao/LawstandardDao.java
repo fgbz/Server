@@ -15,9 +15,9 @@ public interface LawstandardDao {
 
     int  DeleteLawstandardType(LawstandardType lawstandardType);
 
-    int  getLawstandardListCount(Map<java.lang.String, Object>  map);
+    int  getLawstandardListCount(Map<String, Object>  map);
 
-    List<Lawstandard> getLawstandardList(Map<java.lang.String, Object>  map);
+    List<Lawstandard> getLawstandardList(Map<String, Object>  map);
 
     int deleteLawstandardById(String id);
 

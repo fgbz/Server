@@ -11,19 +11,19 @@ public class AppSettings {
 	private final int ProvinceCode = 370000;
 
 	private String ReportYear;
-	
+
 	private String GeometryService;
-	
+
 	private String ConstructionLandService;
-	
+
 	private String ExistingMapService;
-	
+
 	private String DLBM;
-	
+
 	private String path;
-	
+
 	private String backupsPath;
-	
+
 	private String isSyncMongodb;
 	public String getDLBM() {
 		return DLBM;
@@ -50,7 +50,7 @@ public class AppSettings {
 	}
 
 	private String GeoWKID;
-	
+
 	private String ProjWKID;
 
 	public String getProjWKID() {
@@ -89,12 +89,15 @@ public class AppSettings {
 	private String IOSVersion;
 
 	private String MinDistance;
-	
+
 	private String time;
-	
+
 	private String isStartCheck;
-	
+
 	private String dataname;
+
+	private String swfPath;
+
 	public String getMinDistance() {
 		return MinDistance;
 	}
@@ -151,15 +154,21 @@ public class AppSettings {
 		return IOSVersion;
 	}
 
+	public String getSwfPath() {
+		return swfPath;
+	}
 
-	
+	public void setSwfPath(String swfPath) {
+		this.swfPath = swfPath;
+	}
+
 	public AppSettings() {
 		super();
-		
+
 		InputStream inputStream = this.getClass().getClassLoader().getResourceAsStream("conf/config.properties");
-		
+
 		java.util.Properties properties = new java.util.Properties();
-		
+
 		try{
 			properties.load(inputStream);
 			//拍照限制距离
@@ -186,7 +195,7 @@ public class AppSettings {
 			this.AndroidVersion = properties.getProperty("AndroidVersion");
 			this.OutsideService = properties.getProperty("OutsideService");
 			this.IOSVersion = properties.getProperty("IOSVersion");
-			
+
 			this.DeltaX = properties.getProperty("DeltaX");
 			this.DeltaY = properties.getProperty("DeltaY");
 			this.DeltaZ = properties.getProperty("DeltaZ");
@@ -201,10 +210,12 @@ public class AppSettings {
 			this.isSyncMongodb = properties.getProperty("isSyncMongodb");
 			this.dataname = properties.getProperty("dataname");
 			this.PJMapSpotLocationService = properties.getProperty("PJMapSpotLocationService");
+			this.swfPath = properties.getProperty("swfPath");
+
 		}
 		catch(IOException e1) {
 			e1.printStackTrace();
-		} 
+		}
 	}
 
 	public String getGeoWKID() {
@@ -229,20 +240,20 @@ public class AppSettings {
 
 	public void setAllWeatherSpotLocationService(String allWeatherSpotLocationService) {
 		this.allWeatherSpotLocationService = allWeatherSpotLocationService;
-	} 
-	
+	}
+
 	private String DeltaX;
-	
+
 	private String DeltaY;
-	
+
 	private String DeltaZ;
-	
+
 	private String Rx;
-	
+
 	private String Ry;
-	
+
 	private String Rz;
-	
+
 	private String K;
 
 	public String getDeltaX() {

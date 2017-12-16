@@ -15,7 +15,7 @@
         FROM
         m_bs_tech_type link
         WHERE
-        link.LAWSTYPEID = t.id) = 0 then 'candelete' else 'unabledelete' end as iscandelete
+        link.LAWSTYPEID = t.id) = 0 then 1 else 0 end as candelete
         FROM
         m_bs_techtype t
     </select>
@@ -51,7 +51,8 @@
         t.`CODE`,
         t.CHINESENAME,
         t.RELEASEDATE,
-        n.TYPENAME
+        n.TYPENAME,
+        t.approvestatus
         FROM
         m_bs_tech t
         LEFT JOIN m_bs_tech_type m ON m.SID = t.id
@@ -82,6 +83,10 @@
         <if test="FiledTimeEnd != null and FiledTimeEnd != ''">
             and Date(t.RELEASEDATE) <![CDATA[  <=  ]]> #{FiledTimeEnd}
         </if>
+        <if test="ApproveStatus != null and ApproveStatus != ''">
+            and t.approvestatus = #{ApproveStatus}
+        </if>
+
         <if test="TreeValue !=null and TreeValue!=''" >
             and t.id in (select lt.SID from m_bs_tech_type lt where lt.LAWSTYPEID in
             <foreach collection="TreeValue" item="item" open="(" close=")" separator=",">
@@ -143,6 +148,10 @@
                 <if test="summaryinfo != null">
                     SUMMARYINFO,
                 </if>
+                <if test="approvestatus != null">
+                    approvestatus,
+                </if>
+
             </trim>
             <trim prefix="values (" suffix=")" suffixOverrides=",">
                 <if test="id != null">
@@ -183,6 +192,9 @@
                 </if>
                 <if test="summaryinfo != null">
                     #{summaryinfo,jdbcType=VARCHAR},
+                </if>
+                <if test="approvestatus != null">
+                    #{approvestatus,jdbcType=INTEGER},
                 </if>
             </trim>
 
@@ -230,6 +242,9 @@
                 </if>
                 <if test="status != null">
                     STATUS=#{status,jdbcType=VARCHAR},
+                </if>
+                <if test="approvestatus != null">
+                    approvestatus=#{approvestatus,jdbcType=INTEGER},
                 </if>
             </trim>
             where ID=#{id}
