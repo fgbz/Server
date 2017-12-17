@@ -119,9 +119,9 @@ public class TechnicalService {
         if(page.getPageNo()==1){
             conditions.put("startRow", 0 );
         }else{
-            conditions.put("startRow", page.getPageSize() * (page.getPageNo() + 1) );
+            conditions.put("startRow", page.getPageSize() * (page.getPageNo() -1) );
         }
-        conditions.put("endRow", page.getPageSize() * page.getPageNo());
+        conditions.put("endRow", page.getPageSize());
 
         // 2, 查询到当前页数的数据
         List<Technical> list = technicalDao.getTechnicalList(conditions);

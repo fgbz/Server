@@ -110,10 +110,18 @@ public class SystemServie {
         // 1,根据条件一共查询到的数据条数
         int count = systemDao.getRolesCount();
 
+        if(page.getConditions()!=null) {
+            //查询条件
+            for (Condition condition : page.getConditions()) {
+                if (condition.getKey().equals("Name")) {
+                    conditions.put("Name", condition.getValue());
+                }
+            }
+        }
         if(page.getPageNo()==1){
             conditions.put("startRow", 0 );
         }else{
-            conditions.put("startRow", page.getPageSize() * (page.getPageNo() + 1) );
+            conditions.put("startRow", page.getPageSize() * (page.getPageNo() -1) );
         }
         conditions.put("endRow", page.getPageSize() * page.getPageNo());
 
@@ -238,9 +246,9 @@ public class SystemServie {
         if(page.getPageNo()==1){
             conditions.put("startRow", 0 );
         }else{
-            conditions.put("startRow", page.getPageSize() * (page.getPageNo() + 1) );
+            conditions.put("startRow", page.getPageSize() * (page.getPageNo() - 1) );
         }
-        conditions.put("endRow", page.getPageSize() * page.getPageNo());
+        conditions.put("endRow", page.getPageSize());
 
         // 2, 查询到当前页数的数据
         List<FG_User> list = systemDao.getUsersList(conditions);

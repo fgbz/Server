@@ -27,12 +27,23 @@ public class TechnicalType {
      * 录入人ID
      */
 
-    private Integer inputuserid;
+    private String inputuserid;
     /**
      * 录入时间
      */
 
     private Date inputdate;
+
+    /**
+     * 修改人ID
+     */
+
+    private String modifyuserid;
+    /**
+     * 修改人时间
+     */
+
+    private Date modifydate;
     /**
      * 记录状态
      */
@@ -86,14 +97,6 @@ public class TechnicalType {
         this.memo = memo;
     }
 
-    public Integer getInputuserid() {
-        return inputuserid;
-    }
-
-    public void setInputuserid(Integer inputuserid) {
-        this.inputuserid = inputuserid;
-    }
-
     public Date getInputdate() {
         return inputdate;
     }
@@ -140,5 +143,29 @@ public class TechnicalType {
 
     public void setCount(int count) {
         this.count = count;
+    }
+
+    public String getInputuserid() {
+        return inputuserid;
+    }
+
+    public void setInputuserid(String inputuserid) {
+        this.inputuserid = inputuserid;
+    }
+
+    public String getModifyuserid() {
+        return modifyuserid;
+    }
+
+    public void setModifyuserid(String modifyuserid) {
+        this.modifyuserid = modifyuserid;
+    }
+
+    public Date getModifydate() {
+        return modifydate;
+    }
+
+    public void setModifydate(Date modifydate) {
+        this.modifydate = modifydate;
     }
 }

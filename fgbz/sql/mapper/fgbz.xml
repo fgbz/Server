@@ -36,10 +36,12 @@
         </selectKey>
 
         <if test="count==0">
-            INSERT into m_bs_lawstandardtype  (ID,TYPENAME, PARENTID ) VALUES (#{id},#{typename},#{parentid});
+            INSERT into m_bs_lawstandardtype  (ID,TYPENAME, PARENTID,INPUTUSERID,INPUTDATE,MODIFYDATE )
+            VALUES (#{id},#{typename},#{parentid},#{inputuserid,jdbcType=VARCHAR},now(),now());
         </if>
         <if test="count==1">
-            UPDATE  m_bs_lawstandardtype t  SET t.TYPENAME = #{typename,jdbcType=VARCHAR} where t.ID = #{id}
+            UPDATE  m_bs_lawstandardtype t  SET t.TYPENAME = #{typename,jdbcType=VARCHAR},t.MODIFYUSERID=#{modifyuserid,jdbcType=VARCHAR},t.MODIFYDATE = now()
+            where t.ID = #{id}
         </if>
     </insert>
 
@@ -57,7 +59,7 @@
         left join m_bs_lawstandardtype n on n.id = m.LAWSTYPEID
         where 1=1
         <include refid="queryLawstandard"></include>
-        order by t.istop desc,t.RELEASEDATE desc
+        order by t.istop desc,t.MODIFYDATE desc
         LIMIT #{startRow},#{endRow}
     </select>
 
@@ -159,15 +161,11 @@
                 <if test="inputuserid != null">
                     INPUTUSERID,
                 </if>
-                <if test="inputdate != null">
                     INPUTDATE,
-                </if>
                 <if test="modifyuserid != null">
                     MODIFYUSERID,
                 </if>
-                <if test="modifydate != null">
                     MODIFYDATE,
-                </if>
                 <if test="clickcount != null">
                     CLICKCOUNT,
                 </if>
@@ -224,15 +222,13 @@
                 <if test="inputuserid != null">
                     #{inputuserid,jdbcType=VARCHAR},
                 </if>
-                <if test="inputdate != null">
-                    #{inputdate,jdbcType=TIMESTAMP},
-                </if>
+                  now(),
                 <if test="modifyuserid != null">
                     #{modifyuserid,jdbcType=VARCHAR},
                 </if>
-                <if test="modifydate != null">
-                    #{modifydate,jdbcType=TIMESTAMP},
-                </if>
+
+                   now(),
+
                 <if test="clickcount != null">
                     #{clickcount,jdbcType=INTEGER},
                 </if>
@@ -288,18 +284,12 @@
                 <if test="isbatch != null">
                     ISBATCH=   #{isbatch,jdbcType=INTEGER},
                 </if>
-                <if test="inputuserid != null">
-                    INPUTUSERID =  #{inputuserid,jdbcType=VARCHAR},
-                </if>
-                <if test="inputdate != null">
-                    INPUTDATE =  #{inputdate,jdbcType=DATE},
-                </if>
+
                 <if test="modifyuserid != null">
                     MODIFYUSERID= #{modifyuserid,jdbcType=VARCHAR},
                 </if>
-                <if test="modifydate != null">
-                    MODIFYDATE= #{modifydate,jdbcType=DATE},
-                </if>
+                    MODIFYDATE= now(),
+
                 <if test="clickcount != null">
                     CLICKCOUNT= #{clickcount,jdbcType=INTEGER},
                 </if>
@@ -351,7 +341,10 @@
         dep.ID as organization,
         dep.PUBDEPNAME,
         n.TYPENAME,
-        n.id as lawtype
+        n.id as lawtype,
+				ur.USERREALNAME as inputusername,
+				org.ORGNAME as inputorgname,
+				t.INPUTDATE
         FROM
         `m_bs_lawstandard` t
         left join m_sa_lawstandardstatus sta on t.`STATUS` = sta.ID
@@ -359,8 +352,9 @@
         left join m_sa_publishdep dep on dep.ID = pub.PUBDEPID
         left join m_bs_lawstandard_type m on m.SID = t.id
         left join m_bs_lawstandardtype n on n.id = m.LAWSTYPEID
-
-        where t.id =#{id}
+				left join m_sa_user ur on ur.ID = t.INPUTUSERID
+				left join m_sa_organization org on org.ID = ur.ORGID
+				where t.id=#{id}
 
     </select>
 

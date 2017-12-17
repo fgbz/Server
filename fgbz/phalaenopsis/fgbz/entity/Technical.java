@@ -48,17 +48,23 @@ public class Technical {
      * 录入人ID
      */
 
-    private Integer inputuserid;
+    private String inputuserid;
     /**
      * 录入时间
      */
 
     private Date inputdate;
+
+    private  String inputorgname;
+    /**
+     * 录入人姓名
+     */
+    private  String inputusername;
     /**
      * 修改人ID
      */
 
-    private Integer modifyuserid;
+    private String modifyuserid;
     /**
      * 修改人时间
      */
@@ -162,13 +168,7 @@ public class Technical {
         this.isbatch = isbatch;
     }
 
-    public Integer getInputuserid() {
-        return inputuserid;
-    }
 
-    public void setInputuserid(Integer inputuserid) {
-        this.inputuserid = inputuserid;
-    }
 
     public Date getInputdate() {
         return inputdate;
@@ -178,13 +178,7 @@ public class Technical {
         this.inputdate = inputdate;
     }
 
-    public Integer getModifyuserid() {
-        return modifyuserid;
-    }
 
-    public void setModifyuserid(Integer modifyuserid) {
-        this.modifyuserid = modifyuserid;
-    }
 
     public Date getModifydate() {
         return modifydate;
@@ -248,5 +242,37 @@ public class Technical {
 
     public void setApprovestatus(int approvestatus) {
         this.approvestatus = approvestatus;
+    }
+
+    public String getInputuserid() {
+        return inputuserid;
+    }
+
+    public void setInputuserid(String inputuserid) {
+        this.inputuserid = inputuserid;
+    }
+
+    public String getInputorgname() {
+        return inputorgname;
+    }
+
+    public void setInputorgname(String inputorgname) {
+        this.inputorgname = inputorgname;
+    }
+
+    public String getInputusername() {
+        return inputusername;
+    }
+
+    public void setInputusername(String inputusername) {
+        this.inputusername = inputusername;
+    }
+
+    public String getModifyuserid() {
+        return modifyuserid;
+    }
+
+    public void setModifyuserid(String modifyuserid) {
+        this.modifyuserid = modifyuserid;
     }
 }

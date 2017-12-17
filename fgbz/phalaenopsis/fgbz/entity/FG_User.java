@@ -48,7 +48,7 @@ public class FG_User {
      * 录入人ID
      */
 
-    private Integer inputuserid;
+    private String inputuserid;
     /**
      * 录入时间
      */
@@ -60,7 +60,7 @@ public class FG_User {
 
     private Integer status;
     /**
-     * 最后一次登录ID
+     * 最后一次登录Ip
      */
 
     private String lastloginip;
@@ -78,7 +78,7 @@ public class FG_User {
      * 修改时间
      */
 
-    private Date mpdifydate;
+    private Date modifydate;
     /**
      * 子系统ID
      */
@@ -162,11 +162,11 @@ public class FG_User {
         this.orgid = orgid;
     }
 
-    public Integer getInputuserid() {
+    public String getInputuserid() {
         return inputuserid;
     }
 
-    public void setInputuserid(Integer inputuserid) {
+    public void setInputuserid(String inputuserid) {
         this.inputuserid = inputuserid;
     }
 
@@ -210,12 +210,12 @@ public class FG_User {
         this.lastmodifyuserid = lastmodifyuserid;
     }
 
-    public Date getMpdifydate() {
-        return mpdifydate;
+    public Date getModifydate() {
+        return modifydate;
     }
 
-    public void setMpdifydate(Date mpdifydate) {
-        this.mpdifydate = mpdifydate;
+    public void setModifydate(Date modifydate) {
+        this.modifydate = modifydate;
     }
 
     public Integer getSubsysid() {

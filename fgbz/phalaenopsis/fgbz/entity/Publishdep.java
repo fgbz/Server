@@ -2,27 +2,46 @@ package phalaenopsis.fgbz.entity;
 
 import java.util.Date;
 
-public class FG_Organization {
+/**
+ * Created by 13260 on 2017/12/18.
+ */
+public class Publishdep {
 
     /**
-     * 组织主键
+     * 主键ID
      */
 
     private String id;
     /**
-     * 组织名称
+     * 部门名称
      */
 
-    private String orgname;
+    private String pubdepname;
     /**
-     * 上级组织ID
+     * 备注
      */
 
-    private String parentid;
+    private String memo;
+    /**
+     * 录入人ID
+     */
 
     private String inputuserid;
+    /**
+     * 录入时间
+     */
 
     private Date inputdate;
+    /**
+     * 记录状态
+     */
+
+    private Integer status;
+    /**
+     * 子系统ID
+     */
+
+    private Integer subsysid;
     /**
      * 修改人ID
      */
@@ -34,21 +53,17 @@ public class FG_Organization {
 
     private Date modifydate;
 
-    private Integer status;
-    /**
-     * 备注
-     */
-
-    private String memo;
-
-    private Integer subsysid;
-
-    /**
-     * 辅助字段
-     */
     private int count;
 
     private boolean candelete;
+
+    public int getCount() {
+        return count;
+    }
+
+    public void setCount(int count) {
+        this.count = count;
+    }
 
     public String getId() {
         return id;
@@ -58,20 +73,20 @@ public class FG_Organization {
         this.id = id;
     }
 
-    public String getOrgname() {
-        return orgname;
+    public String getPubdepname() {
+        return pubdepname;
     }
 
-    public void setOrgname(String orgname) {
-        this.orgname = orgname;
+    public void setPubdepname(String pubdepname) {
+        this.pubdepname = pubdepname;
     }
 
-    public String getParentid() {
-        return parentid;
+    public String getMemo() {
+        return memo;
     }
 
-    public void setParentid(String parentid) {
-        this.parentid = parentid;
+    public void setMemo(String memo) {
+        this.memo = memo;
     }
 
     public String getInputuserid() {
@@ -98,36 +113,12 @@ public class FG_Organization {
         this.status = status;
     }
 
-    public String getMemo() {
-        return memo;
-    }
-
-    public void setMemo(String memo) {
-        this.memo = memo;
-    }
-
     public Integer getSubsysid() {
         return subsysid;
     }
 
     public void setSubsysid(Integer subsysid) {
         this.subsysid = subsysid;
-    }
-
-    public int getCount() {
-        return count;
-    }
-
-    public void setCount(int count) {
-        this.count = count;
-    }
-
-    public boolean isCandelete() {
-        return candelete;
-    }
-
-    public void setCandelete(boolean candelete) {
-        this.candelete = candelete;
     }
 
     public String getModifyuserid() {
@@ -144,5 +135,13 @@ public class FG_Organization {
 
     public void setModifydate(Date modifydate) {
         this.modifydate = modifydate;
+    }
+
+    public boolean isCandelete() {
+        return candelete;
+    }
+
+    public void setCandelete(boolean candelete) {
+        this.candelete = candelete;
     }
 }

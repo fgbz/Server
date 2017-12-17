@@ -27,6 +27,15 @@ public class FG_Role {
      */
 
     private Date inputdate;
+
+    /**
+     * 修改人id
+     */
+    private String modifyuserid;
+    /**
+     * 修改时间
+     */
+    private Date modifydate;
     /**
      * 状态
      */
@@ -128,5 +137,21 @@ public class FG_Role {
 
     public void setIscheck(boolean ischeck) {
         this.ischeck = ischeck;
+    }
+
+    public String getModifyuserid() {
+        return modifyuserid;
+    }
+
+    public void setModifyuserid(String modifyuserid) {
+        this.modifyuserid = modifyuserid;
+    }
+
+    public Date getModifydate() {
+        return modifydate;
+    }
+
+    public void setModifydate(Date modifydate) {
+        this.modifydate = modifydate;
     }
 }

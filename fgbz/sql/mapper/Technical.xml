@@ -32,10 +32,12 @@
         </selectKey>
 
         <if test="count==0">
-            INSERT into m_bs_techtype  (ID,TYPENAME, PARENTID ) VALUES (#{id},#{typename},#{parentid});
+            INSERT into m_bs_techtype  (ID,TYPENAME, PARENTID,INPUTUSERID,INPUTDATE,MODIFYDATE )
+            VALUES (#{id},#{typename},#{parentid},#{inputuserid,jdbcType=VARCHAR},now(),now());
         </if>
         <if test="count==1">
-            UPDATE  m_bs_techtype t  SET t.TYPENAME = #{typename,jdbcType=VARCHAR} where t.ID = #{id}
+            UPDATE  m_bs_techtype t  SET t.TYPENAME = #{typename,jdbcType=VARCHAR},
+            t.MODIFYUSERID=#{modifyuserid,jdbcType=VARCHAR},t.MODIFYDATE = now() where t.ID = #{id}
         </if>
     </insert>
 
@@ -59,7 +61,7 @@
         LEFT JOIN m_bs_techtype n ON n.id = m.LAWSTYPEID where 1=1
         <include refid="queryTechnical"></include>
         ORDER BY
-        t.RELEASEDATE DESC
+        t.MODIFYDATE DESC
         LIMIT #{startRow},#{endRow}
     </select>
 
@@ -133,15 +135,10 @@
                 <if test="inputuserid != null">
                     INPUTUSERID,
                 </if>
-                <if test="inputdate != null">
+
                     INPUTDATE,
-                </if>
-                <if test="modifyuserid != null">
-                    MODIFYUSERID,
-                </if>
-                <if test="modifydate != null">
                     MODIFYDATE,
-                </if>
+
                 <if test="memo != null">
                     MEMO,
                 </if>
@@ -178,15 +175,8 @@
                 <if test="inputuserid != null">
                     #{inputuserid,jdbcType=VARCHAR},
                 </if>
-                <if test="inputdate != null">
-                    #{inputdate,jdbcType=TIMESTAMP},
-                </if>
-                <if test="modifyuserid != null">
-                    #{modifyuserid,jdbcType=VARCHAR},
-                </if>
-                <if test="modifydate != null">
-                    #{modifydate,jdbcType=TIMESTAMP},
-                </if>
+                now(),
+                now(),
                 <if test="memo != null">
                     #{memo,jdbcType=VARCHAR},
                 </if>
@@ -221,18 +211,14 @@
                 <if test="isbatch != null">
                     ISBATCH=   #{isbatch,jdbcType=INTEGER},
                 </if>
-                <if test="inputuserid != null">
-                    INPUTUSERID =  #{inputuserid,jdbcType=VARCHAR},
-                </if>
-                <if test="inputdate != null">
-                    INPUTDATE =  #{inputdate,jdbcType=DATE},
-                </if>
+
+
                 <if test="modifyuserid != null">
                     MODIFYUSERID= #{modifyuserid,jdbcType=VARCHAR},
                 </if>
-                <if test="modifydate != null">
-                    MODIFYDATE= #{modifydate,jdbcType=DATE},
-                </if>
+
+                    MODIFYDATE= now(),
+
 
                 <if test="memo != null">
                     MEMO= #{memo,jdbcType=VARCHAR},
@@ -292,12 +278,16 @@
         t.MEMO,
         t.SUMMARYINFO,
         n.TYPENAME,
-        n.id as tectype
+        n.id as tectype,
+        ur.USERREALNAME as inputusername,
+				org.ORGNAME as inputorgname,
+				t.INPUTDATE
         FROM
         `m_bs_tech` t
         LEFT JOIN m_bs_tech_type m ON m.SID = t.id
         LEFT JOIN m_bs_techtype n ON n.id = m.LAWSTYPEID
-
+        left join m_sa_user ur on ur.ID = t.INPUTUSERID
+		left join m_sa_organization org on org.ID = ur.ORGID
         where t.id =#{id}
 
     </select>

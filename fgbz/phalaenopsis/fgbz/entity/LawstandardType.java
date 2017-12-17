@@ -29,12 +29,22 @@ public class LawstandardType {
      * 录入人ID
      */
 
-    private Integer inputuserid;
+    private String inputuserid;
     /**
      * 录入时间
      */
 
     private Date inputdate;
+    /**
+     * 修改人ID
+     */
+
+    private String modifyuserid;
+    /**
+     * 修改人时间
+     */
+
+    private Date modifydate;
     /**
      * 类别层级
      */
@@ -108,12 +118,28 @@ public class LawstandardType {
         this.memo = memo;
     }
 
-    public Integer getInputuserid() {
+    public String getInputuserid() {
         return inputuserid;
     }
 
-    public void setInputuserid(Integer inputuserid) {
+    public void setInputuserid(String inputuserid) {
         this.inputuserid = inputuserid;
+    }
+
+    public String getModifyuserid() {
+        return modifyuserid;
+    }
+
+    public void setModifyuserid(String modifyuserid) {
+        this.modifyuserid = modifyuserid;
+    }
+
+    public Date getModifydate() {
+        return modifydate;
+    }
+
+    public void setModifydate(Date modifydate) {
+        this.modifydate = modifydate;
     }
 
     public Date getInputdate() {

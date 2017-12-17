@@ -27,10 +27,12 @@
         </selectKey>
 
         <if test="count==0">
-            INSERT into m_sa_organization  (ID,ORGNAME, PARENTID ) VALUES (#{id},#{orgname},#{parentid});
+            INSERT into m_sa_organization  (ID,ORGNAME, PARENTID,INPUTUSERID,INPUTDATE,MODIFYDATE )
+            VALUES (#{id},#{orgname},#{parentid},#{inputuserid,jdbcType=VARCHAR},now(),now());
         </if>
         <if test="count==1">
-            UPDATE  m_sa_organization t  SET t.ORGNAME = #{orgname,jdbcType=VARCHAR} where t.ID = #{id}
+            UPDATE  m_sa_organization t  SET t.ORGNAME = #{orgname,jdbcType=VARCHAR},t.MODIFYUSERID=#{modifyuserid,jdbcType=VARCHAR},t.MODIFYDATE = now()
+            where t.ID = #{id}
         </if>
     </insert>
 
@@ -69,16 +71,25 @@
 	case when (select count(1) from m_sa_user_role link where link.ROLEID = t.id)>0 THEN 0 else 1 end as candelete
 FROM
     (SELECT  *from
-	m_sa_role order by INPUTDATE desc
+	m_sa_role where 1=1
+       <include refid="queryRole"></include>
+	 order by MODIFYDATE   desc
 	LIMIT #{startRow},#{endRow}) t
 	LEFT JOIN m_sa_role_menu m ON t.id = m.ROLEID
 	LEFT JOIN m_sa_menu men ON men.id = m.MENUID
-
+        order by t.MODIFYDATE   desc
     </select>
 
     <select id="getRolesCount" resultType="int">
-        SELECT count(1) FROM m_sa_role t
+        SELECT count(1) FROM m_sa_role t where 1=1
+        <include refid="queryRole"></include>
     </select>
+
+    <sql id="queryRole">
+        <if test="Name != null and Name != ''">
+            and instr(ROLENAME,#{Name})> 0
+        </if>
+    </sql>
 
     <!--删除权限-->
     <delete id="deleteRoleByID" parameterType="String">
@@ -95,20 +106,24 @@ FROM
 
         <if test="count == 0">
 
-            insert into m_sa_role  (ID,ROLENAME,INPUTUSERID,INPUTDATE) VALUES
-            (#{id},#{rolename,jdbcType=VARCHAR},#{inputuserid,jdbcType=VARCHAR},now());
+            insert into m_sa_role  (ID,ROLENAME,INPUTUSERID,INPUTDATE,MODIFYDATE) VALUES
+            (#{id},#{rolename,jdbcType=VARCHAR},#{inputuserid,jdbcType=VARCHAR},now(),now());
 
         </if>
         <if test="count > 0">
-            UPDATE m_sa_role set ROLENAME = #{rolename,jdbcType=VARCHAR} where id=#{id};
+            UPDATE m_sa_role set ROLENAME = #{rolename,jdbcType=VARCHAR},
+            MODIFYUSERID = #{modifyuserid,jdbcType=VARCHAR},MODIFYDATE =now() where id=#{id};
         </if>
 
         DELETE  from m_sa_role_menu where ROLEID=#{id};
 
-        insert into m_sa_role_menu  (ID,ROLEID,MENUID,INPUTUSERID,INPUTDATE) VALUES
-        <foreach collection="menus" item="item" open="" close="" separator=",">
-            (uuid(),#{id},#{item.id},#{inputuserid,jdbcType=VARCHAR},now())
-        </foreach>
+        <if test="menus !=null and menus.size()>0">
+            insert into m_sa_role_menu  (ID,ROLEID,MENUID,INPUTUSERID,INPUTDATE) VALUES
+            <foreach collection="menus" item="item" open="" close="" separator=",">
+                (uuid(),#{id},#{item.id},#{inputuserid,jdbcType=VARCHAR},now())
+            </foreach>
+        </if>
+
 
     </insert>
 
@@ -146,10 +161,8 @@ FROM
                 <if test="inputuserid != null">
                     inputuserid,
                 </if>
-                <if test="inputdate != null">
                     INPUTDATE,
-                </if>
-
+                    MODIFYDATE,
                 <if test="favoriteid != null">
                     FAVORITEID,
                 </if>
@@ -180,9 +193,8 @@ FROM
                 <if test="inputuserid != null">
                     #{inputuserid,jdbcType=VARCHAR},
                 </if>
-                <if test="inputdate != null">
                    now(),
-                </if>
+                now(),
                 <if test="favoriteid != null">
                     #{favoriteid,jdbcType=VARCHAR},
                 </if>
@@ -215,6 +227,10 @@ FROM
                 <if test="favoriteid != null">
                     favoriteid=   #{favoriteid,jdbcType=VARCHAR},
                 </if>
+                <if test="lastmodifyuserid != null">
+                    lastmodifyuserid = #{lastmodifyuserid,jdbcType=VARCHAR},
+                </if>
+                    modifydate = now(),
 
             </trim>
             where ID=#{id}
@@ -313,12 +329,12 @@ FROM
         (SELECT  *from
 	m_sa_user where 1=1
         <include refid="queryUser"></include>
-	order by MPDIFYDATE desc
+	order by modifydate desc
         LIMIT #{startRow},#{endRow}) t
 	LEFT JOIN m_sa_organization org ON t.ORGID = org.ID
 	left join m_sa_user_role link on link.USERID = t.ID
 	left join m_sa_role role on link.ROLEID = role.ID
-	where 1=1
+        order by t.modifydate desc
 
 
     </select>

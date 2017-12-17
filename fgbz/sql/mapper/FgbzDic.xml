@@ -12,4 +12,115 @@
         SELECT t.id,t.STATUSNAME as name  from m_sa_lawstandardstatus t
     </select>
 
+    <!--获取通知列表-->
+    <select id="getPublishdepList" parameterType="map" resultType="Publishdep">
+      SELECT
+	t.ID,
+	t.PUBDEPNAME,
+CASE
+
+	WHEN (
+SELECT
+count( 1 )
+FROM
+	m_bs_lawstandard law
+	LEFT JOIN m_bs_lawstandard_pubdep pub ON law.ID = pub.SID
+WHERE
+	pub.PUBDEPID = t.id
+	) > 0 THEN
+		0 ELSE 1
+	END as candelete
+FROM
+m_sa_publishdep t where 1=1
+        <include refid="queryPublishdep"></include>
+        order by t.MODIFYDATE desc
+        LIMIT #{startRow},#{endRow}
+    </select>
+
+    <sql id="queryPublishdep">
+        <if test="Name != null and Name != ''">
+            and instr(t.PUBDEPNAME,#{Name})> 0
+        </if>
+    </sql>
+
+    <!--获取通知列表总数-->
+    <select id="getPublishdepListCount" parameterType="map" resultType="int">
+        SELECT
+        count(1)
+        FROM
+        m_sa_publishdep t WHERE 1=1
+        <include refid="queryPublishdep"></include>
+    </select>
+
+    <!--删除通知-->
+    <delete id="DeletePublishdepByID" parameterType="String">
+        DELETE from m_sa_publishdep where id = #{id}
+    </delete>
+
+    <!--新增或编辑新闻通知-->
+    <insert id="SaveOrUpdatePublishdep" parameterType="Publishdep">
+
+        <selectKey keyProperty="count" resultType="int" order="BEFORE">
+            select count(1) from m_sa_publishdep t where t.ID=#{id}
+        </selectKey>
+
+        <if test="count == 0">
+            insert into m_sa_publishdep
+            <trim prefix="(" suffix=")" suffixOverrides=",">
+                <if test="id != null">
+                    ID,
+                </if>
+                <if test="pubdepname != null">
+                    pubdepname,
+                </if>
+                <if test="inputuserid != null">
+                    INPUTUSERID,
+                </if>
+                INPUTDATE,
+                MODIFYDATE,
+            </trim>
+            <trim prefix="values (" suffix=")" suffixOverrides=",">
+                <if test="id != null">
+                    #{id,jdbcType=VARCHAR},
+                </if>
+                <if test="pubdepname != null">
+                    #{pubdepname,jdbcType=VARCHAR},
+                </if>
+                <if test="inputuserid != null">
+                    #{inputuserid,jdbcType=VARCHAR},
+                </if>
+                now(),
+                now(),
+            </trim>
+
+        </if>
+        <if test="count>0">
+            update  m_sa_publishdep set
+            <trim prefix="" suffix="" suffixOverrides=",">
+
+                <if test="pubdepname != null">
+                    pubdepname = #{pubdepname,jdbcType=VARCHAR},
+                </if>
+                <if test="modifyuserid != null">
+                    MODIFYUSERID = #{modifyuserid,jdbcType=VARCHAR},
+                </if>
+
+
+                MODIFYDATE= now(),
+            </trim>
+            where ID=#{id}
+
+
+        </if>
+    </insert>
+
+    <!--验证发布部门是否重复-->
+    <select id="checkPublichName" parameterType="Publishdep" resultType="int">
+        SELECT  count(1) from  m_sa_publishdep t where t.pubdepname = #{pubdepname}
+        <if test="id !=null and id !=''">
+            and t.id <![CDATA[  != ]]> #{id}
+        </if>
+    </select>
+
+
 </mapper>
