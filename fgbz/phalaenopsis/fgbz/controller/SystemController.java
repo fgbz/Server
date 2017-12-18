@@ -162,4 +162,24 @@ public class SystemController {
         return systemServie.SaveOrUpdateUser(user);
     }
 
+    /**
+     * 获取审核设置
+     * @return
+     */
+    @RequestMapping(value = "/getApproveSetting", method = RequestMethod.GET)
+    @ResponseBody
+    public int getApproveSetting(){
+        return systemServie.getApproveSetting();
+    }
+
+    /**
+     * 保存审核设置
+     * @return
+     */
+    @RequestMapping(value = "/SaveOrUpdateApproveSetting", method = RequestMethod.GET)
+    @ResponseBody
+    public int SaveOrUpdateApproveSetting(int status){
+
+        return systemServie.SaveOrUpdateApproveSetting(status);
+    }
 }

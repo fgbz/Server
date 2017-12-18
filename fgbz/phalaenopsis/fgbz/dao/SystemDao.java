@@ -149,4 +149,10 @@ public interface SystemDao {
      */
     int getApproveSetting();
 
+    /**
+     * 保存审核设置
+     * @return
+     */
+    int SaveOrUpdateApproveSetting(Map<String, Object> map);
+
 }

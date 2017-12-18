@@ -387,6 +387,14 @@ FROM
         <selectKey keyProperty="count" resultType="int" order="BEFORE">
             select count(1) from m_sa_setting t where t.KEY='isApprove'
         </selectKey>
+
+        <if test="count==0">
+            insert into m_sa_setting t (t.id,t.KEY,t.VALUE) VALUES (uuid(),'isApprove',#{value})
+        </if>
+        <if test="count>0">
+            UPDATE m_sa_setting t set t.VALUE = #{value} where t.KEY = 'isApprove'
+        </if>
+
     </insert>
 
 

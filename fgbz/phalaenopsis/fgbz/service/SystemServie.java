@@ -274,5 +274,24 @@ public class SystemServie {
         return OpResult.Success;
     }
 
+    /**
+     * 获取审核设置
+     * @return
+     */
+   public int getApproveSetting(){
+       return systemDao.getApproveSetting();
+   }
 
+    /**
+     * 保存审核设置
+     * @return
+     */
+    public int SaveOrUpdateApproveSetting(int status){
+        Map<String, Object> map = new HashMap<>();
+        map.put("key","isApprove");
+        map.put("value",status);
+        map.put("count",0);
+        systemDao.SaveOrUpdateApproveSetting(map);
+        return OpResult.Success;
+    }
 }

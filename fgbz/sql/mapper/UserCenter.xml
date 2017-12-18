@@ -226,7 +226,7 @@ FROM
     </select>
 
     <!--保存审核信息-->
-    <insert id="SaveApprove" parameterType="">
+    <insert id="SaveApprove" parameterType="LawstandardApprove">
         insert into m_bs_lawstandard_approve
         <trim prefix="(" suffix=")" suffixOverrides=",">
             <if test="id != null">
