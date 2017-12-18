@@ -199,7 +199,8 @@ FROM
         t.TITLE,
         t.DETAILS,
         org.ORGNAME,
-        t.INPUTDATE
+        t.INPUTDATE,
+        us.USERREALNAME as inputname
         FROM
         m_bs_suggestion t
         LEFT JOIN m_sa_user us ON us.ID = t.INPUTUSERID
@@ -280,6 +281,7 @@ SELECT
 FROM
 	m_bs_lawstandard_approve t
 LEFT JOIN m_sa_user us ON t.ApproveUserID = us.ID
+where t.LawstandardID = #{id}
 ORDER BY t.ApproveDate desc
     </select>
 

@@ -147,7 +147,7 @@ public interface SystemDao {
      * 获取审核设置
      * @return
      */
-    int getApproveSetting();
+    String getApproveSetting();
 
     /**
      * 保存审核设置

@@ -68,6 +68,11 @@ public class Suggestion {
      */
     private String orgname;
 
+    /**
+     * 发布人
+     */
+    private String inputname;
+
     public int getCount() {
         return count;
     }
@@ -164,5 +169,13 @@ public class Suggestion {
 
     public void setOrgname(String orgname) {
         this.orgname = orgname;
+    }
+
+    public String getInputname() {
+        return inputname;
+    }
+
+    public void setInputname(String inputname) {
+        this.inputname = inputname;
     }
 }

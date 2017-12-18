@@ -100,4 +100,17 @@ public interface LawstandardDao {
      */
     int SaveFileLink(Lawstandard lawstandard);
 
+    /**
+     * 更新法规发布状态
+     * @param map
+     * @return
+     */
+    int updateLawstandardStatus(Map<String, Object>  map);
+
+    /**
+     * 更新所有待审核的法规
+     * @return
+     */
+    int updateAllCheckingLawstandard();
+
 }

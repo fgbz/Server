@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import phalaenopsis.common.entity.Page;
 import phalaenopsis.common.entity.PagingEntity;
 import phalaenopsis.fgbz.entity.Adviceinfo;
+import phalaenopsis.fgbz.entity.LawstandardApprove;
 import phalaenopsis.fgbz.entity.Suggestion;
 import phalaenopsis.fgbz.service.UserCenterService;
 
@@ -111,5 +112,30 @@ public class UserCenterController {
     @ResponseBody
     public PagingEntity<Suggestion> getSuggestionList(@RequestBody Page page){
         return  userCenterService.getSuggestionList(page);
+    }
+
+    /**********************************审核******************************/
+
+    /**
+     * 保存审核信息
+     * @param lawstandardApprove
+     * @return
+     */
+    @RequestMapping(value = "/SaveApprove", method = RequestMethod.POST)
+    @ResponseBody
+    public int SaveApprove(@RequestBody LawstandardApprove lawstandardApprove){
+
+        return userCenterService.SaveApprove(lawstandardApprove);
+    }
+
+    /**
+     * 通过法规id获取审核历史记录
+     * @param id
+     * @return
+     */
+    @RequestMapping(value = "/getApproveHistroy", method = RequestMethod.GET)
+    @ResponseBody
+    public List<LawstandardApprove> getApproveHistroy(String id){
+        return userCenterService.getApproveHistroy(id);
     }
 }

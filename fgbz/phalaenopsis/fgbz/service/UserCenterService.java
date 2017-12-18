@@ -2,12 +2,15 @@ package phalaenopsis.fgbz.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import phalaenopsis.common.entity.Condition;
 import phalaenopsis.common.entity.OpResult;
 import phalaenopsis.common.entity.Page;
 import phalaenopsis.common.entity.PagingEntity;
+import phalaenopsis.fgbz.dao.LawstandardDao;
 import phalaenopsis.fgbz.dao.UserCenterDao;
 import phalaenopsis.fgbz.entity.Adviceinfo;
+import phalaenopsis.fgbz.entity.LawstandardApprove;
 import phalaenopsis.fgbz.entity.Suggestion;
 import phalaenopsis.lawcase.workflownodes.Punish;
 
@@ -25,6 +28,8 @@ public class UserCenterService {
     @Autowired
     private UserCenterDao userCenterDao;
 
+    @Autowired
+    private LawstandardDao lawstandardDao;
     /**
      * 保存或编辑通知
      * @param adviceinfo
@@ -229,4 +234,39 @@ public class UserCenterService {
     }
 
 
+    /**********************************审核******************************/
+
+    /**
+     * 保存审核信息
+     * @param lawstandardApprove
+     * @return
+     */
+    @Transactional
+    public int SaveApprove(LawstandardApprove lawstandardApprove){
+        if(lawstandardApprove.getId()==null||lawstandardApprove.getId().equals("")){
+            lawstandardApprove.setId(UUID.randomUUID().toString());
+        }
+        userCenterDao.SaveApprove(lawstandardApprove);
+
+        int status=1;
+        if(lawstandardApprove.getStatus()==0){
+            status = 1;
+        }else{
+            status = 3;
+        }
+        Map<String, Object> map = new HashMap<String, Object>();
+        map.put("id",lawstandardApprove.getLawstandardID());
+        map.put("status",status);
+        lawstandardDao.updateLawstandardStatus(map);
+        return OpResult.Success;
+    }
+
+    /**
+     * 通过法规id获取审核历史记录
+     * @param id
+     * @return
+     */
+    public List<LawstandardApprove> getApproveHistroy(String id){
+        return userCenterDao.getApproveHistroy(id);
+    }
 }

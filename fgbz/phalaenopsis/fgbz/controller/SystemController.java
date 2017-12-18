@@ -10,6 +10,7 @@ import phalaenopsis.common.entity.Page;
 import phalaenopsis.common.entity.PagingEntity;
 import phalaenopsis.common.method.cache.UserCache;
 import phalaenopsis.fgbz.common.CryptUtils;
+import phalaenopsis.fgbz.dao.LawstandardDao;
 import phalaenopsis.fgbz.entity.FG_Organization;
 import phalaenopsis.fgbz.entity.FG_Role;
 import phalaenopsis.fgbz.entity.FG_User;
@@ -26,6 +27,7 @@ public class SystemController {
 
     @Autowired
     private SystemServie systemServie;
+
 
     @RequestMapping(value = "/Login", method = RequestMethod.POST)
     @ResponseBody

@@ -378,7 +378,7 @@ FROM
     </select>
 
     <!--获取审核状态-->
-    <select id="getApproveSetting" resultType="int">
+    <select id="getApproveSetting" resultType="String">
         SELECT t.VALUE from m_sa_setting t where t.KEY='isApprove'
     </select>
 

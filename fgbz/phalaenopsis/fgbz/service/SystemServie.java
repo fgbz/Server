@@ -7,6 +7,7 @@ import phalaenopsis.common.entity.Condition;
 import phalaenopsis.common.entity.OpResult;
 import phalaenopsis.common.entity.Page;
 import phalaenopsis.common.entity.PagingEntity;
+import phalaenopsis.fgbz.dao.LawstandardDao;
 import phalaenopsis.fgbz.dao.SystemDao;
 import phalaenopsis.fgbz.entity.FG_Menu;
 import phalaenopsis.fgbz.entity.FG_Organization;
@@ -20,6 +21,9 @@ public class SystemServie {
 
     @Autowired
     private SystemDao systemDao;
+
+    @Autowired
+    private LawstandardDao lawstandardDao;
 
     private  List<FG_Organization> ids = new ArrayList<FG_Organization>();
 
@@ -279,19 +283,31 @@ public class SystemServie {
      * @return
      */
    public int getApproveSetting(){
-       return systemDao.getApproveSetting();
+       String str =  systemDao.getApproveSetting();
+       if(str!=null){
+           return Integer.parseInt(str);
+       }
+       else{
+           return 1;
+       }
    }
 
     /**
      * 保存审核设置
      * @return
      */
+    @Transactional
     public int SaveOrUpdateApproveSetting(int status){
         Map<String, Object> map = new HashMap<>();
         map.put("key","isApprove");
         map.put("value",status);
         map.put("count",0);
         systemDao.SaveOrUpdateApproveSetting(map);
+
+        //不需要审核，更新所有待审核的法规
+        if(status==0){
+            lawstandardDao.updateAllCheckingLawstandard();
+        }
         return OpResult.Success;
     }
 }

@@ -34,6 +34,15 @@ public class LawstandardApprove {
      */
     private String username;
 
+    private String inputorgname;
+
+    public String getInputorgname() {
+        return inputorgname;
+    }
+
+    public void setInputorgname(String inputorgname) {
+        this.inputorgname = inputorgname;
+    }
 
     public String getId() {
         return id;
