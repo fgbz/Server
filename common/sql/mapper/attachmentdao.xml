@@ -111,13 +111,19 @@
 		FILETYPE,
 		SERVERFILENAME,
 		CLIENTFILENAME,
-		SERVERPATH
+		SERVERPATH,
+		CONTENT,
+		INPUTDATE,
+		INPUTUSERID
 		) values
 		(#{id},
 		#{fileExt,jdbcType=VARCHAR},
 		#{actualFile,jdbcType=VARCHAR},
 		#{fileName,jdbcType=VARCHAR},
-		#{path,jdbcType=VARCHAR}
+		#{path,jdbcType=VARCHAR},
+		#{content,jdbcType=VARCHAR},
+		now(),
+		#{inputuserid,jdbcType=VARCHAR}
 		)
 	</insert>
 	

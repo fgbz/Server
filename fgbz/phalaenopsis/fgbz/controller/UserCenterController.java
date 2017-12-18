@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import phalaenopsis.common.entity.Page;
 import phalaenopsis.common.entity.PagingEntity;
 import phalaenopsis.fgbz.entity.Adviceinfo;
+import phalaenopsis.fgbz.entity.Suggestion;
 import phalaenopsis.fgbz.service.UserCenterService;
 
 import java.util.List;
@@ -76,5 +77,39 @@ public class UserCenterController {
     @ResponseBody
     public PagingEntity<Adviceinfo> getUpToDateAdviceinfos(@RequestBody Page page){
         return  userCenterService.getUpToDateAdviceinfos(page);
+    }
+
+    /**
+     * 保存或编辑留言
+     * @param suggestion
+     * @return
+     */
+    @RequestMapping(value = "/SaveOrUpdateSuggestion", method = RequestMethod.POST)
+    @ResponseBody
+    public int SaveOrUpdateSuggestion(@RequestBody Suggestion suggestion){
+        return userCenterService.SaveOrUpdateSuggestion(suggestion);
+    }
+
+    /**
+     * 删除留言
+     * @param id
+     * @return
+     */
+    @RequestMapping(value = "/DeleteSuggestionByID", method = RequestMethod.GET)
+    @ResponseBody
+    public int DeleteSuggestionByID(String id){
+
+        return userCenterService.DeleteSuggestionByID(id);
+    }
+
+    /**
+     * 获取留言列表
+     * @param page
+     * @return
+     */
+    @RequestMapping(value = "/getSuggestionList", method = RequestMethod.POST)
+    @ResponseBody
+    public PagingEntity<Suggestion> getSuggestionList(@RequestBody Page page){
+        return  userCenterService.getSuggestionList(page);
     }
 }

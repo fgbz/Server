@@ -122,4 +122,165 @@ FROM
         <include refid="queryAdviceinfo"></include>
     </select>
 
+    <!--保存留言-->
+    <insert id="SaveOrUpdateSuggestion" parameterType="Suggestion">
+        <selectKey keyProperty="count" resultType="int" order="BEFORE">
+            select count(1) from m_bs_suggestion t where t.ID=#{id}
+        </selectKey>
+
+        <if test="count == 0">
+            insert into m_bs_suggestion
+            <trim prefix="(" suffix=")" suffixOverrides=",">
+                <if test="id != null">
+                    ID,
+                </if>
+                <if test="title != null">
+                    TITLE,
+                </if>
+                <if test="details != null">
+                    DETAILS,
+                </if>
+                <if test="inputuserid != null">
+                    INPUTUSERID,
+                </if>
+                INPUTDATE,
+                MODIFYDATE,
+            </trim>
+            <trim prefix="values (" suffix=")" suffixOverrides=",">
+                <if test="id != null">
+                    #{id,jdbcType=VARCHAR},
+                </if>
+                <if test="title != null">
+                    #{title,jdbcType=VARCHAR},
+                </if>
+                <if test="details != null">
+                    #{details,jdbcType=VARCHAR},
+                </if>
+                <if test="inputuserid != null">
+                    #{inputuserid,jdbcType=VARCHAR},
+                </if>
+                now(),
+                now(),
+            </trim>
+
+        </if>
+        <if test="count>0">
+            update  m_bs_suggestion set
+            <trim prefix="" suffix="" suffixOverrides=",">
+
+                <if test="title != null">
+                    TITLE = #{title,jdbcType=VARCHAR},
+                </if>
+                <if test="details != null">
+                    DETAILS = #{details,jdbcType=VARCHAR},
+                </if>
+                <if test="modifyuserid != null">
+                    MODIFYUSERID = #{modifyuserid,jdbcType=VARCHAR},
+                </if>
+
+
+                MODIFYDATE= now(),
+            </trim>
+            where ID=#{id}
+
+
+        </if>
+    </insert>
+
+    <!--删除留言-->
+    <delete id="DeleteSuggestionByID" parameterType="String">
+         DELETE from m_bs_suggestion where id = #{id}
+    </delete>
+
+    <!--获取留言列表-->
+    <select id="getSuggestionList" resultType="Suggestion">
+        SELECT
+        t.ID,
+        t.TITLE,
+        t.DETAILS,
+        org.ORGNAME,
+        t.INPUTDATE
+        FROM
+        m_bs_suggestion t
+        LEFT JOIN m_sa_user us ON us.ID = t.INPUTUSERID
+        LEFT JOIN m_sa_organization org ON us.ORGID = org.ID
+        WHERE 1=1
+        <include refid="querySuggestion"></include>
+        ORDER by t.MODIFYDATE DESC
+        LIMIT #{startRow},#{endRow}
+    </select>
+
+    <sql id="querySuggestion">
+        <if test="Title != null and Title != ''">
+            and instr(t.TITLE,#{Title})> 0
+        </if>
+    </sql>
+
+    <!--获取留言列表数量-->
+    <select id="getSuggestionListCount" parameterType="map" resultType="int">
+        SELECT
+        count(1)
+        FROM
+        m_bs_suggestion t WHERE 1=1
+        <include refid="querySuggestion"></include>
+    </select>
+
+    <!--保存审核信息-->
+    <insert id="SaveApprove" parameterType="">
+        insert into m_bs_lawstandard_approve
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="id != null">
+                ID,
+            </if>
+            <if test="lawstandardID != null">
+                LawstandardID,
+            </if>
+            <if test="content != null">
+                Content,
+            </if>
+            <if test="approveUserID != null">
+                ApproveUserID,
+            </if>
+            ApproveDate,
+            <if test="status != null">
+                Status,
+            </if>
+
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="id != null">
+                #{id,jdbcType=VARCHAR},
+            </if>
+            <if test="lawstandardID != null">
+                #{lawstandardID,jdbcType=VARCHAR},
+            </if>
+            <if test="content != null">
+                #{content,jdbcType=VARCHAR},
+            </if>
+            <if test="approveUserID != null">
+                #{approveUserID,jdbcType=VARCHAR},
+            </if>
+            now(),
+            <if test="status != null">
+                #{status,jdbcType=INTEGER},
+            </if>
+        </trim>
+    </insert>
+
+    <!--通过法规id获取审核历史记录-->
+    <select id="getApproveHistroy" parameterType="String" resultType="LawstandardApprove">
+SELECT
+	t.ID,
+	t.LawstandardID,
+	t.Content,
+	t.ApproveUserID,
+	t.ApproveDate,
+	us.USERREALNAME as username,
+	t.`Status`
+FROM
+	m_bs_lawstandard_approve t
+LEFT JOIN m_sa_user us ON t.ApproveUserID = us.ID
+ORDER BY t.ApproveDate desc
+    </select>
+
 </mapper>

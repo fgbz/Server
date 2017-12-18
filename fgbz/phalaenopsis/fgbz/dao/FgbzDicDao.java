@@ -1,6 +1,7 @@
 package phalaenopsis.fgbz.dao;
 
 import phalaenopsis.fgbz.entity.FgbzDictory;
+import phalaenopsis.fgbz.entity.LawstandardStatus;
 import phalaenopsis.fgbz.entity.Publishdep;
 
 import java.util.List;
@@ -49,4 +50,38 @@ public interface FgbzDicDao {
      */
     int checkPublichName(Publishdep publishdep);
 
+    /**********************************状态*******************************/
+    /**
+     * 获取状态list
+     * @param map
+     * @return
+     */
+    List<LawstandardStatus>  getLawstandardStatusList(Map<String, Object> map);
+
+    /**
+     * 获取所有状态数量
+     * @param map
+     * @return
+     */
+    int getLawstandardStatusListCount(Map<String, Object> map);
+
+    /**
+     * 删除状态
+     * @param id
+     * @return
+     */
+    int DeleteLawstandardStatusByID(String id);
+
+    /**
+     * 新增或修改状态
+     * @param lawstandardStatus
+     * @return
+     */
+    int SaveOrUpdateLawstandardStatus(LawstandardStatus lawstandardStatus);
+
+    /**
+     * 验证状态是否重复
+     * @return
+     */
+    int checkLawstandardStatusName(LawstandardStatus lawstandardStatus);
 }

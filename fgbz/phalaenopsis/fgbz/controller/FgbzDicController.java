@@ -10,6 +10,7 @@ import phalaenopsis.common.entity.Condition;
 import phalaenopsis.common.entity.OpResult;
 import phalaenopsis.common.entity.Page;
 import phalaenopsis.common.entity.PagingEntity;
+import phalaenopsis.fgbz.entity.LawstandardStatus;
 import phalaenopsis.fgbz.entity.Publishdep;
 import phalaenopsis.fgbz.service.FgbzDicService;
 
@@ -72,5 +73,42 @@ public class FgbzDicController {
     public int SaveOrUpdatePublishdep(@RequestBody Publishdep publishdep){
 
         return fgbzDicService.SaveOrUpdatePublishdep(publishdep);
+    }
+
+
+    /**
+     * 获取状态列表
+     * @param page
+     * @return
+     */
+    @RequestMapping(value = "/getLawstandardStatusList", method = RequestMethod.POST)
+    @ResponseBody
+    public PagingEntity<LawstandardStatus> getLawstandardStatusList(@RequestBody Page page){
+
+        return fgbzDicService.getLawstandardStatusList(page);
+    }
+
+    /**
+     * 删除状态
+     * @param id
+     * @return
+     */
+    @RequestMapping(value = "/DeleteLawstandardStatusByID", method = RequestMethod.GET)
+    @ResponseBody
+    public int DeleteLawstandardStatusByID(String id){
+
+        return  fgbzDicService.DeleteLawstandardStatusByID(id);
+    }
+
+    /**
+     * 新增或修改状态
+     * @param lawstandardStatus
+     * @return
+     */
+    @RequestMapping(value = "/SaveOrUpdateLawstandardStatus", method = RequestMethod.POST)
+    @ResponseBody
+    public int SaveOrUpdateLawstandardStatus(@RequestBody LawstandardStatus lawstandardStatus){
+
+        return  fgbzDicService.SaveOrUpdateLawstandardStatus(lawstandardStatus);
     }
 }

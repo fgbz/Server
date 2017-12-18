@@ -134,6 +134,15 @@ public class Attachment implements Serializable   {
 
 	private Date modifydate;
 
+	private String inputuserid;
+
+	public String getInputuserid() {
+		return inputuserid;
+	}
+
+	public void setInputuserid(String inputuserid) {
+		this.inputuserid = inputuserid;
+	}
 
 	public Integer getIsdelete() {
 		return isdelete;

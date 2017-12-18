@@ -31,7 +31,7 @@ public class Generator {
 		AutoGenerator mpg = new AutoGenerator();
 		// 全局配置
 		GlobalConfig gc = new GlobalConfig();
-		gc.setOutputDir("C://createFile");
+		gc.setOutputDir("D://createFile");
 		gc.setFileOverride(false);
 		gc.setActiveRecord(false);
 		gc.setEnableCache(false);// XML 二级缓存

@@ -143,9 +143,9 @@ public class AttachmentController {
 	@RequestMapping(value = "/uploadWithNoThum", method = RequestMethod.POST)
 	@ResponseBody
 	public FileState uploadWithNoThum(HttpServletRequest request) {
-		String bizID = request.getParameter("bizID");
+		String userid = request.getParameter("userid");
 		String module = request.getParameter("module");
-		return service.uploadWithNoThum(bizID, module, request);
+		return service.uploadWithNoThum(userid, module, request);
 	}
 
 

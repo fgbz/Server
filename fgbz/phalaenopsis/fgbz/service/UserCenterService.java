@@ -8,6 +8,7 @@ import phalaenopsis.common.entity.Page;
 import phalaenopsis.common.entity.PagingEntity;
 import phalaenopsis.fgbz.dao.UserCenterDao;
 import phalaenopsis.fgbz.entity.Adviceinfo;
+import phalaenopsis.fgbz.entity.Suggestion;
 import phalaenopsis.lawcase.workflownodes.Punish;
 
 import java.util.HashMap;
@@ -137,4 +138,95 @@ public class UserCenterService {
 
         return result;
     }
+
+    /*******************************************用户留言************************************************/
+
+    /**
+     * 保存或编辑留言
+     * @param suggestion
+     * @return
+     */
+    public int SaveOrUpdateSuggestion(Suggestion suggestion){
+        if(suggestion.getId()==null||suggestion.getId().equals("")){
+            suggestion.setId(UUID.randomUUID().toString());
+        }
+        userCenterDao.SaveOrUpdateSuggestion(suggestion);
+        return OpResult.Success;
+    }
+
+    /**
+     * 删除留言
+     * @param id
+     * @return
+     */
+    public int DeleteSuggestionByID(String id){
+        userCenterDao.DeleteSuggestionByID(id);
+        return OpResult.Success;
+    }
+
+    /**
+     * 获取留言列表
+     * @param page
+     * @return
+     */
+    public PagingEntity<Suggestion> getSuggestionList(Page page){
+
+        Map<String, Object> conditions = new HashMap<String, Object>();
+
+        if(page.getConditions()!=null) {
+            //查询条件
+            for (Condition condition : page.getConditions()) {
+                if (condition.getKey().equals("Title")) {
+                    conditions.put("Title", condition.getValue());
+                }else if(condition.getKey().equals("Type")){
+                    conditions.put("Type", condition.getValue());
+                }
+
+            }
+        }
+
+
+        // 1,根据条件一共查询到的数据条数
+        int count = userCenterDao.getSuggestionListCount(conditions);
+
+        if(conditions.get("Type")!=null){
+            //最新10条
+            if(page.getPageNo()==1){
+                conditions.put("startRow", 0 );
+            }else{
+                conditions.put("startRow", page.getPageSize() * (page.getPageNo() - 1) );
+            }
+            int finalcount =  page.getPageSize() * page.getPageNo();
+
+            if(finalcount>=10){
+                conditions.put("endRow", 10);
+            }else{
+                conditions.put("endRow", page.getPageSize());
+            }
+        }else{
+            if(page.getPageNo()==1){
+                conditions.put("startRow", 0 );
+            }else{
+                conditions.put("startRow", page.getPageSize() * (page.getPageNo() - 1) );
+            }
+            conditions.put("endRow", page.getPageSize());
+        }
+
+        // 2, 查询到当前页数的数据
+        List<Suggestion> list = userCenterDao.getSuggestionList(conditions);
+
+        PagingEntity<Suggestion> result = new PagingEntity<Suggestion>();
+        result.setPageCount(count);
+
+        int pageCount = 0 == count ? 1 : (count - 1) / page.getPageSize() + 1; // 由于计算pageCount存在整除的情况，所以计算的时候先减1在除以pageSize
+        result.setPageNo(page.getPageNo());
+        result.setPageSize(page.getPageSize());
+        result.setPageCount(pageCount);
+        result.setRecordCount(count);
+        result.setCurrentList(list);
+
+        return result;
+    }
+
+
 }

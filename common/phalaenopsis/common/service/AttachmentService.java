@@ -18,6 +18,8 @@ import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.pdfbox.pdmodel.PDDocument;
+import org.apache.pdfbox.text.PDFTextStripper;
 import org.springframework.transaction.annotation.Transactional;
 
 import org.apache.commons.fileupload.servlet.ServletRequestContext;
@@ -165,8 +167,8 @@ public class AttachmentService extends Basis {
 		return save(fileName, explain, null, 0, 0, 0, request, false);
 	}
 
-	public FileState uploadWithNoThum(String bizId, String module, HttpServletRequest request) {
-		return saveWithNoThum(bizId, module, request);
+	public FileState uploadWithNoThum(String userid, String module, HttpServletRequest request) {
+		return saveWithNoThum(userid, module, request);
 	}
 
 	public FileState mobileUploadToServer(String fileName, String spotid, Double x, Double y, Double angle,
@@ -284,7 +286,7 @@ public class AttachmentService extends Basis {
 //		file.deleteOnExit();
 	}
 
-	private FileState saveWithNoThum(String bizId, String module, HttpServletRequest request) {
+	private FileState saveWithNoThum(String userid, String module, HttpServletRequest request) {
 		String guid = UUID.randomUUID().toString();
 
 		// 得到上传文件
@@ -320,13 +322,26 @@ public class AttachmentService extends Basis {
 				System.out.println(converter.getswfPath());
 			}
 
-			Attachment attachment = new Attachment(guid, fileName, ext, multipartFile.getSize(), storeFile, bizId,
+			Attachment attachment = new Attachment(guid, fileName, ext, multipartFile.getSize(), storeFile, userid,
 					Calendar.getInstance().getTime(), module, AttachmentSource.Client);
 			attachment.setPath(storageFolder);
-
+			attachment.setInputuserid(userid);
 			//获取pdf中的文字
 			if(ext.equals("pdf")){
-				attachment.setContent(ItextpdfUtil.readPdfToTxt(storageFolder + storeFile));
+
+				PDDocument document=PDDocument.load(file);
+
+				// 获取页码
+				int pages = document.getNumberOfPages();
+
+				// 读文本内容
+				PDFTextStripper stripper=new PDFTextStripper();
+				// 设置按顺序输出
+				stripper.setSortByPosition(true);
+				stripper.setStartPage(1);
+				stripper.setEndPage(pages);
+				String content = stripper.getText(document);
+				attachment.setContent(content);
 			}
 
 			dao.saveFgbz(attachment);

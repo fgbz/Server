@@ -377,5 +377,17 @@ FROM
           </if>
     </select>
 
+    <!--获取审核状态-->
+    <select id="getApproveSetting" resultType="int">
+        SELECT t.VALUE from m_sa_setting t where t.KEY='isApprove'
+    </select>
+
+    <!--保存或修改审核状态-->
+    <insert id="SaveOrUpdateApproveSetting" parameterType="map">
+        <selectKey keyProperty="count" resultType="int" order="BEFORE">
+            select count(1) from m_sa_setting t where t.KEY='isApprove'
+        </selectKey>
+    </insert>
+
 
 </mapper>

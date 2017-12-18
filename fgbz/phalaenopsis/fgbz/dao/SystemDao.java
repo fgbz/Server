@@ -143,4 +143,10 @@ public interface SystemDao {
      */
     int checkUserRepeat(FG_User user);
 
+    /**
+     * 获取审核设置
+     * @return
+     */
+    int getApproveSetting();
+
 }

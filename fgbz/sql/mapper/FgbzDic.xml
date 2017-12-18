@@ -57,7 +57,7 @@ m_sa_publishdep t where 1=1
         DELETE from m_sa_publishdep where id = #{id}
     </delete>
 
-    <!--新增或编辑新闻通知-->
+    <!--新增或编辑发布部门-->
     <insert id="SaveOrUpdatePublishdep" parameterType="Publishdep">
 
         <selectKey keyProperty="count" resultType="int" order="BEFORE">
@@ -122,5 +122,114 @@ m_sa_publishdep t where 1=1
         </if>
     </select>
 
+
+    <!--获取状态列表-->
+    <select id="getLawstandardStatusList" parameterType="map" resultType="LawstandardStatus">
+        SELECT
+        t.ID,
+        t.STATUSNAME,
+        CASE
+
+        WHEN (
+        SELECT
+        count( 1 )
+        FROM
+        m_bs_lawstandard law
+        WHERE
+        law.STATUS = t.id
+        ) > 0 THEN
+        0 ELSE 1
+        END as candelete
+        FROM
+        m_sa_lawstandardstatus t where 1=1
+        <include refid="queryLawstandardStatus"></include>
+        order by t.MODIFYDATE desc
+        LIMIT #{startRow},#{endRow}
+    </select>
+
+    <sql id="queryLawstandardStatus">
+        <if test="Name != null and Name != ''">
+            and instr(t.STATUSNAME,#{Name})> 0
+        </if>
+    </sql>
+
+    <!--获取状态总数-->
+    <select id="getLawstandardStatusListCount" parameterType="map" resultType="int">
+        SELECT
+        count(1)
+        FROM
+        m_sa_lawstandardstatus t WHERE 1=1
+        <include refid="queryLawstandardStatus"></include>
+    </select>
+
+    <!--删除状态-->
+    <delete id="DeleteLawstandardStatusByID" parameterType="String">
+        DELETE from m_sa_lawstandardstatus where id = #{id}
+    </delete>
+
+    <!--新增或编辑状态-->
+    <insert id="SaveOrUpdateLawstandardStatus" parameterType="LawstandardStatus">
+
+        <selectKey keyProperty="count" resultType="int" order="BEFORE">
+            select count(1) from m_sa_lawstandardstatus t where t.ID=#{id}
+        </selectKey>
+
+        <if test="count == 0">
+            insert into m_sa_lawstandardstatus
+            <trim prefix="(" suffix=")" suffixOverrides=",">
+                <if test="id != null">
+                    ID,
+                </if>
+                <if test="statusname != null">
+                    STATUSNAME,
+                </if>
+                <if test="inputuserid != null">
+                    INPUTUSERID,
+                </if>
+                INPUTDATE,
+                MODIFYDATE,
+            </trim>
+            <trim prefix="values (" suffix=")" suffixOverrides=",">
+                <if test="id != null">
+                    #{id,jdbcType=VARCHAR},
+                </if>
+                <if test="statusname != null">
+                    #{statusname,jdbcType=VARCHAR},
+                </if>
+                <if test="inputuserid != null">
+                    #{inputuserid,jdbcType=VARCHAR},
+                </if>
+                now(),
+                now(),
+            </trim>
+
+        </if>
+        <if test="count>0">
+            update  m_sa_lawstandardstatus set
+            <trim prefix="" suffix="" suffixOverrides=",">
+
+                <if test="statusname != null">
+                    statusname = #{statusname,jdbcType=VARCHAR},
+                </if>
+                <if test="modifyuserid != null">
+                    MODIFYUSERID = #{modifyuserid,jdbcType=VARCHAR},
+                </if>
+
+
+                MODIFYDATE= now(),
+            </trim>
+            where ID=#{id}
+
+
+        </if>
+    </insert>
+
+    <!--验证状态是否重复-->
+    <select id="checkLawstandardStatusName" parameterType="LawstandardStatus" resultType="int">
+        SELECT  count(1) from  m_sa_lawstandardstatus t where t.statusname = #{statusname}
+        <if test="id !=null and id !=''">
+            and t.id <![CDATA[  != ]]> #{id}
+        </if>
+    </select>
 
 </mapper>
