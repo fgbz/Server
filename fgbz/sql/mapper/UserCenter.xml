@@ -316,8 +316,8 @@ ORDER BY t.ApproveDate desc
     <insert id="SaveFavoriteLawsLink" parameterType="map">
           INSERT into m_bs_lawstandard_favorite (id,FAVORITEID,LAWSTANDRADID)
           VALUES
-        <foreach collection="list" item="item" open="" close="" separator=",">
-            (uuid(),#{item.id},#{lawid})
+        <foreach collection="fevlists" item="item" open="" close="" separator=",">
+            (#{item.tableid},#{item.id},#{lawid})
         </foreach>
     </insert>
 
@@ -405,7 +405,9 @@ ORDER BY t.ApproveDate desc
 SELECT
 	t.ID,
 	t.CHINESENAME,
-	fav.INPUTDATE
+	fav.INPUTDATE,
+    fav.name as favname,
+    fav.id as favid
 FROM
 	m_bs_lawstandard t
 LEFT JOIN m_bs_lawstandard_favorite link ON t.ID = link.LAWSTANDRADID
@@ -446,5 +448,15 @@ where link.LAWSTANDRADID=#{id}
     <delete id="DismissFavorite" parameterType="map" >
         delete from m_bs_lawstandard_favorite where FAVORITEID =#{favid} and LAWSTANDRADID =#{lawid}
     </delete>
+
+    <!--通过密码和用户id查看用户-->
+    <select id="getUserByPasswordAndId" parameterType="map" resultType="int">
+        SELECT count(1) from m_sa_user t where t.id=#{id} and t.PASSWORD = #{oldpassword}
+    </select>
+
+    <!--更新用户密码-->
+    <update id="updateUserPassword" parameterType="map">
+        update m_sa_user set PASSWORD=#{newpassword} where id=#{id}
+    </update>
 
 </mapper>

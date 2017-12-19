@@ -155,4 +155,12 @@ public interface SystemDao {
      */
     int SaveOrUpdateApproveSetting(Map<String, Object> map);
 
+    /**
+     *通过用户名和密码获取用户
+     * @return
+     */
+    int getUserByPasswordAndId(Map<String, Object> map);
+
+
+
 }

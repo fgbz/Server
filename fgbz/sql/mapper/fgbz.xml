@@ -51,10 +51,11 @@
 
     <!--查询法律标准列表-->
     <select id="getLawstandardList" parameterType="map" resultType="Lawstandard">
-        select t.ID,t.`CODE`,t.CHINESENAME,t.APPROVESTATUS,sta.STATUSNAME ,t.IMPDATE,n.TYPENAME,t.CLICKCOUNT ,	ur.USERREALNAME as inputusername from
+        select t.ID,t.`CODE`,t.CHINESENAME,t.APPROVESTATUS,sta.STATUSNAME,t.RELEASEDATE ,t.IMPDATE,n.TYPENAME,t.CLICKCOUNT ,	ur.USERREALNAME as inputusername, dep.PUBDEPNAME from
         m_bs_lawstandard t
         left join m_sa_lawstandardstatus sta on t.`STATUS` = sta.ID
         left join m_bs_lawstandard_pubdep pub on t.id = pub.SID
+        left join m_sa_publishdep dep on dep.ID = pub.PUBDEPID
         left join m_bs_lawstandard_type m on m.SID = t.id
         left join m_bs_lawstandardtype n on n.id = m.LAWSTYPEID
         left join m_sa_user ur on ur.ID = t.INPUTUSERID
@@ -499,5 +500,50 @@
     <update id="updateAllCheckingLawstandard">
         update m_bs_lawstandard t set t.APPROVESTATUS = 3 , MODIFYDATE = now() where t.APPROVESTATUS=2
     </update>
+
+    <!--上传前十统计-->
+    <select id="getUploadPeople" resultType="ChartInfo">
+SELECT
+	*
+FROM
+	(
+SELECT
+	MAX( us.USERREALNAME ) AS NAME,
+	count( 1 ) AS COUNT
+FROM
+	m_sa_fileinfo file
+	LEFT JOIN m_sa_user us ON file.INPUTUSERID = us.ID
+GROUP BY
+	file.INPUTUSERID
+	) t
+ORDER BY
+	count DESC
+	LIMIT 0,
+	10
+    </select>
+    <!--上传部门统计-->
+    <select id="getUploadOrgname" resultType="ChartInfo">
+      SELECT
+	MAX(org.ORGNAME ) AS name,
+	count( 1 ) AS count
+FROM
+	m_sa_fileinfo file
+	LEFT JOIN m_sa_user us ON file.INPUTUSERID = us.ID
+	left join m_sa_organization org on us.ORGID = org.ID
+GROUP BY
+	org.id
+    </select>
+    <!--上传分类统计-->
+    <select id="getUploadType" resultType="ChartInfo">
+       SELECT
+	file.FILETYPE AS name,
+	count( 1 ) AS count
+FROM
+	m_sa_fileinfo file
+
+GROUP BY
+	file.FILETYPE
+
+    </select>
 
 </mapper>

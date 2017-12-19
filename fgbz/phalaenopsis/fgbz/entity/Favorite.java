@@ -61,6 +61,11 @@ public class Favorite {
      */
     private int count;
 
+    /**
+     * 关联表id
+     */
+    private String tableid;
+
 
     public String getId() {
         return id;
@@ -148,5 +153,13 @@ public class Favorite {
 
     public void setModifydate(Date modifydate) {
         this.modifydate = modifydate;
+    }
+
+    public String getTableid() {
+        return tableid;
+    }
+
+    public void setTableid(String tableid) {
+        this.tableid = tableid;
     }
 }

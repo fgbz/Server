@@ -213,7 +213,16 @@ public class UserCenterController {
     }
 
 
+    /**
+     * 更新用户密码
+     * @return
+     */
+    @RequestMapping(value = "/updateUserPassword", method = RequestMethod.GET)
+    @ResponseBody
+    public int  updateUserPassword(String id,String oldpassword, String newpassword){
+        return userCenterService.updateUserPassword(id, oldpassword,newpassword);
 
+    }
 
 
 

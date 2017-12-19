@@ -166,6 +166,13 @@ public class SystemServie {
             String guid=uuid.toString();
             role.setId(guid);
         }
+
+        if(role.getMenus()!=null&&role.getMenus().size()>0){
+            for (FG_Menu  m:role.getMenus()
+                 ) {
+                m.setTableid(UUID.randomUUID().toString());
+            }
+        }
         return systemDao.SaveOrEditRole(role);
     }
 
@@ -196,6 +203,12 @@ public class SystemServie {
          systemDao.SaveOrUpdateUser(user);
 
         if(user.getRoles()!=null&&user.getRoles().size()>0){
+
+                for (FG_Role r:user.getRoles()
+                        ) {
+                    r.setTableid(UUID.randomUUID().toString());
+                }
+
             systemDao.SaveUserRoles(user);
         }
 

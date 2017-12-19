@@ -113,4 +113,20 @@ public interface LawstandardDao {
      */
     int updateAllCheckingLawstandard();
 
+    /**
+     * 获取上传数量前十人
+     * @return
+     */
+    List<ChartInfo> getUploadPeople();
+    /**
+     * 获取上传部门统计
+     * @return
+     */
+    List<ChartInfo> getUploadOrgname();
+    /**
+     * 获取上传分类
+     * @return
+     */
+    List<ChartInfo> getUploadType();
+
 }

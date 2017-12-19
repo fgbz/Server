@@ -7,12 +7,15 @@ import org.springframework.web.bind.annotation.RequestBody;
 import phalaenopsis.common.entity.Condition;
 import phalaenopsis.common.entity.Page;
 import phalaenopsis.common.entity.PagingEntity;
+import phalaenopsis.common.method.ExportExcel;
 import phalaenopsis.common.method.Tools.GuidHelper;
 import phalaenopsis.fgbz.dao.LawstandardDao;
+import phalaenopsis.fgbz.entity.ChartInfo;
 import phalaenopsis.fgbz.entity.Lawstandard;
 import phalaenopsis.fgbz.entity.LawstandardType;
 import phalaenopsis.fgbz.entity.RefenceOrReplace;
 
+import javax.servlet.http.HttpServletResponse;
 import java.util.*;
 
 
@@ -94,7 +97,7 @@ public class LawstandardService {
      * @param page
      * @return
      */
-    public PagingEntity<Lawstandard> getLawstandardList(@RequestBody Page page){
+    public PagingEntity<Lawstandard> getLawstandardList(@RequestBody Page page,String type){
 
         Map<String, Object> conditions = new HashMap<String, Object>();
 
@@ -137,12 +140,18 @@ public class LawstandardService {
         // 1,根据条件一共查询到的数据条数
         int count = lawstandardDao.getLawstandardListCount(conditions);
 
-        if(page.getPageNo()==1){
+        if(type!=null&&type.equals("uptodate")){
             conditions.put("startRow", 0 );
+            conditions.put("endRow", 10);
         }else{
-            conditions.put("startRow", page.getPageSize() * (page.getPageNo() - 1) );
+            if(page.getPageNo()==1){
+                conditions.put("startRow", 0 );
+            }else{
+                conditions.put("startRow", page.getPageSize() * (page.getPageNo() - 1) );
+            }
+            conditions.put("endRow", page.getPageSize());
         }
-        conditions.put("endRow", page.getPageSize());
+
 
         // 2, 查询到当前页数的数据
         List<Lawstandard> list = lawstandardDao.getLawstandardList(conditions);
@@ -275,4 +284,22 @@ public class LawstandardService {
         lawstandardDao.LawstandardIsTop(lawstandard);
     }
 
+
+    /**************************首页统计************************************/
+
+
+    public Map<Object,Object> getHomeChart() {
+
+        Map<Object,Object> map = new HashMap<>();
+
+        List<ChartInfo> listdPeople = lawstandardDao.getUploadPeople();
+        List<ChartInfo> listOrgname= lawstandardDao.getUploadOrgname();
+        List<ChartInfo> listType= lawstandardDao.getUploadType();
+
+        map.put("People",listdPeople);
+        map.put("Orgname",listOrgname);
+        map.put("Type",listType);
+
+        return map;
+    }
 }

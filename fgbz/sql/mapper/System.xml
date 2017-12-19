@@ -120,7 +120,7 @@ FROM
         <if test="menus !=null and menus.size()>0">
             insert into m_sa_role_menu  (ID,ROLEID,MENUID,INPUTUSERID,INPUTDATE) VALUES
             <foreach collection="menus" item="item" open="" close="" separator=",">
-                (uuid(),#{id},#{item.id},#{inputuserid,jdbcType=VARCHAR},now())
+                (#{item.tableid},#{id},#{item.id},#{inputuserid,jdbcType=VARCHAR},now())
             </foreach>
         </if>
 
@@ -254,7 +254,7 @@ FROM
     <insert id="SaveUserRoles" parameterType="FG_User">
         insert into m_sa_user_role  (ID,USERID,ROLEID,INPUTUSERID,INPUTDATE) VALUES
         <foreach collection="roles" item="item" open="" close="" separator=",">
-            (uuid(),#{id},#{item.id},#{inputuserid,jdbcType=VARCHAR},now())
+            (#{item.tableid},#{id},#{item.id},#{inputuserid,jdbcType=VARCHAR},now())
         </foreach>
     </insert>
 

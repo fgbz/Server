@@ -151,6 +151,15 @@ public class Lawstandard {
      */
     private List<Favorite> favs;
 
+    /**
+     * 收藏夹名称
+     */
+    private String favname;
+    /**
+     * 收藏夹id
+     */
+    private String favid;
+
     public String getPubdepname() {
         return pubdepname;
     }
@@ -477,5 +486,21 @@ public class Lawstandard {
 
     public void setFavs(List<Favorite> favs) {
         this.favs = favs;
+    }
+
+    public String getFavname() {
+        return favname;
+    }
+
+    public void setFavname(String favname) {
+        this.favname = favname;
+    }
+
+    public String getFavid() {
+        return favid;
+    }
+
+    public void setFavid(String favid) {
+        this.favid = favid;
     }
 }

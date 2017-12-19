@@ -52,6 +52,8 @@ public class FG_Role {
      * 辅助字段
      */
     private int count;
+
+    private String tableid;
     /**
      * 是否能删除
      */
@@ -153,5 +155,13 @@ public class FG_Role {
 
     public void setModifydate(Date modifydate) {
         this.modifydate = modifydate;
+    }
+
+    public String getTableid() {
+        return tableid;
+    }
+
+    public void setTableid(String tableid) {
+        this.tableid = tableid;
     }
 }

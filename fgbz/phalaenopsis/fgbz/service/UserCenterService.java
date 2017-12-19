@@ -348,7 +348,12 @@ public class UserCenterService {
 
         Map<String,Object> map  = new HashMap<>();
         map.put("lawid",lawstandard.getId());
-        map.put("list",lawstandard.getFavs());
+        if(lawstandard.getFavs()!=null&&lawstandard.getFavs().size()>0){
+            for (Favorite f:lawstandard.getFavs() ) {
+                f.setTableid(UUID.randomUUID().toString());
+            }
+        }
+        map.put("fevlists",lawstandard.getFavs());
 
         Map<String,Object> map1 =new HashMap<>();
         map1.put("id",lawstandard.getId());
@@ -427,4 +432,26 @@ public class UserCenterService {
        userCenterDao.DismissFavorite(map);
        return OpResult.Success;
    }
+
+    /**
+     * 更新用户密码
+     * @return
+     */
+    public int  updateUserPassword(String id,String oldpassword,String newpassword){
+
+        Map<String,Object> map = new HashMap<>();
+        map.put("id",id);
+        map.put("oldpassword",oldpassword);
+        map.put("newpassword",newpassword);
+
+        int num =userCenterDao.getUserByPasswordAndId(map);
+        if(num==0){
+            int isWorking = 403;
+            OpResult opResult = new OpResult(isWorking);
+            return opResult.Code;
+        }
+        userCenterDao.updateUserPassword(map);
+        return  OpResult.Success;
+
+    }
 }

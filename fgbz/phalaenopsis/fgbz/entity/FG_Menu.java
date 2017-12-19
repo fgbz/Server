@@ -13,6 +13,8 @@ public class FG_Menu {
      */
     private String menuname;
 
+    private String tableid;
+
     private boolean ischeck =false ;
 
     public String getId() {
@@ -37,5 +39,13 @@ public class FG_Menu {
 
     public void setIscheck(boolean ischeck) {
         this.ischeck = ischeck;
+    }
+
+    public String getTableid() {
+        return tableid;
+    }
+
+    public void setTableid(String tableid) {
+        this.tableid = tableid;
     }
 }

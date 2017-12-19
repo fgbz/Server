@@ -161,4 +161,9 @@ public interface UserCenterDao {
      * @return
      */
     int DismissFavorite(Map<String,Object> map);
+
+    /***************************修改密码*****************************/
+    int getUserByPasswordAndId(Map<String,Object> map);
+
+    int updateUserPassword(Map<String,Object> map);
 }
