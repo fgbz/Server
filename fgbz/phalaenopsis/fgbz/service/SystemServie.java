@@ -188,7 +188,6 @@ public class SystemServie {
             UUID uuid=UUID.randomUUID();
             String guid=uuid.toString();
             user.setId(guid);
-
             user.setFavoriteid(UUID.randomUUID().toString());
             systemDao.SaveUserFavorite(user);
         }else{

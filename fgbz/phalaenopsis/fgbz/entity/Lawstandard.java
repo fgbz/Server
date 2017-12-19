@@ -146,6 +146,11 @@ public class Lawstandard {
 
     private List<String> fileids;
 
+    /**
+     * 关联的法规
+     */
+    private List<Favorite> favs;
+
     public String getPubdepname() {
         return pubdepname;
     }
@@ -464,5 +469,13 @@ public class Lawstandard {
 
     public void setInputusername(String inputusername) {
         this.inputusername = inputusername;
+    }
+
+    public List<Favorite> getFavs() {
+        return favs;
+    }
+
+    public void setFavs(List<Favorite> favs) {
+        this.favs = favs;
     }
 }

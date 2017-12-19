@@ -285,4 +285,166 @@ where t.LawstandardID = #{id}
 ORDER BY t.ApproveDate desc
     </select>
 
+    <!--通过父节点id获取所有子记录-->
+    <select id="getFavoriteListByID" parameterType="String" resultType="Favorite">
+        SELECT t.id,t.`NAME` ,t.PARENTID from m_bs_favorite t where t.ID=#{id}
+    </select>
+
+    <!--通过父节点id获取所有子记录-->
+    <select id="getFavoriteListByParentID" parameterType="String" resultType="Favorite">
+        SELECT t.id,t.`NAME` ,t.PARENTID from m_bs_favorite t where t.PARENTID=#{id}
+    </select>
+
+    <!--删除收藏夹-->
+    <delete id="DeleteFavoriteByID" parameterType="String" >
+        DELETE FROM  m_bs_favorite where id= #{id}
+    </delete>
+
+    <!--删除收藏夹与法规的关联关系-->
+    <delete id="DeleteFavoriteLawsLink" parameterType="map">
+        DELETE FROM  m_bs_lawstandard_favorite where
+        <if test="type == 'fav'.toString()">
+            FAVORITEID= #{id}
+        </if>
+        <if test="type == 'law'.toString()">
+            LAWSTANDRADID = #{id}
+        </if>
+
+    </delete>
+
+    <!--建立法规与收藏夹关联-->
+    <insert id="SaveFavoriteLawsLink" parameterType="map">
+          INSERT into m_bs_lawstandard_favorite (id,FAVORITEID,LAWSTANDRADID)
+          VALUES
+        <foreach collection="list" item="item" open="" close="" separator=",">
+            (uuid(),#{item.id},#{lawid})
+        </foreach>
+    </insert>
+
+    <!--删除所有的收藏夹-->
+    <delete id="DeleteAllFavorite" parameterType="list">
+        DELETE from  m_bs_favorite where id in
+        <foreach collection="list" item="item" open="(" close=")" separator=",">
+            #{item.id}
+        </foreach>
+    </delete>
+
+    <!--删除所有的收藏与法规关联关系-->
+    <delete id="DeleteAllFavoriteLawsLink" parameterType="list">
+        DELETE from  m_bs_lawstandard_favorite where FAVORITEID in
+        <foreach collection="list" item="item" open="(" close=")" separator=",">
+            #{item.id}
+        </foreach>
+    </delete>
+
+    <!--新增或编辑收藏夹-->
+    <insert id="SaveOrUpdateFavorite" parameterType="Favorite">
+
+        <selectKey keyProperty="count" resultType="int" order="BEFORE">
+            select count(1) from m_bs_favorite t where t.ID=#{id}
+        </selectKey>
+
+        <if test="count == 0">
+            insert into m_bs_favorite
+            <trim prefix="(" suffix=")" suffixOverrides=",">
+                <if test="id != null">
+                    ID,
+                </if>
+                <if test="name != null">
+                    NAME,
+                </if>
+                <if test="parentid != null">
+                    PARENTID,
+                </if>
+                <if test="inputuserid != null">
+                    INPUTUSERID,
+                </if>
+                INPUTDATE,
+                MODIFYDATE,
+            </trim>
+            <trim prefix="values (" suffix=")" suffixOverrides=",">
+                <if test="id != null">
+                    #{id,jdbcType=VARCHAR},
+                </if>
+                <if test="name != null">
+                    #{name,jdbcType=VARCHAR},
+                </if>
+                <if test="parentid != null">
+                    #{parentid,jdbcType=VARCHAR},
+                </if>
+                <if test="inputuserid != null">
+                    #{inputuserid,jdbcType=VARCHAR},
+                </if>
+                now(),
+                now(),
+            </trim>
+
+        </if>
+        <if test="count>0">
+            update  m_bs_favorite set
+            <trim prefix="" suffix="" suffixOverrides=",">
+
+                <if test="name != null">
+                    name = #{name,jdbcType=VARCHAR},
+                </if>
+                <if test="modifyuserid != null">
+                    MODIFYUSERID = #{modifyuserid,jdbcType=VARCHAR},
+                </if>
+
+
+                MODIFYDATE= now(),
+            </trim>
+            where ID=#{id}
+
+
+        </if>
+    </insert>
+
+    <!--获取收藏夹关联的法规-->
+    <select id="getLawsByLinkID" parameterType="map" resultType="Lawstandard">
+SELECT
+	t.ID,
+	t.CHINESENAME,
+	fav.INPUTDATE
+FROM
+	m_bs_lawstandard t
+LEFT JOIN m_bs_lawstandard_favorite link ON t.ID = link.LAWSTANDRADID
+LEFT JOIN m_bs_favorite fav ON link.FAVORITEID = fav.ID
+WHERE
+	fav.id IN
+        <foreach collection="TreeValue" item="item" open="(" close=")" separator=",">
+            #{item.id}
+        </foreach>
+
+        order by fav.INPUTDATE DESC
+        LIMIT #{startRow},#{endRow}
+    </select>
+
+    <select id="getLawsByLinkIDCount" parameterType="map" resultType="int">
+        select count(1) from m_bs_lawstandard t
+        LEFT JOIN m_bs_lawstandard_favorite link ON t.ID = link.LAWSTANDRADID
+        LEFT JOIN m_bs_favorite fav ON link.FAVORITEID = fav.ID
+        WHERE
+        fav.id IN
+        <foreach collection="TreeValue" item="item" open="(" close=")" separator=",">
+            #{item.id}
+        </foreach>
+    </select>
+
+    <!--获取法规对应的收藏夹Favorite-->
+    <select id="getFavoriteListByLawID" parameterType="String" resultType="Favorite">
+        SELECT
+	t.ID
+FROM
+	m_bs_favorite t
+LEFT JOIN m_bs_lawstandard_favorite link ON t.ID = link.FAVORITEID
+
+where link.LAWSTANDRADID=#{id}
+    </select>
+
+    <!--取消收藏-->
+    <delete id="DismissFavorite" parameterType="map" >
+        delete from m_bs_lawstandard_favorite where FAVORITEID =#{favid} and LAWSTANDRADID =#{lawid}
+    </delete>
+
 </mapper>

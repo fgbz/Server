@@ -9,15 +9,10 @@ import phalaenopsis.common.entity.Page;
 import phalaenopsis.common.entity.PagingEntity;
 import phalaenopsis.fgbz.dao.LawstandardDao;
 import phalaenopsis.fgbz.dao.UserCenterDao;
-import phalaenopsis.fgbz.entity.Adviceinfo;
-import phalaenopsis.fgbz.entity.LawstandardApprove;
-import phalaenopsis.fgbz.entity.Suggestion;
+import phalaenopsis.fgbz.entity.*;
 import phalaenopsis.lawcase.workflownodes.Punish;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 
 /**
  * Created by 13260 on 2017/12/17.
@@ -269,4 +264,167 @@ public class UserCenterService {
     public List<LawstandardApprove> getApproveHistroy(String id){
         return userCenterDao.getApproveHistroy(id);
     }
+
+    /*****************************获取用户收藏夹********************************/
+
+    private List<Favorite>  facList = new ArrayList<>();
+
+    /**
+     * 获取用户收藏夹
+     * @param id
+     * @return
+     */
+    public List<Favorite>  getFavoriteList(String id){
+
+        facList = new ArrayList<>();
+        Favorite favorite = userCenterDao.getFavoriteListByID(id);
+        facList.add(favorite);
+
+        getFavsTree(id);
+        return facList;
+    }
+
+    /*
+    通过父节点id获取子收藏夹内容
+     */
+    public List<Favorite> getFavoriteListByParentID(String id){
+        return  userCenterDao.getFavoriteListByParentID(id);
+    }
+
+    /**
+     * 递归获取树
+     * @param id
+     * @return
+     */
+    public  List<Favorite> getFavsTree(String id){
+
+        List<Favorite> list = getFavoriteListByParentID(id);
+
+        while (list!=null&&list.size()>0){
+            facList.addAll(list);
+            for(Favorite favorite:list){
+                list=getFavsTree(favorite.getId());
+            }
+        }
+        return list;
+    }
+
+    /**
+     * 删除搜藏夹
+     * @return
+     */
+    @Transactional
+    public int DeleteFavoriteByID(String id){
+
+        userCenterDao.DeleteFavoriteByID(id);
+
+        Map<String,Object> map =new HashMap<>();
+        map.put("id",id);
+        map.put("type","fav");
+        userCenterDao.DeleteFavoriteLawsLink(map);
+
+        return OpResult.Success;
+    }
+
+    /**
+     * 保存或新增收藏夹
+     * @return
+     */
+    public int SaveOrUpdateFavorite(Favorite favorite){
+        if(favorite.getId()==null||favorite.getId().equals("")){
+            favorite.setId(UUID.randomUUID().toString());
+        }
+        userCenterDao.SaveOrUpdateFavorite(favorite);
+        return OpResult.Success;
+    }
+
+    /**
+     * 保存收藏夹与法规的关联
+     * @param lawstandard
+     * @return
+     */
+    @Transactional
+    public int SaveFavoriteLawsLink(Lawstandard lawstandard){
+
+        Map<String,Object> map  = new HashMap<>();
+        map.put("lawid",lawstandard.getId());
+        map.put("list",lawstandard.getFavs());
+
+        Map<String,Object> map1 =new HashMap<>();
+        map1.put("id",lawstandard.getId());
+        map1.put("type","law");
+        userCenterDao.DeleteFavoriteLawsLink(map1);
+
+        userCenterDao.SaveFavoriteLawsLink(map);
+
+        return OpResult.Success;
+    }
+
+    /**
+     * 获取收藏夹相关的法规
+     * @return
+     */
+   public PagingEntity<Lawstandard> getLawsByLinkID(Page page){
+
+
+       Map<String, Object> conditions = new HashMap<String, Object>();
+
+       if(page.getConditions()!=null) {
+           //查询条件
+           for (Condition condition : page.getConditions()) {
+               if (condition.getKey().equals("TreeValue")) {
+                   List<Favorite> list= getFavoriteList(condition.getValue());
+                   conditions.put("TreeValue", list);
+               }
+
+           }
+       }
+
+       // 1,根据条件一共查询到的数据条数
+       int count = userCenterDao.getLawsByLinkIDCount(conditions);
+
+       if(page.getPageNo()==1){
+           conditions.put("startRow", 0 );
+       }else{
+           conditions.put("startRow", page.getPageSize() * (page.getPageNo() - 1) );
+       }
+       conditions.put("endRow", page.getPageSize());
+
+       // 2, 查询到当前页数的数据
+       List<Lawstandard> list = userCenterDao.getLawsByLinkID(conditions);
+
+       PagingEntity<Lawstandard> result = new PagingEntity<Lawstandard>();
+       result.setPageCount(count);
+
+       int pageCount = 0 == count ? 1 : (count - 1) / page.getPageSize() + 1; // 由于计算pageCount存在整除的情况，所以计算的时候先减1在除以pageSize
+       result.setPageNo(page.getPageNo());
+       result.setPageSize(page.getPageSize());
+       result.setPageCount(pageCount);
+       result.setRecordCount(count);
+       result.setCurrentList(list);
+
+       return result;
+   }
+
+    /**
+     * 获取法规对应的收藏夹Favorite
+     * @param id
+     * @return
+     */
+    public List<Favorite> getFavoriteListByLawID(String id){
+        return userCenterDao.getFavoriteListByLawID(id);
+    }
+
+    /**
+     * 取消收藏
+     * @return
+     */
+   public int DismissFavorite(String favid,String lawid){
+
+       Map<String,Object> map =new HashMap<>();
+       map.put("favid",favid);
+       map.put("lawid",lawid);
+       userCenterDao.DismissFavorite(map);
+       return OpResult.Success;
+   }
 }

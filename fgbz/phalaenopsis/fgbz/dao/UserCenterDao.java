@@ -1,8 +1,6 @@
 package phalaenopsis.fgbz.dao;
 
-import phalaenopsis.fgbz.entity.Adviceinfo;
-import phalaenopsis.fgbz.entity.LawstandardApprove;
-import phalaenopsis.fgbz.entity.Suggestion;
+import phalaenopsis.fgbz.entity.*;
 
 import java.util.List;
 import java.util.Map;
@@ -83,5 +81,84 @@ public interface UserCenterDao {
      */
     List<LawstandardApprove> getApproveHistroy(String id);
 
+    /***********************************收藏夹********************************/
 
+    /**
+     * 通过父节点获取子节点记录
+     * @return
+     */
+    List<Favorite>  getFavoriteListByParentID(String id);
+
+    /**
+     * 通过id获取收藏夹信息
+     * @param id
+     * @return
+     */
+     Favorite  getFavoriteListByID(String id);
+
+    /**
+     * 删除收藏夹
+     * @return
+     */
+    int DeleteFavoriteByID(String id);
+
+    /**
+     * 删除收藏夹和法规关联
+     * @return
+     */
+    int DeleteFavoriteLawsLink(Map<String,Object> map);
+
+    /**
+     * 通过根目录删除所有的收藏夹
+     * @param list
+     * @return
+     */
+    int DeleteAllFavorite(List<Favorite> list);
+
+    /**
+     * 通过根目录删除所有的收藏夹与法规的关联
+     * @param list
+     * @return
+     */
+    int DeleteAllFavoriteLawsLink(List<Favorite> list);
+
+    /**
+     * 保存或新增收藏夹
+     * @param favorite
+     * @return
+     */
+    int SaveOrUpdateFavorite(Favorite favorite);
+
+    /**
+     * 保存法规与收藏夹关联
+     * @param map
+     * @return
+     */
+    int SaveFavoriteLawsLink(Map<String,Object> map);
+
+    /**
+     * 获取收藏夹相关的法规
+     * @return
+     */
+    List<Lawstandard> getLawsByLinkID(Map<String,Object> map);
+
+    /**
+     * 获取收藏相关法规总数
+     * @param map
+     * @return
+     */
+    int getLawsByLinkIDCount(Map<String,Object> map);
+
+    /**
+     * 获取法规对应的收藏夹Favorite
+     * @return
+     */
+    List<Favorite> getFavoriteListByLawID(String id);
+
+    /**
+     * 取消收藏
+     * @param map
+     * @return
+     */
+    int DismissFavorite(Map<String,Object> map);
 }
