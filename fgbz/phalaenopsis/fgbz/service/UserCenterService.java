@@ -69,8 +69,8 @@ public class UserCenterService {
         if(page.getConditions()!=null) {
             //查询条件
             for (Condition condition : page.getConditions()) {
-                if (condition.getKey().equals("Title")) {
-                    conditions.put("Title", condition.getValue());
+                if (condition.getKey().equals("keyWords")) {
+                    conditions.put("keyWords", condition.getValue());
                 }
 
             }
@@ -176,8 +176,8 @@ public class UserCenterService {
         if(page.getConditions()!=null) {
             //查询条件
             for (Condition condition : page.getConditions()) {
-                if (condition.getKey().equals("Title")) {
-                    conditions.put("Title", condition.getValue());
+                if (condition.getKey().equals("KeyWords")) {
+                    conditions.put("KeyWords", condition.getValue());
                 }else if(condition.getKey().equals("Type")){
                     conditions.put("Type", condition.getValue());
                 }
@@ -360,7 +360,9 @@ public class UserCenterService {
         map1.put("type","law");
         userCenterDao.DeleteFavoriteLawsLink(map1);
 
-        userCenterDao.SaveFavoriteLawsLink(map);
+        if(lawstandard.getFavs()!=null&&lawstandard.getFavs().size()>0){
+            userCenterDao.SaveFavoriteLawsLink(map);
+        }
 
         return OpResult.Success;
     }

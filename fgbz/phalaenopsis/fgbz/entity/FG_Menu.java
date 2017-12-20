@@ -1,5 +1,7 @@
 package phalaenopsis.fgbz.entity;
 
+import java.util.List;
+
 /**
  * Created by 13260 on 2017/12/15.
  */
@@ -16,6 +18,7 @@ public class FG_Menu {
     private String tableid;
 
     private boolean ischeck =false ;
+    private String parentid;
 
     public String getId() {
         return id;
@@ -47,5 +50,13 @@ public class FG_Menu {
 
     public void setTableid(String tableid) {
         this.tableid = tableid;
+    }
+
+    public String getParentid() {
+        return parentid;
+    }
+
+    public void setParentid(String parentid) {
+        this.parentid = parentid;
     }
 }

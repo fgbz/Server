@@ -1,11 +1,7 @@
 package phalaenopsis.common.service;
 
 import java.awt.image.BufferedImage;
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.IOException;
-import java.io.OutputStream;
-import java.io.UnsupportedEncodingException;
+import java.io.*;
 import java.net.URLEncoder;
 import java.sql.Date;
 import java.text.ParseException;
@@ -20,6 +16,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.text.PDFTextStripper;
+import org.apache.poi.hdgf.streams.Stream;
 import org.springframework.transaction.annotation.Transactional;
 
 import org.apache.commons.fileupload.servlet.ServletRequestContext;
@@ -205,18 +202,17 @@ public class AttachmentService extends Basis {
 		DownloadAttachment(path, attachment.getFileName(), response);
 	}
 
-	public Map<Object,String> getPreView(String fileID) {
-		Attachment attachment = dao.getAttachmentById(fileID);
-		if (null == attachment)
-			return null;
-		String path = Attachment.GetFileStorageFolder(attachment.getActualFile()) + attachment.getActualFile();
-		path=path.substring( 0,path.lastIndexOf("."));
-		String converfilename = path.replaceAll("\\\\", "/") ;
-
-		Map<Object,String> map = new HashMap<>();
-		map.put("path",converfilename+".swf");
-		return map;
-
+	public void getPreView(String fileID,HttpServletResponse response) throws IOException {
+//		Attachment attachment = dao.getAttachmentById(fileID);
+//		if (null == attachment)
+//			return null;
+//		String path = Attachment.GetFileStorageFolder(attachment.getActualFile()) + attachment.getActualFile();
+//		File file = new File(path);
+//		OutputStream out = response.getOutputStream();
+//		out.write(FileUtils.readFileToByteArray(file));
+//		out.close();
+//
+//		return response.getOutputStream();
 	}
 
 
@@ -308,22 +304,13 @@ public class AttachmentService extends Basis {
 				file.mkdirs();
 			multipartFile.transferTo(file);
 
-			if (isDocFile(ext)) {
-				FileConverter converter = new FileConverter(storageFolder + storeFile);
-
-				converter.conver();
-
-				System.out.println(converter.getswfPath());
-			} else if (isPDFFile(ext)) {
-				FileConverter converter = new FileConverter(storageFolder + storeFile);
-
-				converter.converPDF();
-
-				System.out.println(converter.getswfPath());
-			}
+//			if (isDocFile(ext)) {
+//			} else if (isPDFFile(ext)) {
+//			}
 
 			Attachment attachment = new Attachment(guid, fileName, ext, multipartFile.getSize(), storeFile, userid,
 					Calendar.getInstance().getTime(), module, AttachmentSource.Client);
+
 			attachment.setPath(storageFolder);
 			attachment.setInputuserid(userid);
 			//获取pdf中的文字

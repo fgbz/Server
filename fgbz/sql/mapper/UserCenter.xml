@@ -108,8 +108,8 @@ FROM
     </select>
 
     <sql id="queryAdviceinfo">
-        <if test="Title != null and Title != ''">
-            and instr(t.TITLE,#{Title})> 0
+        <if test="keyWords != null and keyWords != ''">
+            and ( instr(t.TITLE,#{keyWords})> 0 or instr(t.DETAILS,#{keyWords})> 0)
         </if>
     </sql>
 
@@ -212,8 +212,8 @@ FROM
     </select>
 
     <sql id="querySuggestion">
-        <if test="Title != null and Title != ''">
-            and instr(t.TITLE,#{Title})> 0
+        <if test="KeyWords != null and KeyWords != ''">
+            and ( instr(t.TITLE,#{KeyWords})> 0 or instr(t.DETAILS,#{KeyWords})> 0 )
         </if>
     </sql>
 
@@ -418,7 +418,7 @@ WHERE
             #{item.id}
         </foreach>
 
-        order by fav.INPUTDATE DESC
+        order by fav.MODIFYDATE DESC
         LIMIT #{startRow},#{endRow}
     </select>
 

@@ -147,6 +147,11 @@ public class Lawstandard {
     private List<String> fileids;
 
     /**
+     * 是否收藏
+     */
+    private boolean iscollect;
+
+    /**
      * 关联的法规
      */
     private List<Favorite> favs;
@@ -502,5 +507,13 @@ public class Lawstandard {
 
     public void setFavid(String favid) {
         this.favid = favid;
+    }
+
+    public boolean isIscollect() {
+        return iscollect;
+    }
+
+    public void setIscollect(boolean iscollect) {
+        this.iscollect = iscollect;
     }
 }

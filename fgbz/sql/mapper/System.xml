@@ -43,7 +43,7 @@
 
     <!--获取所有的菜单权限-->
     <select id="getAllMenus" resultType="FG_Menu">
-        SELECT t.id,t.MENUNAME from m_sa_menu t
+        SELECT t.id,t.MENUNAME,t.parentid from m_sa_menu t
     </select>
 
     <!--获取所有的角色-->

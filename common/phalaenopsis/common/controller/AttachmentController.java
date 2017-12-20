@@ -2,6 +2,7 @@ package phalaenopsis.common.controller;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -11,6 +12,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.ws.rs.PathParam;
 
+import org.apache.poi.hdgf.streams.Stream;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
@@ -208,9 +210,9 @@ public class AttachmentController {
 	 */
 	@RequestMapping(value = "/getPreView", method = RequestMethod.GET)
 	@ResponseBody
-	public Map<Object,String> getPreView() {
-		String fileID = request.getParameter("file");
-		return service.getPreView(fileID);
+	public void getPreView(HttpServletResponse response) throws IOException {
+		String fileID = request.getParameter("fileid");
+//		return service.getPreView(fileID,response);
 	}
 
 

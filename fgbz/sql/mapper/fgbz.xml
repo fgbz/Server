@@ -346,7 +346,9 @@
         n.id as lawtype,
 				ur.USERREALNAME as inputusername,
 				org.ORGNAME as inputorgname,
-				t.INPUTDATE
+				t.INPUTDATE,
+			case when (select count(1) from m_bs_lawstandard_favorite fav where fav.LAWSTANDRADID = t.id)>0
+			then 1 ELSE 0 END  as iscollect
         FROM
         `m_bs_lawstandard` t
         left join m_sa_lawstandardstatus sta on t.`STATUS` = sta.ID
@@ -535,14 +537,17 @@ GROUP BY
     </select>
     <!--上传分类统计-->
     <select id="getUploadType" resultType="ChartInfo">
-       SELECT
-	file.FILETYPE AS name,
+      SELECT
+	ty.TYPENAME AS name,
 	count( 1 ) AS count
 FROM
 	m_sa_fileinfo file
-
+LEFT JOIN m_bs_lawstandard law on file.REFID = law.ID
+left join m_bs_lawstandard_type link on law.ID = link.SID
+left join m_bs_lawstandardtype ty on ty.ID = link.LAWSTYPEID
+where file.REFID is not NULL
 GROUP BY
-	file.FILETYPE
+ty.ID
 
     </select>
 
