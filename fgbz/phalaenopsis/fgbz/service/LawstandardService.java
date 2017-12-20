@@ -131,6 +131,16 @@ public class LawstandardService {
                     conditions.put("KeyWords", condition.getValue());
                 }else if(condition.getKey().equals("ApproveStatus")){
                     conditions.put("ApproveStatus", condition.getValue());
+                }else if(condition.getKey().equals("EnglishTitle")){
+                    conditions.put("EnglishTitle", condition.getValue());
+                }else if(condition.getKey().equals("KeyWordsSingle")){
+                    conditions.put("KeyWordsSingle", condition.getValue());
+                }else if(condition.getKey().equals("Summaryinfo")){
+                    conditions.put("Summaryinfo", condition.getValue());
+                }else if(condition.getKey().equals("Solr")){
+                    conditions.put("Solr", condition.getValue());
+                } else if(condition.getKey().equals("ReplaceOrRefenceid")){
+                    conditions.put("ReplaceOrRefenceid", condition.getValue());
                 }
 
             }
@@ -169,6 +179,34 @@ public class LawstandardService {
         return result;
     }
 
+    /**
+     * 导出法规列表
+     */
+    public void exportExcel( List<Condition> list,HttpServletResponse response){
+        Page page = new Page();
+        page.setConditions(list);
+        page.setPageNo(1);
+        page.setPageSize(Integer.MAX_VALUE);
+
+        List<Lawstandard>  listLaws = getLawstandardList(page,null).getCurrentList();
+
+        ExportExcel exportExcel = new ExportExcel();
+
+        String[] fields = {
+
+                "chinesename",
+                "englishname",
+                "keywords",
+                "code",
+                "releasedate",
+                "impdate",
+                "summaryinfo",
+                "memo"
+
+        };
+        exportExcel.exportExcel(fields,new Lawstandard(),listLaws,"法规标准",response);
+
+    }
     /**
      * 删除法规标准
      * @return

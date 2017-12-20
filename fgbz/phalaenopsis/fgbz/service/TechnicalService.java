@@ -7,9 +7,11 @@ import org.springframework.web.bind.annotation.RequestBody;
 import phalaenopsis.common.entity.Condition;
 import phalaenopsis.common.entity.Page;
 import phalaenopsis.common.entity.PagingEntity;
+import phalaenopsis.common.method.ExportExcel;
 import phalaenopsis.fgbz.dao.TechnicalDao;
 import phalaenopsis.fgbz.entity.*;
 
+import javax.servlet.http.HttpServletResponse;
 import java.util.*;
 
 @Service("technicalService")
@@ -107,6 +109,10 @@ public class TechnicalService {
                     conditions.put("TreeValue",ids );
                 }else if (condition.getKey().equals("KeyWords")){
                     conditions.put("KeyWords", condition.getValue());
+                }else if(condition.getKey().equals("KeyWordsSingle")){
+                    conditions.put("KeyWordsSingle", condition.getValue());
+                }else if(condition.getKey().equals("ApproveStatus")){
+                    conditions.put("ApproveStatus", condition.getValue());
                 }
 
             }
@@ -138,7 +144,34 @@ public class TechnicalService {
 
         return result;
     }
+    /**
+     * 导出法规列表
+     */
+    public void exportExcel( List<Condition> list,HttpServletResponse response){
 
+        Page page = new Page();
+        page.setConditions(list);
+        page.setPageNo(1);
+        page.setPageSize(Integer.MAX_VALUE);
+
+        List<Technical>  listTecs = getTechnicalList(page).getCurrentList();
+
+        ExportExcel exportExcel = new ExportExcel();
+
+        String[] fields = {
+
+                "chinesename",
+                "englishname",
+                "keywords",
+                "code",
+                "releasedate",
+                "summaryinfo",
+                "memo"
+
+        };
+        exportExcel.exportExcel(fields,new Technical(),listTecs,"技术文档",response);
+
+    }
     /**
      * 新增法规标准
      * @param technical

@@ -52,8 +52,13 @@
         t.ID,
         t.`CODE`,
         t.CHINESENAME,
+        t.ENGLISHNAME,
         t.RELEASEDATE,
         n.TYPENAME,
+        t.RELEASEDATE,
+        t.KEYWORDS,
+        t.SUMMARYINFO,
+        t.MEMO,
         t.approvestatus
         FROM
         m_bs_tech t
@@ -97,8 +102,13 @@
             )
         </if>
         <if test="KeyWords != null and KeyWords != ''">
-            and instr(t.KEYWORDS,#{KeyWords})> 0
+            and (instr(t.CODE,#{KeyWords})> 0 or instr(t.CHINESENAME,#{KeyWords})> 0 or instr(t.ENGLISHNAME,#{KeyWords})> 0
+            or instr(t.KEYWORDS,#{KeyWords})> 0 or instr(t.MEMO,#{KeyWords})> 0 or instr(t.SUMMARYINFO,#{KeyWords})> 0 )
         </if>
+        <if test="KeyWordsSingle != null and KeyWordsSingle != ''">
+            and  instr(t.KEYWORDS,#{KeyWordsSingle})> 0
+        </if>
+
     </sql>
 
     <!--新增或编辑技术文件-->

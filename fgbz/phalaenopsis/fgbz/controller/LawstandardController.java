@@ -4,6 +4,7 @@ import org.apache.commons.collections.map.HashedMap;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
+import phalaenopsis.common.entity.Condition;
 import phalaenopsis.common.entity.Page;
 import phalaenopsis.common.entity.PagingEntity;
 import phalaenopsis.fgbz.entity.ChartInfo;
@@ -12,6 +13,7 @@ import phalaenopsis.fgbz.entity.LawstandardType;
 import phalaenopsis.fgbz.service.LawstandardService;
 
 import javax.servlet.http.HttpServletResponse;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -81,7 +83,7 @@ public class LawstandardController {
      *
      * @param response 返回导出的excel
      */
-    @RequestMapping(value = "/export", method = RequestMethod.GET)
+    @RequestMapping(value = "/ExportLaw", method = RequestMethod.GET)
     public void export(
             @RequestParam(value = "Number", required = false) String Number,
             @RequestParam(value = "Title", required = false) String Title,
@@ -94,17 +96,41 @@ public class LawstandardController {
             @RequestParam(value = "TreeValue", required = false) String TreeValue,
             @RequestParam(value = "ApproveStatus", required = false) String ApproveStatus,
             HttpServletResponse response) {
-        Map<String, Object> map = new HashedMap();
-        map.put("Number", Number);
-        map.put("Title", Title);
-        map.put("FiledTimeStart", FiledTimeStart);
-        map.put("FiledTimeEnd", FiledTimeEnd);
-        map.put("State", State);
-        map.put("organization", organization);
-        map.put("MaterialTmeStart", MaterialTmeStart);
-        map.put("MaterialTmeEnd", MaterialTmeEnd);
-        map.put("TreeValue", TreeValue);
-        map.put("ApproveStatus", ApproveStatus);
+        List<Condition> list = new ArrayList<>();
+        if (Number != null&&!Number.equals("null")) {
+            list.add(new Condition("Number", Number));
+        }
+        if (Title != null&&!Title.equals("null")) {
+            list.add(new Condition("Title", Title));
+        }
+        if (FiledTimeStart != null&&!FiledTimeStart.equals("null")) {
+            list.add(new Condition("FiledTimeStart", FiledTimeStart));
+        }
+        if (FiledTimeEnd != null&&!FiledTimeEnd.equals("null")) {
+            list.add(new Condition("FiledTimeEnd", FiledTimeEnd));
+        }
+        if (State != null&&!State.equals("null")) {
+            list.add(new Condition("State", State));
+        }
+        if (organization != null&&!organization.equals("null")) {
+            list.add(new Condition("organization", organization));
+        }
+        if (MaterialTmeStart != null&&!MaterialTmeStart.equals("null")) {
+            list.add(new Condition("MaterialTmeStart", MaterialTmeStart));
+        }
+        if (MaterialTmeEnd != null&&!MaterialTmeEnd.equals("null")) {
+            list.add(new Condition("MaterialTmeEnd", MaterialTmeEnd));
+        }
+        if (TreeValue != null&&!TreeValue.equals("null")) {
+            list.add(new Condition("TreeValue", TreeValue));
+        }
+        if (ApproveStatus != null&&!ApproveStatus.equals("null")) {
+            list.add(new Condition("ApproveStatus", ApproveStatus));
+        }
+
+
+        lawstandardService.exportExcel(list, response);
+
     }
 
     /**
@@ -170,15 +196,6 @@ public class LawstandardController {
         lawstandardService.LawstandardIsTop(lawstandard);
     }
 
-
-    /**
-     * 导出export
-     */
-    @RequestMapping(value = "/ExportLaw", method = RequestMethod.POST)
-    @ResponseBody
-    public void ExportLaw(@RequestBody Lawstandard lawstandard){
-
-    }
 
     /**
      * 首页统计

@@ -1,5 +1,7 @@
 package phalaenopsis.fgbz.entity;
 
+import phalaenopsis.common.annotation.ExcelTitle;
+
 import java.util.Date;
 import java.util.List;
 
@@ -10,34 +12,35 @@ public class Technical {
 
     private String id;
     /**
-     * 法规标准编号
+     * 技术文档编号
      */
 
+    @ExcelTitle(value = "技术文档编号")
     private String code;
     /**
      * 中文名称
      */
-
+    @ExcelTitle(value = "中文名称")
     private String chinesename;
     /**
      * 英文名称
      */
-
+    @ExcelTitle(value = "英文名称")
     private String englishname;
     /**
      * 发布日期
      */
-
+    @ExcelTitle(value = "发布日期")
     private Date releasedate;
     /**
      * 关键字
      */
-
+    @ExcelTitle(value = "关键字")
     private String keywords;
     /**
      * 摘要信息，最大2000个汉字
      */
-
+    @ExcelTitle(value = "摘要")
     private String summaryinfo;
     /**
      * 是否经过批量上传
@@ -73,7 +76,7 @@ public class Technical {
     /**
      * 备注
      */
-
+    @ExcelTitle(value = "备注")
     private String memo;
     /**
      * 子系统ID

@@ -2,10 +2,8 @@ package phalaenopsis.fgbz.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.*;
+import phalaenopsis.common.entity.Condition;
 import phalaenopsis.common.entity.Page;
 import phalaenopsis.common.entity.PagingEntity;
 import phalaenopsis.fgbz.entity.Lawstandard;
@@ -13,6 +11,8 @@ import phalaenopsis.fgbz.entity.Technical;
 import phalaenopsis.fgbz.entity.TechnicalType;
 import phalaenopsis.fgbz.service.TechnicalService;
 
+import javax.servlet.http.HttpServletResponse;
+import java.util.ArrayList;
 import java.util.List;
 
 @Controller
@@ -96,6 +96,49 @@ public class TechnicalController {
     public Technical getTechnicalById(@RequestBody Technical technical){
 
         return technicalService.getTechnicalById(technical.getId());
+    }
+
+    /**
+     * 导出
+     *
+     * @param response 返回导出的excel
+     */
+    @RequestMapping(value = "/ExportTec", method = RequestMethod.GET)
+    public void export(
+            @RequestParam(value = "Number", required = false) String Number,
+            @RequestParam(value = "Title", required = false) String Title,
+            @RequestParam(value = "FiledTimeStart", required = false) String FiledTimeStart,
+            @RequestParam(value = "FiledTimeEnd", required = false) String FiledTimeEnd,
+            @RequestParam(value = "KeyWordsSingle", required = false) String KeyWordsSingle,
+            @RequestParam(value = "TreeValue", required = false) String TreeValue,
+            @RequestParam(value = "ApproveStatus", required = false) String ApproveStatus,
+            HttpServletResponse response) {
+        List<Condition> list = new ArrayList<>();
+        if (Number != null&&!Number.equals("null")) {
+            list.add(new Condition("Number", Number));
+        }
+        if (Title != null&&!Title.equals("null")) {
+            list.add(new Condition("Title", Title));
+        }
+        if (FiledTimeStart != null&&!FiledTimeStart.equals("null")) {
+            list.add(new Condition("FiledTimeStart", FiledTimeStart));
+        }
+        if (FiledTimeEnd != null&&!FiledTimeEnd.equals("null")) {
+            list.add(new Condition("FiledTimeEnd", FiledTimeEnd));
+        }
+        if (KeyWordsSingle != null&&!KeyWordsSingle.equals("null")) {
+            list.add(new Condition("KeyWordsSingle", KeyWordsSingle));
+        }
+        if (TreeValue != null&&!TreeValue.equals("null")) {
+            list.add(new Condition("TreeValue", TreeValue));
+        }
+        if (ApproveStatus != null&&!ApproveStatus.equals("null")) {
+            list.add(new Condition("ApproveStatus", ApproveStatus));
+        }
+
+
+        technicalService.exportExcel(list, response);
+
     }
 
 }

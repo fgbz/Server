@@ -51,7 +51,9 @@
 
     <!--查询法律标准列表-->
     <select id="getLawstandardList" parameterType="map" resultType="Lawstandard">
-        select t.ID,t.`CODE`,t.CHINESENAME,t.APPROVESTATUS,sta.STATUSNAME,t.RELEASEDATE ,t.IMPDATE,n.TYPENAME,t.CLICKCOUNT ,	ur.USERREALNAME as inputusername, dep.PUBDEPNAME from
+        select t.ID,t.`CODE`,t.CHINESENAME,t.APPROVESTATUS,sta.STATUSNAME,t.RELEASEDATE ,t.IMPDATE,n.TYPENAME,t.CLICKCOUNT , t.MEMO,
+        t.SUMMARYINFO,t.ENGLISHNAME, t.KEYWORDS,
+        ur.USERREALNAME as inputusername, dep.PUBDEPNAME from
         m_bs_lawstandard t
         left join m_sa_lawstandardstatus sta on t.`STATUS` = sta.ID
         left join m_bs_lawstandard_pubdep pub on t.id = pub.SID
@@ -67,7 +69,9 @@
 
     <!-- 查询列表的总数 -->
     <select id="getLawstandardListCount" resultType="int">
-        select count(1) from m_bs_lawstandard t where 1=1
+        select count(1) from m_bs_lawstandard t
+        left join m_bs_lawstandard_pubdep pub on t.id = pub.SID
+        where 1=1
         <include refid="queryLawstandard"></include>
     </select>
 
@@ -103,11 +107,39 @@
             </foreach>
             )
         </if>
+
+        <if test="EnglishTitle != null and EnglishTitle != ''">
+            and instr(t.ENGLISHNAME,#{EnglishTitle})> 0
+        </if>
+
+        <if test="KeyWordsSingle != null and KeyWordsSingle != ''">
+            and instr(t.KEYWORDS,#{KeyWordsSingle})> 0
+        </if>
+
+        <if test="Summaryinfo != null and Summaryinfo != ''">
+            and instr(t.SUMMARYINFO,#{Summaryinfo})> 0
+        </if>
+
+        <!--全文检索-->
+        <if test="Solr != null and Solr != ''">
+            and (instr(t.CODE,#{Solr})> 0 or instr(t.CHINESENAME,#{Solr})> 0 or instr(t.ENGLISHNAME,#{Solr})> 0
+            or instr(t.KEYWORDS,#{Solr})> 0 or instr(t.MEMO,#{Solr})> 0 or instr(t.SUMMARYINFO,#{Solr})> 0
+            or instr((select group_concat(file.Content) from m_sa_fileinfo file where file.REFID=t.id),#{Solr})>0
+            )
+        </if>
+
+        <!--模糊匹配多个关键字-->
         <if test="KeyWords != null and KeyWords != ''">
-            and instr(t.KEYWORDS,#{KeyWords})> 0
+            and (instr(t.CODE,#{KeyWords})> 0 or instr(t.CHINESENAME,#{KeyWords})> 0 or instr(t.ENGLISHNAME,#{KeyWords})> 0
+             or instr(t.KEYWORDS,#{KeyWords})> 0 or instr(t.MEMO,#{KeyWords})> 0 or instr(t.SUMMARYINFO,#{KeyWords})> 0 )
         </if>
         <if test="ApproveStatus != null and ApproveStatus != ''">
             and t.APPROVESTATUS = #{ApproveStatus}
+        </if>
+
+        <!--引用文件不查自己-->
+        <if test="ReplaceOrRefenceid != null and ReplaceOrRefenceid != ''">
+            and t.id <![CDATA[  != ]]> {ReplaceOrRefenceid}
         </if>
     </sql>
 

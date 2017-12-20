@@ -1,5 +1,7 @@
 package phalaenopsis.fgbz.entity;
 
+import phalaenopsis.common.annotation.ExcelTitle;
+
 import java.util.Date;
 import java.util.List;
 
@@ -9,16 +11,17 @@ public class Lawstandard {
      * 法规标准编号
      */
 
+    @ExcelTitle(value = "法规标准编号")
     private String code;
     /**
      * 中文名称
      */
-
+    @ExcelTitle(value = "中文名称")
     private String chinesename;
     /**
      * 英文名称
      */
-
+    @ExcelTitle(value = "英文名称")
     private String englishname;
     /**
      * 0:受控，1:不受控
@@ -28,17 +31,17 @@ public class Lawstandard {
     /**
      * 发布日期
      */
-
+    @ExcelTitle(value = "发布日期")
     private Date releasedate;
     /**
      * 实施日期
      */
-
+    @ExcelTitle(value = "实施日期")
     private Date impdate;
     /**
      * 关键字
      */
-
+    @ExcelTitle(value = "关键字")
     private String keywords;
     /**
      * 是否经过批量上传
@@ -95,12 +98,12 @@ public class Lawstandard {
     /**
      * 备注
      */
-
+    @ExcelTitle(value = "备注")
     private String memo;
     /**
      * 摘要信息，最大2000个汉字
      */
-
+    @ExcelTitle(value = "摘要")
     private String summaryinfo;
     /**
      * 子系统ID
@@ -125,7 +128,6 @@ public class Lawstandard {
      2、已提交待审核
      3、已发布
      */
-
     private Integer approvestatus;
 
     private String extend1;
