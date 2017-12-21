@@ -5,6 +5,7 @@ import org.springframework.web.context.request.ServletRequestAttributes;
 import phalaenopsis.common.entity.AppSettings;
 import phalaenopsis.common.entity.User;
 import phalaenopsis.common.method.cache.UserCache;
+import phalaenopsis.fgbz.entity.FG_User;
 
 import javax.servlet.http.HttpServletRequest;
 import java.io.File;
@@ -35,6 +36,16 @@ public class Basis {
 		return (User) UserCache.get(ticket); // CacheUtils.getUserCache(ticket);
 	}
 
+	public static final FG_User getCurrentFGUser() {
+		HttpServletRequest request = ((ServletRequestAttributes) RequestContextHolder.getRequestAttributes())
+				.getRequest();
+		//Map map = request.getParameterMap();
+		String ticket = request.getHeader("auth_id");
+		if (null == ticket){
+			ticket =  request.getParameter("AUTH_ID");
+		}
+		return (FG_User) UserCache.get(ticket); // CacheUtils.getUserCache(ticket);
+	}
 	/**
 	 * 获取Tomcat目录
 	 * 

@@ -4,19 +4,22 @@ import org.apache.commons.collections.map.HashedMap;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
-import phalaenopsis.common.entity.Condition;
-import phalaenopsis.common.entity.Page;
-import phalaenopsis.common.entity.PagingEntity;
-import phalaenopsis.fgbz.entity.ChartInfo;
-import phalaenopsis.fgbz.entity.Lawstandard;
-import phalaenopsis.fgbz.entity.LawstandardType;
+import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.multipart.MultipartHttpServletRequest;
+import org.springframework.web.multipart.commons.CommonsMultipartResolver;
+import phalaenopsis.common.entity.*;
+import phalaenopsis.fgbz.common.ExcelHelper;
+import phalaenopsis.fgbz.entity.*;
 import phalaenopsis.fgbz.service.LawstandardService;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.io.FileInputStream;
+import java.util.*;
+
+import static phalaenopsis.common.method.Basis.getCurrentFGUser;
+import static phalaenopsis.common.method.Basis.getCurrentUser;
+
 
 @Controller
 @RequestMapping("/Lawstandard")
@@ -206,6 +209,74 @@ public class LawstandardController {
     public Map<Object,Object> getHomeChart() {
 
         return lawstandardService.getHomeChart();
+    }
+
+    /**
+     * 批量导入
+     * @param request
+     * @return
+     */
+    @RequestMapping(value = "/ImportLaw", method = RequestMethod.POST)
+    @ResponseBody
+    public int importLawcaseAccount(HttpServletRequest request) {
+        //获取前端传过来的file
+        MultipartFile file = getFile(request);
+        FileInputStream inputStream = null;
+        int result = 0;
+        try {
+            if (file != null) {
+                //转化文件名，避免乱码
+                String fileName = new String(file.getOriginalFilename().getBytes("ISO-8859-1"), "UTF-8");
+                inputStream = (FileInputStream) file.getInputStream();
+                //将导入的excel转化为实体
+                List<LawstandardExcel> list = ExcelHelper.convertToList(LawstandardExcel.class, fileName, inputStream, 2, 8);
+
+                if(list.size()==0){
+                    int isEmpty= 404;
+                    OpResult opResult = new OpResult(isEmpty);
+                    return opResult.Code;
+                }
+                FG_User user = getCurrentFGUser();
+                //插入法规
+                result= lawstandardService.importLawstandard(list,user);
+                inputStream.close();
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return result;
+    }
+
+    /**
+     * 获取客户端上传的文件
+     *
+     * @param request
+     * @return
+     */
+    public MultipartFile getFile(HttpServletRequest request) {
+
+        MultipartFile file = null;
+
+        // 解析器解析request的上下文
+        CommonsMultipartResolver multipartResolver = new CommonsMultipartResolver(
+                request.getSession().getServletContext());
+
+        // 先判断request中是否包涵multipart类型的数据
+        if (multipartResolver.isMultipart(request)) {
+            // 再将request中的数据转化成multipart类型的数据
+            MultipartHttpServletRequest multiRequest = (MultipartHttpServletRequest) request;
+
+            Iterator iter = multiRequest.getFileNames();
+            while (iter.hasNext()) {
+                String name = (String) iter.next();
+                // 根据name值拿取文件
+                file = multiRequest.getFile(name);
+            }
+
+        }
+        return file;
+
     }
 
 }

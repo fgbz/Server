@@ -86,4 +86,10 @@ public interface TechnicalDao {
      * @return
      */
     Technical getTechnicalById(String id);
+
+    /**
+     * 判断技术文档编号是否重复
+     * @return
+     */
+    int checkTecCode(Technical technical);
 }

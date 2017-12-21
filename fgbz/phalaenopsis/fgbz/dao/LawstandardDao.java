@@ -129,4 +129,9 @@ public interface LawstandardDao {
      */
     List<ChartInfo> getUploadType();
 
+    /**
+     * 判断法规编号是否重复
+     * @return
+     */
+    int checklawCode(Lawstandard lawstandard);
 }

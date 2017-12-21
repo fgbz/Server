@@ -5,13 +5,17 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.RequestBody;
 import phalaenopsis.common.entity.Condition;
+import phalaenopsis.common.entity.OpResult;
 import phalaenopsis.common.entity.Page;
 import phalaenopsis.common.entity.PagingEntity;
 import phalaenopsis.common.method.ExportExcel;
+import phalaenopsis.common.method.Tools.StrUtil;
 import phalaenopsis.fgbz.dao.TechnicalDao;
 import phalaenopsis.fgbz.entity.*;
 
 import javax.servlet.http.HttpServletResponse;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.*;
 
 @Service("technicalService")
@@ -113,6 +117,8 @@ public class TechnicalService {
                     conditions.put("KeyWordsSingle", condition.getValue());
                 }else if(condition.getKey().equals("ApproveStatus")){
                     conditions.put("ApproveStatus", condition.getValue());
+                }else if(condition.getKey().equals("IsBatch")){
+                    conditions.put("IsBatch", condition.getValue());
                 }
 
             }
@@ -172,6 +178,51 @@ public class TechnicalService {
         exportExcel.exportExcel(fields,new Technical(),listTecs,"技术文档",response);
 
     }
+
+    /**
+     * 批量导入
+     * @return
+     */
+    @Transactional
+    public int importTechnical( List<TechnicalExcel> list,FG_User user) throws ParseException {
+
+        List<Technical> listImport = new ArrayList<>();
+
+        for (TechnicalExcel excel:list ) {
+            Technical technical = new Technical();
+            //中文标题不能为空
+            if(StrUtil.isNullOrEmpty(excel.getChinesename())){
+                int isChinesenameEmpty =1;
+                OpResult opResult = new OpResult(isChinesenameEmpty);
+                return opResult.Code;
+            }else {
+                technical.setChinesename(excel.getChinesename());
+            }
+            //验证编号不能为空
+            if(StrUtil.isNullOrEmpty(excel.getCode())){
+                int isodeEmpty =2;
+                OpResult opResult = new OpResult(isodeEmpty);
+                return opResult.Code;
+            }else{
+                technical.setCode(excel.getCode());
+            }
+            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd ");
+            technical.setEnglishname(excel.getEnglishname());
+            technical.setKeywords(excel.getKeywords());
+            technical.setReleasedate( sdf.parse(excel.getReleasedate()));
+            technical.setSummaryinfo(excel.getSummaryinfo());
+            technical.setMemo(excel.getMemo());
+            technical.setId(UUID.randomUUID().toString());
+            technical.setApprovestatus(1);
+            technical.setIsbatch(1);
+            technical.setInputuserid(user.getId());
+            listImport.add(technical);
+        }
+        for(Technical tec:listImport){
+            technicalDao.SaveOrUpdateTechnical(tec);
+        }
+        return OpResult.Success;
+    }
     /**
      * 新增法规标准
      * @param technical
@@ -185,8 +236,14 @@ public class TechnicalService {
             String guid=uuid.toString();
             technical.setId(guid);
         }
+        int num = technicalDao.checkTecCode(technical);
+        if(num>0){
+            int isWorking = 461;
+            OpResult opResult = new OpResult(isWorking);
+            return opResult.Code;
+        }
 
-        int num = technicalDao.SaveOrUpdateTechnical(technical);
+        technicalDao.SaveOrUpdateTechnical(technical);
         technicalDao.SaveOrUpdateTecAndType(technical);
 
         //建立与附件的关系
@@ -195,7 +252,7 @@ public class TechnicalService {
         }
 
 
-        return num;
+        return OpResult.Success;
     }
 
     /**
@@ -205,9 +262,9 @@ public class TechnicalService {
      */
     @Transactional
     public int  DeleteTechnicalById( String id){
-        int num1 = technicalDao.DeleteTechnicalById(id);
-        int num2 = technicalDao.DeleteTecAndType(id);
-        return num1+num2;
+         technicalDao.DeleteTechnicalById(id);
+         technicalDao.DeleteTecAndType(id);
+        return OpResult.Success;
     }
 
     /**

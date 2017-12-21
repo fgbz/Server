@@ -52,7 +52,7 @@
     <!--查询法律标准列表-->
     <select id="getLawstandardList" parameterType="map" resultType="Lawstandard">
         select t.ID,t.`CODE`,t.CHINESENAME,t.APPROVESTATUS,sta.STATUSNAME,t.RELEASEDATE ,t.IMPDATE,n.TYPENAME,t.CLICKCOUNT , t.MEMO,
-        t.SUMMARYINFO,t.ENGLISHNAME, t.KEYWORDS,
+        t.SUMMARYINFO,t.ENGLISHNAME, t.KEYWORDS,t.IsBatch,
         ur.USERREALNAME as inputusername, dep.PUBDEPNAME from
         m_bs_lawstandard t
         left join m_sa_lawstandardstatus sta on t.`STATUS` = sta.ID
@@ -141,12 +141,24 @@
         <if test="ReplaceOrRefenceid != null and ReplaceOrRefenceid != ''">
             and t.id <![CDATA[  != ]]> {ReplaceOrRefenceid}
         </if>
+        <!--是否批量导入-->
+        <if test="IsBatch != null and IsBatch != '' and IsBatch == 1 ">
+        and t.IsBatch = 1
+    </if>
+        <if test="IsBatch != null and IsBatch != '' and IsBatch == 0 ">
+            and t.IsBatch is NULL
+        </if>
     </sql>
 
     <delete id="deleteLawstandardById" parameterType="String">
         DELETE from m_bs_lawstandard WHERE  ID = #{id}
     </delete>
 
+    <!--判断法规编号是否重复-->
+    <select id="checklawCode" parameterType="Lawstandard" resultType="int">
+        select count(1) from m_bs_lawstandard t where t.CODE = #{code}
+        and t.id <![CDATA[  != ]]> #{id}
+    </select>
 
     <!--获取发布部门-->
     <select id="getPublishDep" resultType="FgbzDictory">
@@ -502,11 +514,11 @@
             select count(1) from m_bs_lawstandard_pubdep t where t.SID=#{id}
         </selectKey>
 
-        <if test="count == 0 and organization!=null and organization!=''">
+        <if test="count == 0 and organization != null and organization != ''">
             insert into m_bs_lawstandard_pubdep  (ID,SID,PUBDEPID) VALUES
             (uuid(),#{id},#{organization,jdbcType=VARCHAR})
         </if>
-        <if test="count>0 and organization!=null and organization!=''" >
+        <if test="count>0 and organization != null and organization != ''" >
             UPDATE m_bs_lawstandard_pubdep t set t.PUBDEPID = #{organization,jdbcType=VARCHAR}
             where t.sid = #{id}
         </if>

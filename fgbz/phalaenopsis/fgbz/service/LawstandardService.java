@@ -4,19 +4,18 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.RequestBody;
-import phalaenopsis.common.entity.Condition;
-import phalaenopsis.common.entity.Page;
-import phalaenopsis.common.entity.PagingEntity;
+import phalaenopsis.common.entity.*;
 import phalaenopsis.common.method.ExportExcel;
-import phalaenopsis.common.method.Tools.GuidHelper;
+import phalaenopsis.common.method.Tools.StrUtil;
 import phalaenopsis.fgbz.dao.LawstandardDao;
-import phalaenopsis.fgbz.entity.ChartInfo;
-import phalaenopsis.fgbz.entity.Lawstandard;
-import phalaenopsis.fgbz.entity.LawstandardType;
-import phalaenopsis.fgbz.entity.RefenceOrReplace;
+import phalaenopsis.fgbz.entity.*;
 
 import javax.servlet.http.HttpServletResponse;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.*;
+
+import phalaenopsis.common.method.Basis;
 
 
 /**
@@ -141,6 +140,8 @@ public class LawstandardService {
                     conditions.put("Solr", condition.getValue());
                 } else if(condition.getKey().equals("ReplaceOrRefenceid")){
                     conditions.put("ReplaceOrRefenceid", condition.getValue());
+                }else if(condition.getKey().equals("IsBatch")){
+                    conditions.put("IsBatch", condition.getValue());
                 }
 
             }
@@ -207,6 +208,54 @@ public class LawstandardService {
         exportExcel.exportExcel(fields,new Lawstandard(),listLaws,"法规标准",response);
 
     }
+
+    /**
+     * 批量导入
+     * @return
+     */
+    @Transactional
+    public int importLawstandard( List<LawstandardExcel> list,FG_User user) throws ParseException {
+
+        List<Lawstandard> listImport = new ArrayList<>();
+
+
+
+        for (LawstandardExcel excel:list ) {
+            Lawstandard lawstandard = new Lawstandard();
+            //中文标题不能为空
+            if(StrUtil.isNullOrEmpty(excel.getChinesename())){
+                int isChinesenameEmpty =1;
+                OpResult opResult = new OpResult(isChinesenameEmpty);
+                return opResult.Code;
+            }else {
+                lawstandard.setChinesename(excel.getChinesename());
+            }
+            //验证编号不能为空
+            if(StrUtil.isNullOrEmpty(excel.getCode())){
+                int isodeEmpty =2;
+                OpResult opResult = new OpResult(isodeEmpty);
+                return opResult.Code;
+            }else{
+                lawstandard.setCode(excel.getCode());
+            }
+            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd ");
+            lawstandard.setEnglishname(excel.getEnglishname());
+            lawstandard.setKeywords(excel.getKeywords());
+            lawstandard.setReleasedate( sdf.parse(excel.getReleasedate()));
+            lawstandard.setImpdate( sdf.parse(excel.getImpdate()));
+            lawstandard.setSummaryinfo(excel.getSummaryinfo());
+            lawstandard.setMemo(excel.getMemo());
+            lawstandard.setId(UUID.randomUUID().toString());
+            lawstandard.setApprovestatus(1);
+            lawstandard.setIsbatch(1);
+            lawstandard.setInputuserid(user.getId());
+            listImport.add(lawstandard);
+        }
+        for(Lawstandard law:listImport){
+            lawstandardDao.SaveOrUpdateLawstandard(law);
+        }
+        return OpResult.Success;
+    }
     /**
      * 删除法规标准
      * @return
@@ -214,14 +263,13 @@ public class LawstandardService {
     @Transactional
     public int  DeleteLawstandardById(String id){
 
-        int num1= lawstandardDao.deleteLawstandardById(id);
-        int num2 = lawstandardDao.deleteRefence(id);
-        int num3 = lawstandardDao.deleteReplace(id);
-        int num4 = lawstandardDao.DeleteLawAndType(id);
+         lawstandardDao.deleteLawstandardById(id);
+        lawstandardDao.deleteRefence(id);
+        lawstandardDao.deleteReplace(id);
+        lawstandardDao.DeleteLawAndType(id);
 
-        int result = num1+num2+num3+num4;
 
-        return result;
+        return OpResult.Success;
     }
 
     /**
@@ -236,14 +284,29 @@ public class LawstandardService {
             UUID uuid=UUID.randomUUID();
             String guid=uuid.toString();
             lawstandard.setId(guid);
-        }else{
-            lawstandardDao.deleteRefence(lawstandard.getId());
-            lawstandardDao.deleteReplace(lawstandard.getId());
         }
-        int num = lawstandardDao.SaveOrUpdateLawstandard(lawstandard);
+        int num = lawstandardDao.checklawCode(lawstandard);
 
-        lawstandardDao.SaveOrUpdateLawAndType(lawstandard);
-        lawstandardDao.SaveOrUpdateLawAndPublish(lawstandard);
+        if(num>0){
+            int isWorking = 461;
+            OpResult opResult = new OpResult(isWorking);
+            return opResult.Code;
+        }
+
+        lawstandardDao.deleteRefence(lawstandard.getId());
+        lawstandardDao.deleteReplace(lawstandard.getId());
+        lawstandardDao.SaveOrUpdateLawstandard(lawstandard);
+
+        if(!lawstandard.getLawtype().isEmpty()){
+            lawstandardDao.SaveOrUpdateLawAndType(lawstandard);
+        }
+
+            if(lawstandard.getOrganization()!=null){
+                lawstandardDao.SaveOrUpdateLawAndPublish(lawstandard);
+            }
+
+
+
         //建立与附件的关系
         if(lawstandard.getFileids().size()>0){
             lawstandardDao.SaveFileLink(lawstandard);
@@ -282,7 +345,7 @@ public class LawstandardService {
 
         }
 
-        return num;
+        return OpResult.Success;
     }
 
     /**
@@ -321,7 +384,6 @@ public class LawstandardService {
     public  void LawstandardIsTop(Lawstandard lawstandard){
         lawstandardDao.LawstandardIsTop(lawstandard);
     }
-
 
     /**************************首页统计************************************/
 

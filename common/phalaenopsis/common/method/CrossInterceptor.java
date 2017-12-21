@@ -43,9 +43,9 @@ public class CrossInterceptor extends HandlerInterceptorAdapter {
 
         String[] Urls = ignoreUrls.split(";");
 
-        if(authid!=null&&authid.equals("1")){
-            return super.preHandle(request, response, handler);
-        }
+//        if(authid!=null&&authid.equals("1")){
+//            return super.preHandle(request, response, handler);
+//        }
 
         if (null == authid) {
             for (String string : Urls) {

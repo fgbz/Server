@@ -59,7 +59,8 @@
         t.KEYWORDS,
         t.SUMMARYINFO,
         t.MEMO,
-        t.approvestatus
+        t.approvestatus,
+        t.IsBatch
         FROM
         m_bs_tech t
         LEFT JOIN m_bs_tech_type m ON m.SID = t.id
@@ -107,6 +108,14 @@
         </if>
         <if test="KeyWordsSingle != null and KeyWordsSingle != ''">
             and  instr(t.KEYWORDS,#{KeyWordsSingle})> 0
+        </if>
+
+        <!--是否批量导入-->
+        <if test="IsBatch != null and IsBatch != '' and IsBatch == 1 ">
+            and t.IsBatch = 1
+        </if>
+        <if test="IsBatch != null and IsBatch != '' and IsBatch == 0 ">
+            and t.IsBatch is NULL
         </if>
 
     </sql>
@@ -309,5 +318,11 @@
             #{item}
         </foreach>
     </update>
+
+    <!--判断技术文档编号是否重复-->
+    <select id="checkTecCode" parameterType="Technical" resultType="int">
+         select count(1) from m_bs_tech t where t.CODE = #{code}
+        and t.id <![CDATA[  != ]]> #{id}
+    </select>
 
 </mapper>
