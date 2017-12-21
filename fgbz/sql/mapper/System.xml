@@ -48,7 +48,7 @@
 
     <!--获取所有的角色-->
     <select id="getAllRoles" resultType="FG_Role">
-        select t.id ,t.ROLENAME from m_sa_role t
+        select t.id ,t.ROLENAME from m_sa_role t where t.ROLENAME <![CDATA[  != ]]> 'admin'
     </select>
 
     <resultMap type="FG_Role" id="RoleListMap">
@@ -71,7 +71,7 @@
 	case when (select count(1) from m_sa_user_role link where link.ROLEID = t.id)>0 THEN 0 else 1 end as candelete
 FROM
     (SELECT  *from
-	m_sa_role where 1=1
+	m_sa_role where 1=1 and ROLENAME <![CDATA[  != ]]> 'admin'
        <include refid="queryRole"></include>
 	 order by MODIFYDATE   desc
 	LIMIT #{startRow},#{endRow}) t
@@ -327,7 +327,7 @@ SELECT
 	role.ROLENAME
 FROM
         (SELECT  *from
-	m_sa_user where 1=1
+	m_sa_user where 1=1 and  USERNAME <![CDATA[  != ]]> 'admin'
         <include refid="queryUser"></include>
 	order by modifydate desc
         LIMIT #{startRow},#{endRow}) t
