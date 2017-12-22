@@ -52,7 +52,7 @@
     <!--查询法律标准列表-->
     <select id="getLawstandardList" parameterType="map" resultType="Lawstandard">
         select t.ID,t.`CODE`,t.CHINESENAME,t.APPROVESTATUS,sta.STATUSNAME,t.RELEASEDATE ,t.IMPDATE,n.TYPENAME,t.CLICKCOUNT , t.MEMO,
-        t.SUMMARYINFO,t.ENGLISHNAME, t.KEYWORDS,t.IsBatch,
+        t.SUMMARYINFO,t.ENGLISHNAME, t.KEYWORDS,t.IsBatch,t.INPUTDATE,
         ur.USERREALNAME as inputusername, dep.PUBDEPNAME from
         m_bs_lawstandard t
         left join m_sa_lawstandardstatus sta on t.`STATUS` = sta.ID

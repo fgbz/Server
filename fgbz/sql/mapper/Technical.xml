@@ -60,7 +60,8 @@
         t.SUMMARYINFO,
         t.MEMO,
         t.approvestatus,
-        t.IsBatch
+        t.IsBatch,
+        t.INPUTDATE
         FROM
         m_bs_tech t
         LEFT JOIN m_bs_tech_type m ON m.SID = t.id

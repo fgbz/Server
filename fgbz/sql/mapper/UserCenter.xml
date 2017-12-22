@@ -285,7 +285,7 @@ FROM
     <!--获取反馈信息-->
     <select id="getFeedBackList" parameterType="String" resultType="SuggestionFeedBack">
         SELECT t.ID,t.sid,t.title,t.fdetails,t.feedbackid,t.FEEDBACKDATE ,us.USERREALNAME as feedbackusername from m_bs_suggestionfeedback t
-        left join m_sa_user us on us.id = t.feedbackid
+        left join m_sa_user us on us.id = t.feedbackid where t.sid=#{id}
         order by t.FEEDBACKDATE desc
     </select>
 
