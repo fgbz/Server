@@ -3,8 +3,6 @@ package phalaenopsis.fgbz.common;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
-import phalaenopsis.lawcaseevaluation.common.*;
-
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.lang.reflect.Field;
@@ -68,10 +66,10 @@ public class ExcelHelper {
         Workbook wb = null;
 
         //根据后缀初始化Workbook对象
-        if (!phalaenopsis.lawcaseevaluation.common.Constant.EMPTY.equals(postfix)) {
-            if (phalaenopsis.lawcaseevaluation.common.Constant.OFFICE_EXCEL_2003_POSTFIX.equals(postfix)) {
+        if (!Constant.EMPTY.equals(postfix)) {
+            if (Constant.OFFICE_EXCEL_2003_POSTFIX.equals(postfix)) {
                 wb = getXLSWorkbook(stream);
-            } else if (phalaenopsis.lawcaseevaluation.common.Constant.OFFICE_EXCEL_2010_POSTFIX.equals(postfix)) {
+            } else if (Constant.OFFICE_EXCEL_2010_POSTFIX.equals(postfix)) {
                 wb = getXLSXWorkbook(stream);
             }
             //读取excel文件
@@ -88,15 +86,15 @@ public class ExcelHelper {
      * @return
      */
     private static String getPostfix(String path) {
-        if (path == null || phalaenopsis.lawcaseevaluation.common.Constant.EMPTY.equals(path.trim())) {
-            return phalaenopsis.lawcaseevaluation.common.Constant.EMPTY;
+        if (path == null || Constant.EMPTY.equals(path.trim())) {
+            return Constant.EMPTY;
         }
 
-        if (path.contains(phalaenopsis.lawcaseevaluation.common.Constant.POINT)) {
-            return path.substring(path.lastIndexOf(phalaenopsis.lawcaseevaluation.common.Constant.POINT) + 1, path.length());
+        if (path.contains(Constant.POINT)) {
+            return path.substring(path.lastIndexOf(Constant.POINT) + 1, path.length());
         }
 
-        return phalaenopsis.lawcaseevaluation.common.Constant.EMPTY;
+        return Constant.EMPTY;
     }
 
     /**

@@ -3,8 +3,6 @@ package phalaenopsis.common.method;
 
 import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
-import org.springframework.web.context.support.WebApplicationContextUtils;
-import phalaenopsis.common.service.DataDictionaryService;
 
 /**
  * 初始化信息
