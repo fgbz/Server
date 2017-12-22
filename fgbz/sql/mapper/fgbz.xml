@@ -63,7 +63,7 @@
         left join m_sa_user ur on ur.ID = t.INPUTUSERID
         where 1=1
         <include refid="queryLawstandard"></include>
-        order by t.istop desc,t.MODIFYDATE desc
+        order by if(ISNULL(t.ISTOP),0,t.ISTOP) desc ,t.MODIFYDATE desc
         LIMIT #{startRow},#{endRow}
     </select>
 
@@ -148,6 +148,10 @@
         <if test="IsBatch != null and IsBatch != '' and IsBatch == 0 ">
             and t.IsBatch is NULL
         </if>
+        <if test="Userid != null and Userid != '' ">
+            and t.INPUTUSERID  <![CDATA[  != ]]>  #{Userid}
+        </if>
+
     </sql>
 
     <delete id="deleteLawstandardById" parameterType="String">
@@ -557,8 +561,10 @@ SELECT
 	MAX( us.USERREALNAME ) AS NAME,
 	count( 1 ) AS COUNT
 FROM
-	m_sa_fileinfo file
+	 m_bs_lawstandard t
+	left join m_sa_fileinfo file on t.id=file.REFID
 	LEFT JOIN m_sa_user us ON file.INPUTUSERID = us.ID
+	where us.USERREALNAME is not null
 GROUP BY
 	file.INPUTUSERID
 	) t
@@ -593,6 +599,18 @@ where file.REFID is not NULL
 GROUP BY
 ty.ID
 
+    </select>
+
+    <!--获取首页类别导航-->
+    <select id="getHomePageLawsType" resultType="LawstandardType">
+        SELECT
+	t.id,
+	t.TYPENAME,
+	t.PARENTID
+FROM
+	`m_bs_lawstandardtype` t
+WHERE
+	t.PARENTID = ( SELECT m.ID FROM m_bs_lawstandardtype m WHERE m.PARENTID IS NULL )
     </select>
 
 </mapper>

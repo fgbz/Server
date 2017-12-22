@@ -27,16 +27,5 @@
 		<setting name="logImpl" value="LOG4J" />
 	</settings>
 
-	<typeHandlers>
-		<typeHandler handler="org.apache.ibatis.type.EnumOrdinalTypeHandler"
-			javaType="phalaenopsis.lawcaseevaluation.entity.ReviewState" />
-	<!-- 	<typeHandler
-			handler="phalaenopsis.common.method.typehandler.SdoGeometryTypeHandler"
-			javaType="oracle.spatial.geometry.JGeometry" /> -->
-		<!-- <typeHandler handler="org.apache.ibatis.type.EnumOrdinalTypeHandler" 
-			javaType="phalaenopsis.lawcase.entity.LitigantType" /> <typeHandler handler="org.apache.ibatis.type.EnumOrdinalTypeHandler" 
-			javaType="phalaenopsis.lawcase.entity.SignStatus" /> <typeHandler handler="org.apache.ibatis.type.EnumOrdinalTypeHandler" 
-			javaType="phalaenopsis.lawcase.entity.SignNodeStatus" /> -->
-	</typeHandlers>
 
 </configuration>

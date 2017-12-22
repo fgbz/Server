@@ -728,21 +728,8 @@
 						</goals>
 						<configuration>
 							<sources>
-								<source>${basedir}/SystemManagement/</source>
-								<source>${basedir}/workflowEngine/</source>
-								<source>${basedir}/SatelliteReport/</source>
-								<source>${basedir}/SatelliteGraph/</source>
+
 								<source>${basedir}/common/</source>
-								<source>${basedir}/MiddleSatellite/</source>
-								<source>${basedir}/LawCaseEvaluation/</source>
-								<source>${basedir}/IllegalClue/</source>
-								<source>${basedir}/lawcase/</source>
-								<source>${basedir}/allweather/</source>
-								<source>${basedir}/statistics/</source>
-								<source>${basedir}/patrolManagement/</source>
-								<source>${basedir}/visitSystem/</source>
-								<source>${basedir}/pjMapSpot/</source>
-								<source>${basedir}/legalstatute/</source>
 								<source>${basedir}/fgbz/</source>
 							</sources>
 						</configuration>
@@ -758,10 +745,7 @@
 							<resources>
 								<!-- -->
 
-								<resource>
-									<directory>${basedir}/lawcase/phalaenopsis/lawcase/wordTemplates</directory>
-									<targetPath>phalaenopsis/lawcase/wordTemplates</targetPath>
-								</resource>
+
 
 								<resource>
 									<directory>${basedir}/common/conf</directory>
@@ -772,61 +756,13 @@
 									<directory>${basedir}/common/sql</directory>
 									<targetPath>sql</targetPath>
 								</resource>
-								<resource>
-									<directory>${basedir}/SystemManagement/sql/mapper</directory>
-									<targetPath>sql/mapper</targetPath>
-								</resource>
 
-								<resource>
-									<directory>${basedir}/SatelliteGraph/sql/mapper</directory>
-									<targetPath>sql/mapper</targetPath>
-								</resource>
 
-								<resource>
-									<directory>${basedir}/LawCaseEvaluation/sql/mapper</directory>
-									<targetPath>sql/mapper</targetPath>
-								</resource>
-
-								<resource>
-									<directory>${basedir}/IllegalClue/sql/mapper</directory>
-									<targetPath>sql/mapper</targetPath>
-								</resource>
-
-								<resource>
-									<directory>${basedir}/lawcase/sql/mapper</directory>
-									<targetPath>sql/mapper</targetPath>
-								</resource>
 								<resource>
 									<directory>${basedir}/fgbz/sql/mapper</directory>
 									<targetPath>sql/mapper</targetPath>
 								</resource>
 
-								<resource>
-									<directory>${basedir}/allweather/sql/mapper</directory>
-									<targetPath>sql/mapper</targetPath>
-								</resource>
-
-								<resource>
-									<directory>${basedir}/statistics/sql/mapper</directory>
-									<targetPath>sql/mapper</targetPath>
-								</resource>
-
-								<resource>
-									<directory>${basedir}/visitSystem/sql/mapper</directory>
-									<targetPath>sql/mapper</targetPath>
-								</resource>
-								<resource>
-									<directory>${basedir}/patrolManagement/sql/mapper</directory>
-									<targetPath>sql/mapper</targetPath>
-								</resource>
-								<resource>
-									<directory>${basedir}/pjMapSpot/sql/mapper</directory>
-									<targetPath>sql/mapper</targetPath>
-								</resource>
-								<resource>
-									<directory>${basedir}/legalstatute/sql/mapper</directory>
-									<targetPath>sql/mapper</targetPath>
-								</resource>
 								<resource>
 									<directory>${basedir}/common/temple</directory>
 									<targetPath>temple</targetPath>

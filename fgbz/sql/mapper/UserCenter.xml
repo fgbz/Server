@@ -200,7 +200,8 @@ FROM
         t.DETAILS,
         org.ORGNAME,
         t.INPUTDATE,
-        us.USERREALNAME as inputname
+        us.USERREALNAME as inputname,
+        us.id as inputuserid
         FROM
         m_bs_suggestion t
         LEFT JOIN m_sa_user us ON us.ID = t.INPUTUSERID
@@ -213,7 +214,13 @@ FROM
 
     <sql id="querySuggestion">
         <if test="KeyWords != null and KeyWords != ''">
-            and ( instr(t.TITLE,#{KeyWords})> 0 or instr(t.DETAILS,#{KeyWords})> 0 )
+            and ( instr(t.TITLE,#{KeyWords})> 0 or instr(t.DETAILS,#{KeyWords})> 0 or  instr(us.USERREALNAME,#{KeyWords})>0 )
+        </if>
+        <if test="FiledTimeStart != null and FiledTimeStart != ''">
+            and Date(t.INPUTDATE) <![CDATA[  >=  ]]> #{FiledTimeStart}
+        </if>
+        <if test="FiledTimeEnd != null and FiledTimeEnd != ''">
+            and Date(t.INPUTDATE) <![CDATA[  <=  ]]> #{FiledTimeEnd}
         </if>
     </sql>
 
@@ -222,7 +229,9 @@ FROM
         SELECT
         count(1)
         FROM
-        m_bs_suggestion t WHERE 1=1
+        m_bs_suggestion t
+        LEFT JOIN m_sa_user us ON us.ID = t.INPUTUSERID
+        WHERE 1=1
         <include refid="querySuggestion"></include>
     </select>
 

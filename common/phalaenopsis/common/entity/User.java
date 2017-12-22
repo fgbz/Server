@@ -7,7 +7,6 @@ import java.util.Map;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-import phalaenopsis.patrolManagement.bean.PatrolTrackEntityBean;
 
 
 public class User implements java.io.Serializable{
@@ -135,11 +134,7 @@ public class User implements java.io.Serializable{
 	
 	private List<String> organizationsID = null;
 	
-	/**
-	 * 坐标
-	 */
-	//@JsonProperty("patrolTrackEntityBean")
-	public PatrolTrackEntityBean patrolTrackEntityBean;
+
 	
 	
 	public String getMobilePublicKey() {
@@ -305,13 +300,6 @@ public class User implements java.io.Serializable{
 		this.isOnline = isOnline;
 	}
 
-	public PatrolTrackEntityBean getPatrolTrackEntityBean() {
-		return patrolTrackEntityBean;
-	}
-
-	public void setPatrolTrackEntityBean(PatrolTrackEntityBean patrolTrackEntityBean) {
-		this.patrolTrackEntityBean = patrolTrackEntityBean;
-	}
 
 	public List<String> getOrganizationsID() {
 		return organizationsID;

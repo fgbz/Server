@@ -16,7 +16,7 @@
 			expression="org.springframework.stereotype.Controller" />
 	</context:component-scan>
 
-	<context:property-placeholder location="classpath:conf/jdbc.properties,classpath:conf/mongo.properties" />
+	<context:property-placeholder location="classpath:conf/jdbc.properties" />
 
 
 	<aop:aspectj-autoproxy proxy-target-class="true" />
@@ -24,13 +24,7 @@
 	<import resource="classpath:conf/applicationContext_datasource.xml" />
 	
 	<import resource="classpath:conf/applicationContext_dao.xml" />
-	
-	
-     <!--  
-	 <import resource="classpath:conf/spring-data-mongo.xml" />   -->
-     <import resource="classpath:conf/spring-mongodb.xml" />
 
-	<!--<import resource="metrics-spring.xml"/>-->
 
 
 	<bean id="exceptionHandler" class="phalaenopsis.common.method.MyExceptionHandler" />
@@ -41,25 +35,6 @@
 		<property name="fileEncoding" value="UTF-8" />
 	</bean>
 
-	<!-- 自动加载.properties配置文件 -->
-	<!-- <util:properties id="configSettings" location="classpath:conf/config.properties"
-		/> -->
-
-	<!--<bean id="checkUserOnline" class="phalaenopsis.common.method.CheckUserOnline" />-->
-	<!--&lt;!&ndash; 调度配置 &ndash;&gt;-->
-	<!--&lt;!&ndash; 开启这个配置，Spring才能识别@Scheduled注解 &ndash;&gt;-->
-	<!--<task:scheduled-tasks>-->
-		<!--<task:scheduled ref="taskJob" method="job" cron="0 * * * * ?" /> -->
-		<!--<task:scheduled ref="testSendMsg" method="sendMsg" cron="0/30 * * * * ?" /> -->
-		<!--<task:scheduled ref="CoordiateJob" method="deleteFiles" cron="* * 23 * * ?" />-->
-		<!--<task:scheduled ref="checkUserOnline" method="taskstart" cron="0/30 * * * * ?" />-->
-	<!--</task:scheduled-tasks>-->
-
-
-	<!-- 缓存配置 <bean id="cacheManagerFactory" class="org.springframework.cache.ehcache.EhCacheManagerFactoryBean"> 
-		<property name="configLocation" value="classpath:conf/ehcache.xml"></property> 
-		</bean> <bean id="cacheManager" class="org.springframework.cache.ehcache.EhCacheCacheManager"> 
-		<property name="cacheManager" ref="cacheManagerFactory"></property> </bean> -->
 
 
 	<bean id="cacheManager"

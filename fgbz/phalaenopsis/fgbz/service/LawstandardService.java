@@ -142,6 +142,8 @@ public class LawstandardService {
                     conditions.put("ReplaceOrRefenceid", condition.getValue());
                 }else if(condition.getKey().equals("IsBatch")){
                     conditions.put("IsBatch", condition.getValue());
+                }else if(condition.getKey().equals("Userid")){
+                    conditions.put("Userid", condition.getValue());
                 }
 
             }
@@ -217,8 +219,6 @@ public class LawstandardService {
     public int importLawstandard( List<LawstandardExcel> list,FG_User user) throws ParseException {
 
         List<Lawstandard> listImport = new ArrayList<>();
-
-
 
         for (LawstandardExcel excel:list ) {
             Lawstandard lawstandard = new Lawstandard();
@@ -401,5 +401,20 @@ public class LawstandardService {
         map.put("Type",listType);
 
         return map;
+    }
+
+    /**************************首页类别导航**************************************/
+
+    public List<LawstandardType> getHomePageLawsType(){
+
+        List<LawstandardType> result = new ArrayList<>();
+        result = lawstandardDao.getHomePageLawsType();
+        if(result.size()>0){
+            for (LawstandardType lawstandardType:result
+                 ) {
+                lawstandardType.setChildLists(getChildNode(lawstandardType.getId()));
+            }
+        }
+        return  result;
     }
 }

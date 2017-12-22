@@ -278,5 +278,13 @@ public class LawstandardController {
         return file;
 
     }
+    /**************************首页类别导航**************************************/
+    @RequestMapping(value = "/getHomePageLawsType", method = RequestMethod.GET)
+    @ResponseBody
+    public List<LawstandardType> getHomePageLawsType(){
+
+
+        return  lawstandardService.getHomePageLawsType();
+    }
 
 }

@@ -32,7 +32,7 @@
 			<mvc:mapping path="/**/*" />
 			<bean class="phalaenopsis.common.method.CrossInterceptor">
 				<property name="ignoreUrls"
-					value="/api;/UserCenter/getUpToDateAdviceinfos;/UserCenter/getSuggestionList;/Lawstandard/getUptodateLawstandardList;/Lawstandard/getHomeChart;/FgbzDic/getAllFgbzDictory;/System/Login"></property>
+					value="/api;/Phalaenopsis/UserCenter/getUpToDateAdviceinfos;/Phalaenopsis/UserCenter/getSuggestionList;/Phalaenopsis/Lawstandard/getUptodateLawstandardList;/Phalaenopsis/Lawstandard/getHomeChart;/Phalaenopsis/FgbzDic/getAllFgbzDictory;/Phalaenopsis/System/Login;/Phalaenopsis/Lawstandard/getHomePageLawsType"></property>
 			</bean>
 		</mvc:interceptor>
 		<!-- liulang add start -->

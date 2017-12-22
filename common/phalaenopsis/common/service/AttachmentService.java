@@ -39,13 +39,8 @@ import org.springframework.web.context.request.ServletRequestAttributes;
 import org.springframework.web.multipart.MultipartFile;
 
 import net.coobird.thumbnailator.Thumbnails;
-import phalaenopsis.allWeather.dao.IallWeatherCitydao;
-import phalaenopsis.allWeather.dao.IallWeatherdao;
-import phalaenopsis.allWeather.entity.SwMapspot;
-import phalaenopsis.allWeather.enums.NodeEnum;
+
 import phalaenopsis.common.dao.IAttachmentDao;
-import phalaenopsis.common.dao.ISWAttachmentDao;
-import phalaenopsis.common.dao.MapServiceDao;
 import phalaenopsis.common.entity.AppSettings;
 import phalaenopsis.common.entity.Attachment.Attachment;
 import phalaenopsis.common.entity.Attachment.AttachmentSource;
@@ -63,11 +58,6 @@ public class AttachmentService extends Basis {
 
 	public IAttachmentDao dao;
 
-	@Autowired
-	private IallWeatherCitydao weatherdao;
-
-	@Autowired
-	private MapServiceDao mapServiceDao;
 
 	@Resource(name = "attachmentDao")
 	public void setDao(IAttachmentDao dao) {
@@ -111,42 +101,7 @@ public class AttachmentService extends Basis {
 		return result;
 	}
 
-	private List<Attachment> calShift(List<Attachment> list) {
-		if (0 == list.size())
-			return list;
 
-		Double x = null, y = null;
-
-		outer:
-		for (Attachment attachment : list) {
-			if (attachment.getX() != null && attachment.getY() != null) {
-				x = attachment.getX();
-				y = attachment.getY();
-				break outer;
-			}
-		}
-
-		if (x != null && y != null) {
-			Map<String, Object> map = new HashMap<String, Object>();
-			map.put("x", x);
-			map.put("y", y);
-			AppSettings appSettings = new AppSettings();
-			map.put("GeoWKID", appSettings.getGeoWKID());
-			Map<String, Object> resultMap = mapServiceDao.getPointShift(map);
-			if(null!=resultMap){
-				x = Double.valueOf(resultMap.get("SHIFTX").toString());
-				y = Double.valueOf(resultMap.get("SHIFTY").toString());
-				for (Attachment item : list) {
-					if (null != item.getX() && null != item.getY()) {
-						item.setX(item.getX() + x);
-						item.setY(item.getY() + y);
-					}
-				}
-			}
-		}
-
-		return list;
-	}
 	public List<Attachment> getMoblieAttachments(String bizID, int i) {
 		// TODO Auto-generated method stub
 		return dao.getMoblieAttachments(bizID, i);

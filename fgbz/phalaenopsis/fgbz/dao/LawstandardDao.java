@@ -134,4 +134,10 @@ public interface LawstandardDao {
      * @return
      */
     int checklawCode(Lawstandard lawstandard);
+
+    /**
+     * 获取首页
+     * @return
+     */
+    List<LawstandardType> getHomePageLawsType();
 }

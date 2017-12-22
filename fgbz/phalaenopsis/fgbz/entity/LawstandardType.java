@@ -1,6 +1,7 @@
 package phalaenopsis.fgbz.entity;
 
 import java.util.Date;
+import java.util.List;
 
 public class LawstandardType {
 
@@ -85,6 +86,8 @@ public class LawstandardType {
      * 是否可以删除
      */
     private boolean candelete;
+
+    private List<LawstandardType> childLists;
 
     public String getId() {
         return id;
@@ -225,5 +228,13 @@ public class LawstandardType {
 
     public void setCandelete(boolean candelete) {
         this.candelete = candelete;
+    }
+
+    public List<LawstandardType> getChildLists() {
+        return childLists;
+    }
+
+    public void setChildLists(List<LawstandardType> childLists) {
+        this.childLists = childLists;
     }
 }

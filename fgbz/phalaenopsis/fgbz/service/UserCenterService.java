@@ -10,9 +10,10 @@ import phalaenopsis.common.entity.PagingEntity;
 import phalaenopsis.fgbz.dao.LawstandardDao;
 import phalaenopsis.fgbz.dao.UserCenterDao;
 import phalaenopsis.fgbz.entity.*;
-import phalaenopsis.lawcase.workflownodes.Punish;
 
 import java.util.*;
+
+import static phalaenopsis.common.method.Basis.getCurrentFGUser;
 
 /**
  * Created by 13260 on 2017/12/17.
@@ -75,8 +76,6 @@ public class UserCenterService {
 
             }
         }
-
-
         // 1,根据条件一共查询到的数据条数
         int count = userCenterDao.getAdviceListCount(conditions);
 
@@ -180,6 +179,10 @@ public class UserCenterService {
                     conditions.put("KeyWords", condition.getValue());
                 }else if(condition.getKey().equals("Type")){
                     conditions.put("Type", condition.getValue());
+                } else if (condition.getKey().equals("FiledTimeStart")) {
+                    conditions.put("FiledTimeStart", condition.getValue());
+                } else if (condition.getKey().equals("FiledTimeEnd")) {
+                    conditions.put("FiledTimeEnd", condition.getValue());
                 }
 
             }
