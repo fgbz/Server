@@ -137,13 +137,16 @@ public class LawstandardService {
                 }else if(condition.getKey().equals("Summaryinfo")){
                     conditions.put("Summaryinfo", condition.getValue());
                 }else if(condition.getKey().equals("Solr")){
-                    conditions.put("Solr", condition.getValue());
+                    String[] solrList  = condition.getValue().split(" ");
+                    conditions.put("Solr", solrList);
                 } else if(condition.getKey().equals("ReplaceOrRefenceid")){
                     conditions.put("ReplaceOrRefenceid", condition.getValue());
                 }else if(condition.getKey().equals("IsBatch")){
                     conditions.put("IsBatch", condition.getValue());
                 }else if(condition.getKey().equals("Userid")){
                     conditions.put("Userid", condition.getValue());
+                }else if(condition.getKey().equals("LawInputuserid")){
+                    conditions.put("LawInputuserid", condition.getValue());
                 }
 
             }

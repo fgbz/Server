@@ -235,6 +235,60 @@ FROM
         <include refid="querySuggestion"></include>
     </select>
 
+    <!--保存留言-->
+    <insert id="SaveSuggestionFeedBack" parameterType="SuggestionFeedBack">
+        insert into m_bs_suggestionfeedback
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="id != null">
+                ID,
+            </if>
+            <if test="sid != null">
+                SID,
+            </if>
+            <if test="title != null">
+                title,
+            </if>
+            <if test="fdetails != null">
+                fdetails,
+            </if>
+            <if test="feedbackid != null">
+                feedbackid,
+            </if>
+            FEEDBACKDATE,
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="id != null">
+                #{id,jdbcType=VARCHAR},
+            </if>
+            <if test="sid != null">
+                #{sid,jdbcType=VARCHAR},
+            </if>
+            <if test="title != null">
+                #{title,jdbcType=VARCHAR},
+            </if>
+            <if test="fdetails != null">
+                #{fdetails,jdbcType=VARCHAR},
+            </if>
+            <if test="feedbackid != null">
+                #{feedbackid,jdbcType=INTEGER},
+            </if>
+            now(),
+
+        </trim>
+    </insert>
+
+    <!--删除反馈-->
+    <delete id="DeleteSuggestionFeedBack" parameterType="String" >
+        delete from  m_bs_suggestionfeedback where sid = #{id}
+    </delete>
+
+    <!--获取反馈信息-->
+    <select id="getFeedBackList" parameterType="String" resultType="SuggestionFeedBack">
+        SELECT t.ID,t.sid,t.title,t.fdetails,t.feedbackid,t.FEEDBACKDATE ,us.USERREALNAME as feedbackusername from m_bs_suggestionfeedback t
+        left join m_sa_user us on us.id = t.feedbackid
+        order by t.FEEDBACKDATE desc
+    </select>
+
     <!--保存审核信息-->
     <insert id="SaveApprove" parameterType="LawstandardApprove">
         insert into m_bs_lawstandard_approve

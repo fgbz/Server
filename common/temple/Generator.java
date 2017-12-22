@@ -58,7 +58,7 @@ public class Generator {
 		dsc.setDbType(DbType.MYSQL);
 		dsc.setDriverName("com.mysql.jdbc.Driver");
 		dsc.setUsername("root");
-		dsc.setPassword("kotei$88");
+		dsc.setPassword("88888888");
 		dsc.setUrl("jdbc:mysql://localhost:3306/fgbz");
 		
 		

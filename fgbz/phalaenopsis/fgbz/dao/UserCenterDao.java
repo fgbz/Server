@@ -65,6 +65,26 @@ public interface UserCenterDao {
      */
     int getSuggestionListCount(Map<String, Object>  map);
 
+    /**
+     * 保存反馈
+     * @return
+     */
+    int SaveSuggestionFeedBack(SuggestionFeedBack suggestionFeedBack);
+
+    /**
+     * 删除留言反馈
+     * @return
+     */
+    int DeleteSuggestionFeedBack(String id);
+
+    /**
+     * 获取留言反馈信息
+     * @return
+     */
+    List<SuggestionFeedBack> getFeedBackList(String id);
+
+
+
     /**********************************审核******************************/
 
     /**

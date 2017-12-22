@@ -121,6 +121,11 @@ public class Lawstandard {
 
     private String status;
 
+    /**
+     * 修改人姓名
+     */
+    private String modifyusername;
+
     private String lawtype;
     /**
      * 批准状态：
@@ -517,5 +522,13 @@ public class Lawstandard {
 
     public void setIscollect(boolean iscollect) {
         this.iscollect = iscollect;
+    }
+
+    public String getModifyusername() {
+        return modifyusername;
+    }
+
+    public void setModifyusername(String modifyusername) {
+        this.modifyusername = modifyusername;
     }
 }

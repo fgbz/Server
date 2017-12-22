@@ -113,6 +113,26 @@ public class UserCenterController {
         return  userCenterService.getSuggestionList(page);
     }
 
+    /**
+     * 保存反馈
+     * @return
+     */
+    @RequestMapping(value = "/SaveSuggestionFeedBack", method = RequestMethod.POST)
+    @ResponseBody
+    public int SaveSuggestionFeedBack( @RequestBody SuggestionFeedBack suggestionFeedBack){
+        return userCenterService.SaveSuggestionFeedBack(suggestionFeedBack);
+    }
+
+    /**
+     * 获取反馈列表
+     * @return
+     */
+    @RequestMapping(value = "/getFeedBackList", method = RequestMethod.GET)
+    @ResponseBody
+    public List<SuggestionFeedBack> getFeedBackList(String id){
+        return userCenterService.getFeedBackList(id);
+    }
+
     /**********************************审核******************************/
 
     /**

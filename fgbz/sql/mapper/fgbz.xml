@@ -122,9 +122,14 @@
 
         <!--全文检索-->
         <if test="Solr != null and Solr != ''">
-            and (instr(t.CODE,#{Solr})> 0 or instr(t.CHINESENAME,#{Solr})> 0 or instr(t.ENGLISHNAME,#{Solr})> 0
-            or instr(t.KEYWORDS,#{Solr})> 0 or instr(t.MEMO,#{Solr})> 0 or instr(t.SUMMARYINFO,#{Solr})> 0
-            or instr((select group_concat(file.Content) from m_sa_fileinfo file where file.REFID=t.id),#{Solr})>0
+            and (
+            <foreach collection="Solr" index="index" item="item" open="" close="" separator="or">
+                (instr(t.CODE,#{item})> 0 or
+                instr(t.CHINESENAME,#{item})> 0 or instr(t.ENGLISHNAME,#{item})> 0
+                or instr(t.KEYWORDS,#{item})> 0 or instr(t.MEMO,#{item})> 0 or instr(t.SUMMARYINFO,#{item})> 0
+                or instr((select group_concat(file.Content) from m_sa_fileinfo file where file.REFID=t.id),#{item})>0
+                )
+            </foreach>
             )
         </if>
 
@@ -144,12 +149,17 @@
         <!--是否批量导入-->
         <if test="IsBatch != null and IsBatch != '' and IsBatch == 1 ">
         and t.IsBatch = 1
-    </if>
+       </if>
         <if test="IsBatch != null and IsBatch != '' and IsBatch == 0 ">
             and t.IsBatch is NULL
         </if>
+        <!--不能审核自己-->
         <if test="Userid != null and Userid != '' ">
             and t.INPUTUSERID  <![CDATA[  != ]]>  #{Userid}
+        </if>
+        <!--草稿和审核状态只能自己看见-->
+        <if test="LawInputuserid != null and LawInputuserid !='' ">
+            and (t.INPUTUSERID = #{LawInputuserid}  or t.APPROVESTATUS =3)
         </if>
 
     </sql>
@@ -394,7 +404,7 @@
         n.id as lawtype,
 				ur.USERREALNAME as inputusername,
 				org.ORGNAME as inputorgname,
-				t.INPUTDATE,
+				t.INPUTDATE,urmo.USERREALNAME as modifyusername,t.MODIFYDATE,
 			case when (select count(1) from m_bs_lawstandard_favorite fav where fav.LAWSTANDRADID = t.id)>0
 			then 1 ELSE 0 END  as iscollect
         FROM
@@ -405,6 +415,7 @@
         left join m_bs_lawstandard_type m on m.SID = t.id
         left join m_bs_lawstandardtype n on n.id = m.LAWSTYPEID
 				left join m_sa_user ur on ur.ID = t.INPUTUSERID
+				left join m_sa_user urmo on urmo.ID = t.MODIFYUSERID
 				left join m_sa_organization org on org.ID = ur.ORGID
 				where t.id=#{id}
 

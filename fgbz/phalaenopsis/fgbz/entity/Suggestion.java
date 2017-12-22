@@ -1,6 +1,7 @@
 package phalaenopsis.fgbz.entity;
 
 import java.util.Date;
+import java.util.List;
 
 /**
  * 留言
@@ -72,6 +73,11 @@ public class Suggestion {
      * 发布人
      */
     private String inputname;
+
+    /**
+     * 反馈列表
+     */
+    private List<SuggestionFeedBack> feedBackLists;
 
     public int getCount() {
         return count;
@@ -177,5 +183,13 @@ public class Suggestion {
 
     public void setInputname(String inputname) {
         this.inputname = inputname;
+    }
+
+    public List<SuggestionFeedBack> getFeedBackLists() {
+        return feedBackLists;
+    }
+
+    public void setFeedBackLists(List<SuggestionFeedBack> feedBackLists) {
+        this.feedBackLists = feedBackLists;
     }
 }

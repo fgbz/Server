@@ -158,9 +158,32 @@ public class UserCenterService {
      * @param id
      * @return
      */
+    @Transactional
     public int DeleteSuggestionByID(String id){
         userCenterDao.DeleteSuggestionByID(id);
+        userCenterDao.DeleteSuggestionFeedBack(id);
         return OpResult.Success;
+    }
+
+    /**
+     * 保存反馈
+     * @return
+     */
+    public int SaveSuggestionFeedBack(SuggestionFeedBack suggestionFeedBack){
+
+        if(suggestionFeedBack.getId()==null&&suggestionFeedBack.getId().equals("")){
+            suggestionFeedBack.setId(UUID.randomUUID().toString());
+        }
+        userCenterDao.SaveSuggestionFeedBack(suggestionFeedBack);
+        return OpResult.Success;
+    }
+
+    /**
+     * 获取反馈列表
+     * @return
+     */
+    public List<SuggestionFeedBack> getFeedBackList(String id){
+        return userCenterDao.getFeedBackList(id);
     }
 
     /**

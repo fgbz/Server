@@ -169,7 +169,7 @@ public class LawstandardController {
     }
 
     /**
-     * 新增和编辑法规标准
+     * 查看法规标准
      * @return
      */
     @RequestMapping(value = "/getLawstandardById", method = RequestMethod.POST)
