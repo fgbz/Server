@@ -15,6 +15,7 @@ import phalaenopsis.fgbz.service.LawstandardService;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.FileInputStream;
+import java.io.IOException;
 import java.util.*;
 
 import static phalaenopsis.common.method.Basis.getCurrentFGUser;
@@ -156,6 +157,16 @@ public class LawstandardController {
     public int  DeleteLawstandardById(@RequestBody Lawstandard lawstandard){
         return lawstandardService.DeleteLawstandardById(lawstandard.getId());
     }
+
+    /**
+     * 批量删除
+     * @return
+     */
+    @RequestMapping(value = "/DeleteAllSelectLawstandard", method = RequestMethod.POST)
+    @ResponseBody
+    public int DeleteAllSelectLawstandard(@RequestBody List<String> list){
+        return lawstandardService.DeleteAllSelectLawstandard(list);
+    }
     /**
      * 新增和编辑法规标准
      * @param lawstandard
@@ -209,6 +220,14 @@ public class LawstandardController {
     public Map<Object,Object> getHomeChart() {
 
         return lawstandardService.getHomeChart();
+    }
+
+    /**
+     * 首页统计导出
+     */
+    @RequestMapping(value = "/downHomeChart", method = RequestMethod.GET)
+    public void downHomeChart(HttpServletResponse response) throws IOException {
+         lawstandardService.downHomeChart(response);
     }
 
     /**

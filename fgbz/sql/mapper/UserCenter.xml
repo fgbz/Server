@@ -96,7 +96,8 @@ FROM
 	t.TITLE,
 	t.DETAILS,
      org.ORGNAME,
-    t.INPUTDATE
+    t.INPUTDATE,
+    t.INPUTUSERID
 FROM
 	m_bs_adviceinfo t
         LEFT JOIN m_sa_user us ON us.ID = t.INPUTUSERID

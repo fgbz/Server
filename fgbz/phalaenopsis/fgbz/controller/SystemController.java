@@ -180,7 +180,7 @@ public class SystemController {
      */
     @RequestMapping(value = "/SaveOrUpdateApproveSetting", method = RequestMethod.GET)
     @ResponseBody
-    public int SaveOrUpdateApproveSetting(int status){
+    public Map<String,Object> SaveOrUpdateApproveSetting(int status){
 
         return systemServie.SaveOrUpdateApproveSetting(status);
     }

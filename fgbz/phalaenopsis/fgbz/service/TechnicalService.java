@@ -119,6 +119,8 @@ public class TechnicalService {
                     conditions.put("ApproveStatus", condition.getValue());
                 }else if(condition.getKey().equals("IsBatch")){
                     conditions.put("IsBatch", condition.getValue());
+                }else if(condition.getKey().equals("TecInputuserid")){
+                    conditions.put("TecInputuserid", condition.getValue());
                 }
 
             }

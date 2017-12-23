@@ -118,6 +118,10 @@
         <if test="IsBatch != null and IsBatch != '' and IsBatch == 0 ">
             and t.IsBatch is NULL
         </if>
+        <!--草稿和审核状态只能自己看见-->
+        <if test="TecInputuserid != null and TecInputuserid !='' ">
+            and (t.INPUTUSERID = #{TecInputuserid}  or t.APPROVESTATUS =2)
+        </if>
 
     </sql>
 
@@ -322,7 +326,7 @@
 
     <!--判断技术文档编号是否重复-->
     <select id="checkTecCode" parameterType="Technical" resultType="int">
-         select count(1) from m_bs_tech t where t.CODE = #{code}
+         select count(1) from m_bs_tech t where REPLACE(REPLACE(REPLACE(t.`CODE`,'/',''),'-',''),' ','') = REPLACE(REPLACE(REPLACE(#{code},'/',''),'-',''),' ','')
         and t.id <![CDATA[  != ]]> #{id}
     </select>
 

@@ -161,6 +161,10 @@ public interface SystemDao {
      */
     int getUserByPasswordAndId(Map<String, Object> map);
 
-
+    /**
+     * 获取待审核的法规数量
+     * @return
+     */
+    int getNeedCheckLawCount();
 
 }

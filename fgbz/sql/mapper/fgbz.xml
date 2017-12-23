@@ -53,7 +53,9 @@
     <select id="getLawstandardList" parameterType="map" resultType="Lawstandard">
         select t.ID,t.`CODE`,t.CHINESENAME,t.APPROVESTATUS,sta.STATUSNAME,t.RELEASEDATE ,t.IMPDATE,n.TYPENAME,t.CLICKCOUNT , t.MEMO,
         t.SUMMARYINFO,t.ENGLISHNAME, t.KEYWORDS,t.IsBatch,t.INPUTDATE,
-        ur.USERREALNAME as inputusername, dep.PUBDEPNAME from
+        ur.USERREALNAME as inputusername, dep.PUBDEPNAME,
+        case when (select count(1) from m_bs_lawstandard_approve app where app.LawstandardID = t.id)>0 then 1 else 0 end as isapprove
+        from
         m_bs_lawstandard t
         left join m_sa_lawstandardstatus sta on t.`STATUS` = sta.ID
         left join m_bs_lawstandard_pubdep pub on t.id = pub.SID
@@ -144,7 +146,7 @@
 
         <!--引用文件不查自己-->
         <if test="ReplaceOrRefenceid != null and ReplaceOrRefenceid != ''">
-            and t.id <![CDATA[  != ]]> {ReplaceOrRefenceid}
+            and t.id <![CDATA[  != ]]> #{ReplaceOrRefenceid}
         </if>
         <!--是否批量导入-->
         <if test="IsBatch != null and IsBatch != '' and IsBatch == 1 ">
@@ -170,7 +172,7 @@
 
     <!--判断法规编号是否重复-->
     <select id="checklawCode" parameterType="Lawstandard" resultType="int">
-        select count(1) from m_bs_lawstandard t where t.CODE = #{code}
+        select count(1) from m_bs_lawstandard t where REPLACE(REPLACE(REPLACE(t.`CODE`,'/',''),'-',''),' ','') = REPLACE(REPLACE(REPLACE(#{code},'/',''),'-',''),' ','')
         and t.id <![CDATA[  != ]]> #{id}
     </select>
 
@@ -429,6 +431,11 @@
         </foreach>
     </update>
 
+    <!--选择替代关系，更新状态-->
+    <update id="updateRleplaceStaus" parameterType="String">
+        UPDATE m_bs_lawstandard set STATUS=5 where id=#{id}
+    </update>
+
     <!--获取引用关系-->
     <select id="getRefenceList" parameterType="String" resultType="Lawstandard">
         SELECT
@@ -484,11 +491,20 @@
         delete from m_bs_lsrelatedrelation  where SID = #{id}
     </delete>
 
+    <!--删除引用关系和被引用关系-->
+    <delete id="deleteRefenceAll" parameterType="String">
+        delete from m_bs_lsrelatedrelation  where (SID = #{id} or RelatedID = #{id})
+    </delete>
+
     <!--删除替代关系-->
     <delete id="deleteReplace" parameterType="String">
         delete from m_bs_lsreplacerelation  where PID = #{id}
     </delete>
 
+    <!--删除替代关系和被替代关系-->
+    <delete id="deleteReplaceAll" parameterType="String">
+        delete from m_bs_lsreplacerelation  where (PID = #{id} or SID = #{id})
+    </delete>
 
     <!-- 插入引用关系 -->
     <insert id="addRefence" parameterType="RefenceOrReplace">

@@ -171,6 +171,10 @@ public class Lawstandard {
      * 收藏夹id
      */
     private String favid;
+    /**
+     * 是否审核
+     */
+    private boolean isapprove;
 
     public String getPubdepname() {
         return pubdepname;
@@ -530,5 +534,13 @@ public class Lawstandard {
 
     public void setModifyusername(String modifyusername) {
         this.modifyusername = modifyusername;
+    }
+
+    public boolean isIsapprove() {
+        return isapprove;
+    }
+
+    public void setIsapprove(boolean isapprove) {
+        this.isapprove = isapprove;
     }
 }

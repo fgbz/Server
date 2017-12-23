@@ -71,8 +71,12 @@ public interface LawstandardDao {
     List<Lawstandard> getReplaceList(String id);
 
     int deleteRefence(String id);
+    //删除所有引用和被引用的
+    int deleteRefenceAll(String id);
 
     int deleteReplace(String id);
+
+    int deleteReplaceAll(String id);
 
     int addRefence(RefenceOrReplace refenceOrReplace);
 
@@ -140,4 +144,11 @@ public interface LawstandardDao {
      * @return
      */
     List<LawstandardType> getHomePageLawsType();
+
+    /**
+     * 更新被代替的法规状态
+     * @param id
+     * @return
+     */
+    int updateRleplaceStaus(String id);
 }

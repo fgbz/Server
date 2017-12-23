@@ -1,5 +1,7 @@
 package phalaenopsis.fgbz.service;
 
+import org.apache.poi.hssf.usermodel.*;
+import org.apache.poi.ss.util.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -7,15 +9,19 @@ import org.springframework.web.bind.annotation.RequestBody;
 import phalaenopsis.common.entity.*;
 import phalaenopsis.common.method.ExportExcel;
 import phalaenopsis.common.method.Tools.StrUtil;
+import phalaenopsis.fgbz.common.HssfHelper;
 import phalaenopsis.fgbz.dao.LawstandardDao;
 import phalaenopsis.fgbz.entity.*;
 
 import javax.servlet.http.HttpServletResponse;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.net.URLEncoder;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
-import phalaenopsis.common.method.Basis;
 
 
 /**
@@ -256,6 +262,7 @@ public class LawstandardService {
         }
         for(Lawstandard law:listImport){
             lawstandardDao.SaveOrUpdateLawstandard(law);
+
         }
         return OpResult.Success;
     }
@@ -266,13 +273,26 @@ public class LawstandardService {
     @Transactional
     public int  DeleteLawstandardById(String id){
 
-         lawstandardDao.deleteLawstandardById(id);
-        lawstandardDao.deleteRefence(id);
-        lawstandardDao.deleteReplace(id);
+        lawstandardDao.deleteLawstandardById(id);
+        lawstandardDao.deleteRefenceAll(id);
+        lawstandardDao.deleteReplaceAll(id);
         lawstandardDao.DeleteLawAndType(id);
 
 
         return OpResult.Success;
+    }
+
+    /**
+     * 批量删除法规
+     * @return
+     */
+    @Transactional
+    public int DeleteAllSelectLawstandard(List<String> list){
+        for (String str:list
+             ) {
+            DeleteLawstandardById(str);
+        }
+        return  OpResult.Success;
     }
 
     /**
@@ -344,6 +364,7 @@ public class LawstandardService {
                 refenceOrReplace.setSid(item.getId());
                 refenceOrReplace.setRelatedid(lawstandard.getId());
                 lawstandardDao.addReplace(refenceOrReplace);
+                lawstandardDao.updateRleplaceStaus(item.getId());
             }
 
         }
@@ -404,6 +425,105 @@ public class LawstandardService {
         map.put("Type",listType);
 
         return map;
+    }
+
+    /**
+     * 首页导出
+     */
+    public void downHomeChart(HttpServletResponse response) throws IOException {
+
+        List<ChartInfo> listdPeople = lawstandardDao.getUploadPeople();
+        List<ChartInfo> listOrgname = lawstandardDao.getUploadOrgname();
+        List<ChartInfo> listType = lawstandardDao.getUploadType();
+
+        HSSFWorkbook wb = new HSSFWorkbook();
+        HSSFSheet sheet = wb.createSheet("数据统计");
+        HSSFCellStyle style = HssfHelper.getHssfCellStyle(wb, 3);
+
+        String[] CloumnName = new String[]{"用户姓名", "个数"};
+        HSSFRow rowTitle = sheet.createRow(0);
+        HSSFCellStyle headstyle = HssfHelper.getHssfCellStyle(wb, 1);
+        HSSFCell cellTitle = rowTitle.createCell(1);
+        cellTitle.setCellValue("上传前十统计");
+        cellTitle.setCellStyle(headstyle);
+        sheet.addMergedRegion(new CellRangeAddress(0, 0, 1, 2));
+        HSSFRow row = sheet.createRow(1);
+
+        int nI;
+        for (nI = 0; nI < CloumnName.length; nI++) {
+            HSSFCell cell = row.createCell(nI + 1);
+            cell.setCellValue(CloumnName[nI]);
+            cell.setCellStyle(style);
+        }
+
+        for (nI = 0; nI < listdPeople.size(); nI++) {
+            row = sheet.createRow(nI + 2);
+            ChartInfo item = listdPeople.get(nI);
+            row.createCell(1).setCellValue(item.getName());
+            row.createCell(2).setCellValue(item.getCount());
+            HssfHelper.setRowStyle(row, 1, 2, style);
+        }
+
+        /***************************上传部门***************************/
+        int rowOrgname = listdPeople.size() + 3;
+        String[] CloumnNameOrgname = new String[]{"组织名称", "个数"};
+        rowTitle = sheet.createRow(rowOrgname);
+        headstyle = HssfHelper.getHssfCellStyle(wb, 1);
+        cellTitle = rowTitle.createCell(1);
+        cellTitle.setCellValue("上传部门统计");
+        cellTitle.setCellStyle(headstyle);
+        sheet.addMergedRegion(new CellRangeAddress(rowOrgname, rowOrgname, 1, 2));
+        row = sheet.createRow(1);
+
+        for (nI = 0; nI < CloumnNameOrgname.length; nI++) {
+            HSSFCell cell = row.createCell(nI + 1);
+            cell.setCellValue(CloumnName[nI]);
+            cell.setCellStyle(style);
+        }
+
+        for (nI = 0; nI < listOrgname.size(); nI++) {
+            row = sheet.createRow(rowOrgname+nI+ 1);
+            ChartInfo item = listOrgname.get(nI);
+            row.createCell(1).setCellValue(item.getName());
+            row.createCell(2).setCellValue(item.getCount());
+            HssfHelper.setRowStyle(row, 1, 2, style);
+        }
+        /***************************上传分类***************************/
+        int rowType = rowOrgname + listOrgname.size() + 2;
+        String[] CloumnNameType = new String[]{"类型名称", "个数"};
+        rowTitle = sheet.createRow(rowType);
+        headstyle = HssfHelper.getHssfCellStyle(wb, 1);
+        cellTitle = rowTitle.createCell(1);
+        cellTitle.setCellValue("上传分类统计");
+        cellTitle.setCellStyle(headstyle);
+        sheet.addMergedRegion(new CellRangeAddress(rowType, rowType, 1, 2));
+        row = sheet.createRow(1);
+
+        for (nI = 0; nI < CloumnNameType.length; nI++) {
+            HSSFCell cell = row.createCell(nI + 1);
+            cell.setCellValue(CloumnName[nI]);
+            cell.setCellStyle(style);
+        }
+
+        for (nI = 0; nI < listType.size();nI++) {
+            row = sheet.createRow(rowType+nI+1);
+            ChartInfo item = listType.get(nI);
+            row.createCell(1).setCellValue(item.getName());
+            row.createCell(2).setCellValue(item.getCount());
+            HssfHelper.setRowStyle(row, 1, 2, style);
+        }
+
+        sheet.setColumnWidth(1, 9000);
+        sheet.setColumnWidth(2, 5000);
+
+        response.setHeader("content-disposition", "attachment;filename=" + URLEncoder.encode("数据统计", "utf-8") + ".xls");
+        OutputStream out = response.getOutputStream();
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        wb.write(baos);
+        byte[] xlsBytes = baos.toByteArray();
+        out.write(xlsBytes);
+        out.close();
+
     }
 
     /**************************首页类别导航**************************************/

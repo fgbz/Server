@@ -309,17 +309,23 @@ public class SystemServie {
      * @return
      */
     @Transactional
-    public int SaveOrUpdateApproveSetting(int status){
+    public Map<String,Object> SaveOrUpdateApproveSetting(int status){
+
+        int num =0;
+        //查询待审核的数量
+        if(status==0){
+            num= systemDao.getNeedCheckLawCount();
+        }
         Map<String, Object> map = new HashMap<>();
         map.put("key","isApprove");
         map.put("value",status);
         map.put("count",0);
-        systemDao.SaveOrUpdateApproveSetting(map);
-
-        //不需要审核，更新所有待审核的法规
-        if(status==0){
-            lawstandardDao.updateAllCheckingLawstandard();
+        Map<String,Object> result = new HashMap<>();
+        if(num==0){
+            systemDao.SaveOrUpdateApproveSetting(map);
         }
-        return OpResult.Success;
+        result.put("count",num);
+        result.put("Result",OpResult.Success);
+        return result;
     }
 }

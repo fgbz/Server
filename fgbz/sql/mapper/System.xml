@@ -397,5 +397,10 @@ FROM
 
     </insert>
 
+    <!--待审核的数量-->
+    <select id="getNeedCheckLawCount" resultType="int">
+        SELECT count(1) FROM m_bs_lawstandard t where t.APPROVESTATUS =2
+    </select>
+
 
 </mapper>
