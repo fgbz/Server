@@ -84,4 +84,11 @@ public interface FgbzDicDao {
      * @return
      */
     int checkLawstandardStatusName(LawstandardStatus lawstandardStatus);
+
+    /**
+     * 获取配置
+     * @param key
+     * @return
+     */
+    String getSettingByKey(String key);
 }

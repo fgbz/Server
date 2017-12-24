@@ -330,4 +330,21 @@
         and t.id <![CDATA[  != ]]> #{id}
     </select>
 
+
+    <select id="getLawTypeByName" parameterType="String" resultType="String">
+        select t.id from m_bs_techtype t where  t.TYPENAME = #{name} LIMIT 0,1
+    </select>
+
+    <!--获取首页类别导航-->
+    <select id="getHomePageTecsType" resultType="TechnicalType">
+        SELECT
+        t.id,
+        t.TYPENAME,
+        t.PARENTID
+        FROM
+        `m_bs_techtype` t
+        WHERE
+        t.PARENTID = ( SELECT m.ID FROM m_bs_techtype m WHERE m.PARENTID IS NULL )
+    </select>
+
 </mapper>

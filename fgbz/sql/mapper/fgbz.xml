@@ -126,11 +126,7 @@
         <if test="Solr != null and Solr != ''">
             and (
             <foreach collection="Solr" index="index" item="item" open="" close="" separator="or">
-                (instr(t.CODE,#{item})> 0 or
-                instr(t.CHINESENAME,#{item})> 0 or instr(t.ENGLISHNAME,#{item})> 0
-                or instr(t.KEYWORDS,#{item})> 0 or instr(t.MEMO,#{item})> 0 or instr(t.SUMMARYINFO,#{item})> 0
-                or instr((select group_concat(file.Content) from m_sa_fileinfo file where file.REFID=t.id),#{item})>0
-                )
+                  instr((SELECT solr.solrtext from solrview solr where solr.id=t.id),#{item} )>0
             </foreach>
             )
         </if>
@@ -638,6 +634,21 @@ FROM
 	`m_bs_lawstandardtype` t
 WHERE
 	t.PARENTID = ( SELECT m.ID FROM m_bs_lawstandardtype m WHERE m.PARENTID IS NULL )
+    </select>
+
+    <!--通过名字获取法规类别-->
+    <select id="getLawTypeByName" parameterType="String" resultType="String">
+          select t.id from m_bs_lawstandardtype t where  t.TYPENAME = #{name} LIMIT 0,1
+    </select>
+
+    <!--通过名称获取发布部门id-->
+    <select id="getPubOrgnameByName" parameterType="String" resultType="String">
+          select t.id from m_sa_publishdep t where  t.PUBDEPNAME = #{name} LIMIT 0,1
+    </select>
+
+    <!--获取状态id-->
+    <select id="getStatusIdByName" parameterType="String" resultType="String">
+          select t.id from m_sa_lawstandardstatus t where  t.STATUSNAME = #{name} LIMIT 0,1
     </select>
 
 </mapper>

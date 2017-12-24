@@ -113,7 +113,7 @@ public class Lawstandard {
     /**
      * 状态：具体参加状态表
      */
-
+    @ExcelTitle(value = "状态")
     private String statusname;
     /**
      * 记录状态
@@ -144,11 +144,14 @@ public class Lawstandard {
     private String lsstatusname;
     private Integer sortno;
 
+    @ExcelTitle(value = "类别")
     private String typename;
+
     private Integer istop;
 
     private String organization;
 
+    @ExcelTitle(value = "发布部门")
     private String pubdepname;
 
     private List<String> fileids;

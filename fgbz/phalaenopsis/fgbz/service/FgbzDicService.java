@@ -36,7 +36,12 @@ public class FgbzDicService {
         List<FgbzDictory> listPub = fgbzDicDao.getPublishDep();
         List<FgbzDictory> listState= fgbzDicDao.getLawstandardState();
         List<FG_Menu> listMenus = systemServie.getAllMenus();
-
+        String PageSize=fgbzDicDao.getSettingByKey("PageSize");
+        if(PageSize!=null){
+            map.put("PageSize",Integer.parseInt(PageSize));
+        }else{
+            map.put("PageSize",20);
+        }
         map.put("Pub",listPub);
         map.put("State",listState);
         map.put("Menu",listMenus);

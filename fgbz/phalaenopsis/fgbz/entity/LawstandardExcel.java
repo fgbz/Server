@@ -15,6 +15,9 @@ public class LawstandardExcel {
     private String impdate;
     private String summaryinfo;
     private String memo;
+    private String typename;
+    private String pubdepname;
+    private String statusname;
 
     public String getChinesename() {
         return chinesename;
@@ -78,5 +81,29 @@ public class LawstandardExcel {
 
     public void setMemo(String memo) {
         this.memo = memo;
+    }
+
+    public String getTypename() {
+        return typename;
+    }
+
+    public void setTypename(String typename) {
+        this.typename = typename;
+    }
+
+    public String getPubdepname() {
+        return pubdepname;
+    }
+
+    public void setPubdepname(String pubdepname) {
+        this.pubdepname = pubdepname;
+    }
+
+    public String getStatusname() {
+        return statusname;
+    }
+
+    public void setStatusname(String statusname) {
+        this.statusname = statusname;
     }
 }

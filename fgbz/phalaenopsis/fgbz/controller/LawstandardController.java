@@ -237,34 +237,35 @@ public class LawstandardController {
      */
     @RequestMapping(value = "/ImportLaw", method = RequestMethod.POST)
     @ResponseBody
-    public int importLawcaseAccount(HttpServletRequest request) {
+    public  Map<String,Object> importLawcaseAccount(HttpServletRequest request) {
         //获取前端传过来的file
         MultipartFile file = getFile(request);
         FileInputStream inputStream = null;
-        int result = 0;
+
+        Map<String,Object> map = new HashMap<>();
         try {
             if (file != null) {
                 //转化文件名，避免乱码
                 String fileName = new String(file.getOriginalFilename().getBytes("ISO-8859-1"), "UTF-8");
                 inputStream = (FileInputStream) file.getInputStream();
                 //将导入的excel转化为实体
-                List<LawstandardExcel> list = ExcelHelper.convertToList(LawstandardExcel.class, fileName, inputStream, 2, 8);
+                List<LawstandardExcel> list = ExcelHelper.convertToList(LawstandardExcel.class, fileName, inputStream, 2, 11);
 
                 if(list.size()==0){
-                    int isEmpty= 404;
-                    OpResult opResult = new OpResult(isEmpty);
-                    return opResult.Code;
+                    map.put("Result",OpResult.Failed);
+                    map.put("Msg","文件内容为空");
+                    return map;
                 }
                 FG_User user = getCurrentFGUser();
                 //插入法规
-                result= lawstandardService.importLawstandard(list,user);
+                map= lawstandardService.importLawstandard(list,user);
                 inputStream.close();
             }
         } catch (Exception e) {
             e.printStackTrace();
         }
 
-        return result;
+        return map;
     }
 
     /**

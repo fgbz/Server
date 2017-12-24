@@ -151,4 +151,24 @@ public interface LawstandardDao {
      * @return
      */
     int updateRleplaceStaus(String id);
+
+    /**
+     * 通过名称获取法规类别
+     * @return
+     */
+    String getLawTypeByName(String name);
+
+    /**
+     * 通过名称获取发布部门id
+     * @param name
+     * @return
+     */
+    String getPubOrgnameByName(String name);
+
+    /**
+     * 通过名称获取状态id
+     * @param name
+     * @return
+     */
+    String getStatusIdByName(String name);
 }

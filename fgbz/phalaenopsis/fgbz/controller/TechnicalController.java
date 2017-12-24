@@ -17,9 +17,7 @@ import phalaenopsis.fgbz.service.TechnicalService;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.FileInputStream;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
 
 import static phalaenopsis.common.method.Basis.getCurrentFGUser;
 
@@ -156,34 +154,34 @@ public class TechnicalController {
      */
     @RequestMapping(value = "/ImportTec", method = RequestMethod.POST)
     @ResponseBody
-    public int importTechnical(HttpServletRequest request) {
+    public Map<String,Object> importTechnical(HttpServletRequest request) {
         //获取前端传过来的file
         MultipartFile file = getFile(request);
         FileInputStream inputStream = null;
-        int result = 0;
+        Map<String,Object> map = new HashMap<>();
         try {
             if (file != null) {
                 //转化文件名，避免乱码
                 String fileName = new String(file.getOriginalFilename().getBytes("ISO-8859-1"), "UTF-8");
                 inputStream = (FileInputStream) file.getInputStream();
                 //将导入的excel转化为实体
-                List<TechnicalExcel> list = ExcelHelper.convertToList(TechnicalExcel.class, fileName, inputStream, 2, 8);
+                List<TechnicalExcel> list = ExcelHelper.convertToList(TechnicalExcel.class, fileName, inputStream, 2, 9);
 
                 if(list.size()==0){
-                    int isEmpty= 404;
-                    OpResult opResult = new OpResult(isEmpty);
-                    return opResult.Code;
+                    map.put("Result",OpResult.Failed);
+                    map.put("Msg","文件内容为空");
+                    return map;
                 }
                 FG_User user = getCurrentFGUser();
                 //插入法规
-                result= technicalService.importTechnical(list,user);
+                map= technicalService.importTechnical(list,user);
                 inputStream.close();
             }
         } catch (Exception e) {
             e.printStackTrace();
         }
 
-        return result;
+        return map;
     }
 
     /**
@@ -217,4 +215,12 @@ public class TechnicalController {
 
     }
 
+    /**************************首页类别导航**************************************/
+    @RequestMapping(value = "/getHomePageTecsType", method = RequestMethod.GET)
+    @ResponseBody
+    public List<TechnicalType> getHomePageTecsType(){
+
+
+        return  technicalService.getHomePageTecsType();
+    }
 }

@@ -12,6 +12,7 @@ public class TechnicalExcel {
     private String releasedate;
     private String summaryinfo;
     private String memo;
+    private String typename;
 
     public String getChinesename() {
         return chinesename;
@@ -69,4 +70,11 @@ public class TechnicalExcel {
         this.memo = memo;
     }
 
+    public String getTypename() {
+        return typename;
+    }
+
+    public void setTypename(String typename) {
+        this.typename = typename;
+    }
 }

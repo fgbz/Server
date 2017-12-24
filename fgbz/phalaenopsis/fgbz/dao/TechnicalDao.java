@@ -92,4 +92,16 @@ public interface TechnicalDao {
      * @return
      */
     int checkTecCode(Technical technical);
+
+    /**
+     * 通过名称获取类别
+     * @param name
+     * @return
+     */
+    String getLawTypeByName(String name);
+
+    /**
+     * 获取首页类别导航
+     */
+    List<TechnicalType> getHomePageTecsType();
 }

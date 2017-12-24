@@ -174,7 +174,8 @@ public class TechnicalService {
                 "code",
                 "releasedate",
                 "summaryinfo",
-                "memo"
+                "memo",
+                "typename"
 
         };
         exportExcel.exportExcel(fields,new Technical(),listTecs,"技术文档",response);
@@ -186,32 +187,55 @@ public class TechnicalService {
      * @return
      */
     @Transactional
-    public int importTechnical( List<TechnicalExcel> list,FG_User user) throws ParseException {
+    public Map<String,Object> importTechnical( List<TechnicalExcel> list,FG_User user) throws ParseException {
 
+        Map<String,Object> map = new HashMap<>();
         List<Technical> listImport = new ArrayList<>();
 
-        for (TechnicalExcel excel:list ) {
+        int rownum =0;
+        for (int i=0;i<list.size();i++ ) {
+
+            rownum=i+3;
+            TechnicalExcel excel = list.get(i);
             Technical technical = new Technical();
             //中文标题不能为空
             if(StrUtil.isNullOrEmpty(excel.getChinesename())){
-                int isChinesenameEmpty =1;
-                OpResult opResult = new OpResult(isChinesenameEmpty);
-                return opResult.Code;
+                map.put("Result",OpResult.Failed);
+                map.put("Msg","第"+rownum+"行中文标题为空");
+                return map;
             }else {
                 technical.setChinesename(excel.getChinesename());
             }
             //验证编号不能为空
             if(StrUtil.isNullOrEmpty(excel.getCode())){
-                int isodeEmpty =2;
-                OpResult opResult = new OpResult(isodeEmpty);
-                return opResult.Code;
+                map.put("Result",OpResult.Failed);
+                map.put("Msg","第"+rownum+"行编号为空");
+                return map;
             }else{
                 technical.setCode(excel.getCode());
             }
+
+            if(StrUtil.isNullOrEmpty(excel.getTypename())){
+                map.put("Result",OpResult.Failed);
+                map.put("Msg","第"+rownum+"行类别为空");
+                return map;
+            }else{
+                String lawtypeid= technicalDao.getLawTypeByName(excel.getTypename());
+                if(StrUtil.isNullOrEmpty(lawtypeid)){
+                    map.put("Result",OpResult.Failed);
+                    map.put("Msg","第"+rownum+"行类别不存在");
+                    return map;
+                }else{
+                    technical.setTectype(lawtypeid);
+                }
+            }
+
             SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd ");
             technical.setEnglishname(excel.getEnglishname());
             technical.setKeywords(excel.getKeywords());
-            technical.setReleasedate( sdf.parse(excel.getReleasedate()));
+            if(!StrUtil.isNullOrEmpty(excel.getReleasedate())){
+                technical.setReleasedate( sdf.parse(excel.getReleasedate()));
+            }
             technical.setSummaryinfo(excel.getSummaryinfo());
             technical.setMemo(excel.getMemo());
             technical.setId(UUID.randomUUID().toString());
@@ -222,8 +246,10 @@ public class TechnicalService {
         }
         for(Technical tec:listImport){
             technicalDao.SaveOrUpdateTechnical(tec);
+            technicalDao.SaveOrUpdateTecAndType(tec);
         }
-        return OpResult.Success;
+        map.put("Result",OpResult.Success);
+        return map;
     }
     /**
      * 新增法规标准
@@ -278,5 +304,18 @@ public class TechnicalService {
         return technicalDao.getTechnicalById(id);
     }
 
+    /**************************首页类别导航**************************************/
 
+    public List<TechnicalType> getHomePageTecsType(){
+
+        List<TechnicalType> result = new ArrayList<>();
+        result = technicalDao.getHomePageTecsType();
+        if(result.size()>0){
+            for (TechnicalType technicalType:result
+                    ) {
+                technicalType.setChildLists(getChildNode(technicalType.getId()));
+            }
+        }
+        return  result;
+    }
 }

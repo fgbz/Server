@@ -213,7 +213,10 @@ public class LawstandardService {
                 "releasedate",
                 "impdate",
                 "summaryinfo",
-                "memo"
+                "memo",
+                "typename",
+                "pubdepname",
+                "statusname"
 
         };
         exportExcel.exportExcel(fields,new Lawstandard(),listLaws,"法规标准",response);
@@ -225,33 +228,89 @@ public class LawstandardService {
      * @return
      */
     @Transactional
-    public int importLawstandard( List<LawstandardExcel> list,FG_User user) throws ParseException {
+    public  Map<String,Object> importLawstandard( List<LawstandardExcel> list,FG_User user) throws ParseException {
+
+        Map<String,Object> map = new HashMap<>();
 
         List<Lawstandard> listImport = new ArrayList<>();
 
-        for (LawstandardExcel excel:list ) {
+        int rownum =0;
+        for (int i=0;i<list.size();i++ ) {
+
+            rownum=i+3;
+            LawstandardExcel excel = list.get(i);
             Lawstandard lawstandard = new Lawstandard();
             //中文标题不能为空
             if(StrUtil.isNullOrEmpty(excel.getChinesename())){
-                int isChinesenameEmpty =1;
-                OpResult opResult = new OpResult(isChinesenameEmpty);
-                return opResult.Code;
+                map.put("Result",OpResult.Failed);
+                map.put("Msg","第"+rownum+"行中文标题为空");
+                return map;
             }else {
                 lawstandard.setChinesename(excel.getChinesename());
             }
             //验证编号不能为空
             if(StrUtil.isNullOrEmpty(excel.getCode())){
-                int isodeEmpty =2;
-                OpResult opResult = new OpResult(isodeEmpty);
-                return opResult.Code;
+                map.put("Result",OpResult.Failed);
+                map.put("Msg","第"+rownum+"行编号为空");
+                return map;
             }else{
                 lawstandard.setCode(excel.getCode());
             }
+            if(StrUtil.isNullOrEmpty(excel.getTypename())){
+                map.put("Result",OpResult.Failed);
+                map.put("Msg","第"+rownum+"行类别为空");
+                return map;
+            }else{
+               String lawtypeid= lawstandardDao.getLawTypeByName(excel.getTypename());
+               if(StrUtil.isNullOrEmpty(lawtypeid)){
+                   map.put("Result",OpResult.Failed);
+                   map.put("Msg","第"+rownum+"行类别不存在");
+                   return map;
+               }else{
+                   lawstandard.setLawtype(lawtypeid);
+               }
+            }
+            if(!StrUtil.isNullOrEmpty(excel.getPubdepname())){
+                String pubid= lawstandardDao.getPubOrgnameByName(excel.getPubdepname());
+                if(StrUtil.isNullOrEmpty(pubid)){
+                    map.put("Result",OpResult.Failed);
+                    map.put("Msg","第"+rownum+"行发布部门不存在");
+                    return map;
+                }else{
+                    lawstandard.setOrganization(pubid);
+                }
+            }
+
+            if(!StrUtil.isNullOrEmpty(excel.getStatusname())){
+                String staid= lawstandardDao.getStatusIdByName(excel.getStatusname());
+                if(StrUtil.isNullOrEmpty(staid)){
+                    map.put("Result",OpResult.Failed);
+                    map.put("Msg","第"+rownum+"行状态不存在");
+                    return map;
+                }else{
+                    lawstandard.setStatus(staid);
+                }
+            }
+
             SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd ");
             lawstandard.setEnglishname(excel.getEnglishname());
             lawstandard.setKeywords(excel.getKeywords());
-            lawstandard.setReleasedate( sdf.parse(excel.getReleasedate()));
-            lawstandard.setImpdate( sdf.parse(excel.getImpdate()));
+
+            if(!StrUtil.isNullOrEmpty(excel.getReleasedate())){
+                lawstandard.setReleasedate( sdf.parse(excel.getReleasedate()));
+            }
+            if(!StrUtil.isNullOrEmpty(excel.getImpdate())){
+                lawstandard.setImpdate( sdf.parse(excel.getImpdate()));
+            }
+
+            if(!StrUtil.isNullOrEmpty(excel.getReleasedate())&&!StrUtil.isNullOrEmpty(excel.getImpdate())){
+                if(lawstandard.getReleasedate().getTime()>lawstandard.getImpdate().getTime()){
+                    map.put("Result",OpResult.Failed);
+                    map.put("Msg","第"+rownum+"行发布日期大于实施日期");
+                    return map;
+                }
+            }
+
             lawstandard.setSummaryinfo(excel.getSummaryinfo());
             lawstandard.setMemo(excel.getMemo());
             lawstandard.setId(UUID.randomUUID().toString());
@@ -261,10 +320,16 @@ public class LawstandardService {
             listImport.add(lawstandard);
         }
         for(Lawstandard law:listImport){
+
+            lawstandardDao.SaveOrUpdateLawAndType(law);
+            if(!StrUtil.isNullOrEmpty(law.getOrganization())){
+                lawstandardDao.SaveOrUpdateLawAndPublish(law);
+            }
             lawstandardDao.SaveOrUpdateLawstandard(law);
 
         }
-        return OpResult.Success;
+        map.put("Result",OpResult.Success);
+        return map;
     }
     /**
      * 删除法规标准

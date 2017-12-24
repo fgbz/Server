@@ -91,6 +91,7 @@ public class Technical {
 
     private int count;
 
+    @ExcelTitle(value = "类别")
     private String typename;
 
     private String tectype;

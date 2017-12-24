@@ -1,6 +1,7 @@
 package phalaenopsis.fgbz.entity;
 
 import java.util.Date;
+import java.util.List;
 
 public class TechnicalType {
     /**
@@ -63,6 +64,8 @@ public class TechnicalType {
     private boolean candelete;
 
     private int count;
+
+    private List<TechnicalType> childLists;
 
 
     public String getId() {
@@ -167,5 +170,13 @@ public class TechnicalType {
 
     public void setModifydate(Date modifydate) {
         this.modifydate = modifydate;
+    }
+
+    public List<TechnicalType> getChildLists() {
+        return childLists;
+    }
+
+    public void setChildLists(List<TechnicalType> childLists) {
+        this.childLists = childLists;
     }
 }

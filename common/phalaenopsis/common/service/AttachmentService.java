@@ -259,10 +259,6 @@ public class AttachmentService extends Basis {
 				file.mkdirs();
 			multipartFile.transferTo(file);
 
-//			if (isDocFile(ext)) {
-//			} else if (isPDFFile(ext)) {
-//			}
-
 			Attachment attachment = new Attachment(guid, fileName, ext, multipartFile.getSize(), storeFile, userid,
 					Calendar.getInstance().getTime(), module, AttachmentSource.Client);
 
