@@ -7,6 +7,7 @@ import phalaenopsis.common.entity.Condition;
 import phalaenopsis.common.entity.OpResult;
 import phalaenopsis.common.entity.Page;
 import phalaenopsis.common.entity.PagingEntity;
+import phalaenopsis.common.method.Tools.StrUtil;
 import phalaenopsis.fgbz.dao.LawstandardDao;
 import phalaenopsis.fgbz.dao.UserCenterDao;
 import phalaenopsis.fgbz.entity.*;
@@ -360,10 +361,55 @@ public class UserCenterService {
         if(favorite.getId()==null||favorite.getId().equals("")){
             favorite.setId(UUID.randomUUID().toString());
         }
+
+        int itemlevelcode = 0;
+        //点击的对象
+        Favorite handleitem = favorite.getHandleitem();
+
+        //处理不同的类型
+        switch(favorite.getHandletype()){
+            case "addEqual":
+                itemlevelcode=  getLastItemLevelcode(handleitem.getParentid());
+                favorite.setItemlevelcode(itemlevelcode);
+                break;
+            case "addDown":
+                itemlevelcode=  getLastItemLevelcode(handleitem.getId());
+                favorite.setItemlevelcode(itemlevelcode);
+                break;
+            case "moveUp":
+                if(!StrUtil.isNullOrEmpty(favorite.getItemlevelcode().toString())){
+                    handTreeLevel(favorite);
+                    favorite.setItemlevelcode(favorite.getItemlevelcode()-1);
+                }
+                break;
+            case "moveDown":
+                if(!StrUtil.isNullOrEmpty(favorite.getItemlevelcode().toString())){
+                    handTreeLevel(favorite);
+                    favorite.setItemlevelcode(favorite.getItemlevelcode()+1);
+                }
+                break;
+        }
+
         userCenterDao.SaveOrUpdateFavorite(favorite);
         return OpResult.Success;
     }
 
+    /**
+     * 获取当前层级最后的层级代码
+     * @param id
+     * @return
+     */
+    public int getLastItemLevelcode(String id){
+        return userCenterDao.getLastItemLevelcode(id);
+    }
+
+    /**
+     * 处理上移和下移
+     * @return
+     */
+    public int handTreeLevel(Favorite favorite){
+        return  userCenterDao.handTreeLevel(favorite);
+    }
     /**
      * 保存收藏夹与法规的关联
      * @param lawstandard

@@ -43,6 +43,20 @@ public interface LawstandardDao {
     int DeleteLawAndType(String id);
 
     /**
+     * 获取最后的层级代码
+     * @param id
+     * @return
+     */
+    int getLastItemLevelcode(String id);
+
+    /**
+     *处理上移或下移
+     * @param lawstandardType
+     * @return
+     */
+    int handTreeLevel(LawstandardType lawstandardType);
+
+    /**
      * 保存法规文件与部门关联
      * @param lawstandard
      * @return

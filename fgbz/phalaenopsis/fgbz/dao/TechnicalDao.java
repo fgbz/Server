@@ -32,6 +32,20 @@ public interface TechnicalDao {
     int  DeleteTechnicalType(TechnicalType technicalType);
 
     /**
+     * 获取最后的层级代码
+     * @param id
+     * @return
+     */
+    int getLastItemLevelcode(String id);
+
+    /**
+     *处理上移或下移
+     * @param technicalType
+     * @return
+     */
+    int handTreeLevel(TechnicalType technicalType);
+
+    /**
      * 获取子节点
      * @param id
      * @return

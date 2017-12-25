@@ -8,6 +8,8 @@
         t.ID,
         t.TYPENAME,
         t.PARENTID,
+        t.itemlevel,
+        t.itemlevelcode,
         CASE
         WHEN (
         SELECT
@@ -18,6 +20,7 @@
         link.LAWSTYPEID = t.id) = 0 then 1 else 0 end as candelete
         FROM
         m_bs_techtype t
+        ORDER  by t.itemlevel,t.itemlevelcode
     </select>
 
     <!--删除技术标准类别-->
@@ -32,14 +35,32 @@
         </selectKey>
 
         <if test="count==0">
-            INSERT into m_bs_techtype  (ID,TYPENAME, PARENTID,INPUTUSERID,INPUTDATE,MODIFYDATE )
-            VALUES (#{id},#{typename},#{parentid},#{inputuserid,jdbcType=VARCHAR},now(),now());
+            INSERT into m_bs_techtype  (ID,TYPENAME, PARENTID,INPUTUSERID,INPUTDATE,MODIFYDATE,itemlevel,itemlevelcode )
+            VALUES (#{id},#{typename},#{parentid},#{inputuserid,jdbcType=VARCHAR},now(),now(),#{itemlevel,jdbcType=INTEGER},#{itemlevelcode,jdbcType=INTEGER});
         </if>
         <if test="count==1">
             UPDATE  m_bs_techtype t  SET t.TYPENAME = #{typename,jdbcType=VARCHAR},
-            t.MODIFYUSERID=#{modifyuserid,jdbcType=VARCHAR},t.MODIFYDATE = now() where t.ID = #{id}
+            t.MODIFYUSERID=#{modifyuserid,jdbcType=VARCHAR},t.MODIFYDATE = now(),t.itemlevelcode = #{itemlevelcode,jdbcType=INTEGER} where t.ID = #{id}
         </if>
     </insert>
+
+    <!--获取最新的结构层级-->
+    <select id="getLastItemLevelcode" parameterType="String" resultType="int">
+       select IF(ISNULL(max(t.ITEMLEVELCODE)),0,max(t.ITEMLEVELCODE)+1) from m_bs_techtype t where t.PARENTID= #{id}
+    </select>
+
+    <!--处理上移和下移-->
+    <update id="handTreeLevel" parameterType="TechnicalType">
+        <if test="handletype == 'moveUp'.toString()">
+            update m_bs_techtype t set t.ITEMLEVELCODE = (t.ITEMLEVELCODE+1) where t.PARENTID =#{parentid}  and t.ITEMLEVELCODE=(#{itemlevelcode}-1)
+        </if>
+        <if test="handletype == 'moveDown'.toString()">
+            update m_bs_techtype t set t.ITEMLEVELCODE = (t.ITEMLEVELCODE-1) where t.PARENTID =#{parentid}  and t.ITEMLEVELCODE=(#{itemlevelcode}+1)
+        </if>
+        <if test="handletype == 'delete'.toString()">
+            update m_bs_techtype t set t.ITEMLEVELCODE = (t.ITEMLEVELCODE-1) where t.PARENTID =#{parentid}  and t.ITEMLEVELCODE>#{itemlevelcode}
+        </if>
+    </update>
 
     <!--获取子节点-->
     <select id="getChildNode" parameterType="String" resultType="TechnicalType">

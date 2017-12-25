@@ -55,7 +55,7 @@ public class LawstandardType {
      * 层级代码
      */
 
-    private String itemlevelcode;
+    private Integer itemlevelcode;
     /**
      * 下载次数
      */
@@ -86,6 +86,16 @@ public class LawstandardType {
      * 是否可以删除
      */
     private boolean candelete;
+
+    /**
+     *  处理类型  新增同级 ‘addEqual’ 新增下级 'addDown' '上移' 'moveUp' '下移' 'moveDown'
+     */
+    private String handletype;
+
+    /**
+     * 点击按钮的对象，处理层级结构
+     */
+    private LawstandardType handleitem;
 
     private List<LawstandardType> childLists;
 
@@ -161,11 +171,11 @@ public class LawstandardType {
         this.itemlevel = itemlevel;
     }
 
-    public String getItemlevelcode() {
+    public Integer getItemlevelcode() {
         return itemlevelcode;
     }
 
-    public void setItemlevelcode(String itemlevelcode) {
+    public void setItemlevelcode(Integer itemlevelcode) {
         this.itemlevelcode = itemlevelcode;
     }
 
@@ -236,5 +246,21 @@ public class LawstandardType {
 
     public void setChildLists(List<LawstandardType> childLists) {
         this.childLists = childLists;
+    }
+
+    public String getHandletype() {
+        return handletype;
+    }
+
+    public void setHandletype(String handletype) {
+        this.handletype = handletype;
+    }
+
+    public LawstandardType getHandleitem() {
+        return handleitem;
+    }
+
+    public void setHandleitem(LawstandardType handleitem) {
+        this.handleitem = handleitem;
     }
 }

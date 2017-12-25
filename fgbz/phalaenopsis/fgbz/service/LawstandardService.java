@@ -60,9 +60,54 @@ public class LawstandardService {
             String guid=uuid.toString();
             lawstandardType.setId(guid);
         }
-        int num = lawstandardDao.AddOrUpdateLawstandardType(lawstandardType);
+        int itemlevelcode = 0;
+        //点击的对象
+        LawstandardType handleitem = lawstandardType.getHandleitem();
 
-        return  num;
+        //处理不同的类型
+        switch(lawstandardType.getHandletype()){
+            case "addEqual":
+                itemlevelcode=  getLastItemLevelcode(handleitem.getParentid());
+                lawstandardType.setItemlevelcode(itemlevelcode);
+                break;
+            case "addDown":
+                itemlevelcode=  getLastItemLevelcode(handleitem.getId());
+                lawstandardType.setItemlevelcode(itemlevelcode);
+                break;
+            case "moveUp":
+                if(!StrUtil.isNullOrEmpty(lawstandardType.getItemlevelcode().toString())){
+                    handTreeLevel(lawstandardType);
+                    lawstandardType.setItemlevelcode(lawstandardType.getItemlevelcode()-1);
+                }
+                break;
+            case "moveDown":
+                if(!StrUtil.isNullOrEmpty(lawstandardType.getItemlevelcode().toString())){
+                    handTreeLevel(lawstandardType);
+                    lawstandardType.setItemlevelcode(lawstandardType.getItemlevelcode()+1);
+                }
+                break;
+        }
+
+         lawstandardDao.AddOrUpdateLawstandardType(lawstandardType);
+
+        return OpResult.Success;
+    }
+
+    /**
+     * 获取当前层级最后的层级代码
+     * @param id
+     * @return
+     */
+    public int getLastItemLevelcode(String id){
+        return lawstandardDao.getLastItemLevelcode(id);
+    }
+
+    /**
+     * 处理上移和下移
+     * @return
+     */
+    public int handTreeLevel(LawstandardType lawstandardType){
+        return  lawstandardDao.handTreeLevel(lawstandardType);
     }
 
     /**
@@ -71,7 +116,10 @@ public class LawstandardService {
      * @return
      */
     public int  DeleteLawstandardType(LawstandardType lawstandardType){
-        return lawstandardDao.DeleteLawstandardType(lawstandardType);
+
+        handTreeLevel(lawstandardType);
+         lawstandardDao.DeleteLawstandardType(lawstandardType);
+        return OpResult.Success;
     }
 
     /**

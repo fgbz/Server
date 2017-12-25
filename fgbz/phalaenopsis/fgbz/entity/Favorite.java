@@ -66,6 +66,27 @@ public class Favorite {
      */
     private String tableid;
 
+    /**
+     * 类别层级
+     */
+
+    private Integer itemlevel;
+    /**
+     * 层级代码
+     */
+
+    private Integer itemlevelcode;
+
+    /**
+     *  处理类型  新增同级 ‘addEqual’ 新增下级 'addDown' '上移' 'moveUp' '下移' 'moveDown'
+     */
+    private String handletype;
+
+    /**
+     * 点击按钮的对象，处理层级结构
+     */
+    private Favorite handleitem;
+
 
     public String getId() {
         return id;
@@ -161,5 +182,37 @@ public class Favorite {
 
     public void setTableid(String tableid) {
         this.tableid = tableid;
+    }
+
+    public Integer getItemlevel() {
+        return itemlevel;
+    }
+
+    public void setItemlevel(Integer itemlevel) {
+        this.itemlevel = itemlevel;
+    }
+
+    public Integer getItemlevelcode() {
+        return itemlevelcode;
+    }
+
+    public void setItemlevelcode(Integer itemlevelcode) {
+        this.itemlevelcode = itemlevelcode;
+    }
+
+    public String getHandletype() {
+        return handletype;
+    }
+
+    public void setHandletype(String handletype) {
+        this.handletype = handletype;
+    }
+
+    public Favorite getHandleitem() {
+        return handleitem;
+    }
+
+    public void setHandleitem(Favorite handleitem) {
+        this.handleitem = handleitem;
     }
 }

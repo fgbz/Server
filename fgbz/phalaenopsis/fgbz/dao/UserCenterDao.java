@@ -182,6 +182,20 @@ public interface UserCenterDao {
      */
     int DismissFavorite(Map<String,Object> map);
 
+    /**
+     * 获取最后的层级代码
+     * @param id
+     * @return
+     */
+    int getLastItemLevelcode(String id);
+
+    /**
+     *处理上移或下移
+     * @param favorite
+     * @return
+     */
+    int handTreeLevel(Favorite favorite);
+
     /***************************修改密码*****************************/
     int getUserByPasswordAndId(Map<String,Object> map);
 

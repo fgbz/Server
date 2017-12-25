@@ -7,6 +7,7 @@ import phalaenopsis.common.entity.Condition;
 import phalaenopsis.common.entity.OpResult;
 import phalaenopsis.common.entity.Page;
 import phalaenopsis.common.entity.PagingEntity;
+import phalaenopsis.common.method.Tools.StrUtil;
 import phalaenopsis.fgbz.dao.LawstandardDao;
 import phalaenopsis.fgbz.dao.SystemDao;
 import phalaenopsis.fgbz.entity.FG_Menu;
@@ -65,10 +66,54 @@ public class SystemServie {
             String guid=uuid.toString();
             organization.setId(guid);
         }
-        return systemDao.AddOrUpdateOrganizationType(organization);
+
+        int itemlevelcode = 0;
+        //点击的对象
+        FG_Organization handleitem = organization.getHandleitem();
+
+        //处理不同的类型
+        switch(organization.getHandletype()){
+            case "addEqual":
+                itemlevelcode=  getLastItemLevelcode(handleitem.getParentid());
+                organization.setItemlevelcode(itemlevelcode);
+                break;
+            case "addDown":
+                itemlevelcode=  getLastItemLevelcode(handleitem.getId());
+                organization.setItemlevelcode(itemlevelcode);
+                break;
+            case "moveUp":
+                if(!StrUtil.isNullOrEmpty(organization.getItemlevelcode().toString())){
+                    handTreeLevel(organization);
+                    organization.setItemlevelcode(organization.getItemlevelcode()-1);
+                }
+                break;
+            case "moveDown":
+                if(!StrUtil.isNullOrEmpty(organization.getItemlevelcode().toString())){
+                    handTreeLevel(organization);
+                    organization.setItemlevelcode(organization.getItemlevelcode()+1);
+                }
+                break;
+        }
+         systemDao.AddOrUpdateOrganizationType(organization);
+        return OpResult.Success;
     }
 
+    /**
+     * 获取当前层级最后的层级代码
+     * @param id
+     * @return
+     */
+    public int getLastItemLevelcode(String id){
+        return systemDao.getLastItemLevelcode(id);
+    }
 
+    /**
+     * 处理上移和下移
+     * @return
+     */
+    public int handTreeLevel(FG_Organization organization){
+        return  systemDao.handTreeLevel(organization);
+    }
     /**
      * 删除组织机构
      *

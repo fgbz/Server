@@ -42,6 +42,7 @@ public class TechnicalService {
      * @param technicalType
      * @return
      */
+    @Transactional
     public int AddOrUpdateTechnicalType(TechnicalType technicalType) {
 
         //新增
@@ -50,8 +51,57 @@ public class TechnicalService {
             String guid=uuid.toString();
             technicalType.setId(guid);
         }
-        return technicalDao.AddOrUpdateTechnicalType(technicalType);
+        int itemlevelcode = 0;
+        //点击的对象
+        TechnicalType handleitem = technicalType.getHandleitem();
+        //处理不同的类型
+        switch(technicalType.getHandletype()){
+            case "addEqual":
+                itemlevelcode=  getLastItemLevelcode(handleitem.getParentid());
+                technicalType.setItemlevelcode(itemlevelcode);
+                break;
+            case "addDown":
+                itemlevelcode=  getLastItemLevelcode(handleitem.getId());
+                technicalType.setItemlevelcode(itemlevelcode);
+                break;
+            case "moveUp":
+                if(!StrUtil.isNullOrEmpty(technicalType.getItemlevelcode().toString())){
+                    handTreeLevel(technicalType);
+                    technicalType.setItemlevelcode(technicalType.getItemlevelcode()-1);
+                }
+                break;
+            case "moveDown":
+                if(!StrUtil.isNullOrEmpty(technicalType.getItemlevelcode().toString())){
+                    handTreeLevel(technicalType);
+                    technicalType.setItemlevelcode(technicalType.getItemlevelcode()+1);
+                }
+                break;
+        }
+
+
+         technicalDao.AddOrUpdateTechnicalType(technicalType);
+
+         return OpResult.Success;
     }
+
+    /**
+     * 获取当前层级最后的层级代码
+     * @param id
+     * @return
+     */
+    public int getLastItemLevelcode(String id){
+        return technicalDao.getLastItemLevelcode(id);
+    }
+
+    /**
+     * 处理上移和下移
+     * @return
+     */
+    public int handTreeLevel(TechnicalType technicalType){
+        return  technicalDao.handTreeLevel(technicalType);
+    }
+
+
 
     /**
      * 删除技术文件类别
@@ -59,7 +109,9 @@ public class TechnicalService {
      * @return
      */
     public int  DeleteTechnicalType(TechnicalType technicalType){
-        return  technicalDao.DeleteTechnicalType(technicalType);
+        handTreeLevel(technicalType);
+        technicalDao.DeleteTechnicalType(technicalType);
+        return OpResult.Success;
     }
 
     /**

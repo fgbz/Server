@@ -52,6 +52,7 @@ import phalaenopsis.common.method.Tools.StrUtil;
 import phalaenopsis.common.util.FileHelper;
 import phalaenopsis.fgbz.common.FileConverter;
 import phalaenopsis.fgbz.common.ItextpdfUtil;
+import phalaenopsis.fgbz.common.office2PDF;
 
 @Service("attachmentService")
 public class AttachmentService extends Basis {
@@ -158,16 +159,15 @@ public class AttachmentService extends Basis {
 	}
 
 	public void getPreView(String fileID,HttpServletResponse response) throws IOException {
-//		Attachment attachment = dao.getAttachmentById(fileID);
-//		if (null == attachment)
-//			return null;
-//		String path = Attachment.GetFileStorageFolder(attachment.getActualFile()) + attachment.getActualFile();
-//		File file = new File(path);
-//		OutputStream out = response.getOutputStream();
-//		out.write(FileUtils.readFileToByteArray(file));
-//		out.close();
-//
-//		return response.getOutputStream();
+		Attachment attachment = dao.getAttachmentById(fileID);
+		if (null == attachment)
+			return ;
+
+		String preViewPath = attachment.getActualFile().substring(0,attachment.getActualFile().lastIndexOf("."));
+		preViewPath = preViewPath+".pdf";
+		String path = Attachment.GetFileStorageFolder(preViewPath) + preViewPath;
+
+		DownloadAttachment(path, attachment.getFileName(), response);
 	}
 
 
@@ -259,13 +259,14 @@ public class AttachmentService extends Basis {
 				file.mkdirs();
 			multipartFile.transferTo(file);
 
+
 			Attachment attachment = new Attachment(guid, fileName, ext, multipartFile.getSize(), storeFile, userid,
 					Calendar.getInstance().getTime(), module, AttachmentSource.Client);
 
 			attachment.setPath(storageFolder);
 			attachment.setInputuserid(userid);
-			//获取pdf中的文字
-			if(ext.equals("pdf")){
+			//法规上传需要解析获取pdf中的文字
+			if(ext.equals("pdf")&&module.equals("Law")){
 
 				PDDocument document=PDDocument.load(file);
 
@@ -281,7 +282,10 @@ public class AttachmentService extends Basis {
 				String content = stripper.getText(document);
 				attachment.setContent(content);
 			}
-
+			if(isDocFile(ext)){
+				//转化office pdf
+				office2PDF.office2PDF(storageFolder + storeFile,storageFolder+guid+".pdf");
+			}
 			dao.saveFgbz(attachment);
 			return new FileState(true, attachment.getId(), attachment.getUploadTime(), fileName);
 		} catch (Exception e) {
@@ -292,7 +296,7 @@ public class AttachmentService extends Basis {
 	}
 	private boolean isDocFile(String extName) {
 		boolean result = false;
-		String fileExt = ".xls;.xlsx;.doc;.docx;.ppt;.pptx;";
+		String fileExt = ".xls;.xlsx;.doc;.docx;.ppt;.pptx;.txt;";
 		result = fileExt.contains(extName.toLowerCase());
 
 		return result;

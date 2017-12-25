@@ -56,8 +56,26 @@ public class TechnicalType {
 
     private Integer subsysid;
 
+    /**
+     * 类别层级
+     */
+
+    private Integer itemlevel;
+    /**
+     * 层级代码
+     */
+
+    private Integer itemlevelcode;
+
+    /**
+     * 技术文档id
+     */
     private String tectype;
 
+    /**
+     *  处理类型  新增同级 ‘addEqual’ 新增下级 'addDown' '上移' 'moveUp' '下移' 'moveDown'
+     */
+    private String handletype;
     /**
      * 是否可以删除
      */
@@ -66,6 +84,11 @@ public class TechnicalType {
     private int count;
 
     private List<TechnicalType> childLists;
+
+    /**
+     * 点击按钮的对象，处理层级结构
+     */
+    private TechnicalType handleitem;
 
 
     public String getId() {
@@ -178,5 +201,37 @@ public class TechnicalType {
 
     public void setChildLists(List<TechnicalType> childLists) {
         this.childLists = childLists;
+    }
+
+    public Integer getItemlevel() {
+        return itemlevel;
+    }
+
+    public void setItemlevel(Integer itemlevel) {
+        this.itemlevel = itemlevel;
+    }
+
+    public Integer getItemlevelcode() {
+        return itemlevelcode;
+    }
+
+    public void setItemlevelcode(Integer itemlevelcode) {
+        this.itemlevelcode = itemlevelcode;
+    }
+
+    public String getHandletype() {
+        return handletype;
+    }
+
+    public void setHandletype(String handletype) {
+        this.handletype = handletype;
+    }
+
+    public TechnicalType getHandleitem() {
+        return handleitem;
+    }
+
+    public void setHandleitem(TechnicalType handleitem) {
+        this.handleitem = handleitem;
     }
 }

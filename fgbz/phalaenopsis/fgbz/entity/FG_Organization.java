@@ -50,6 +50,25 @@ public class FG_Organization {
 
     private boolean candelete;
 
+    /**
+     * 类别层级
+     */
+
+    private Integer itemlevel;
+    /**
+     * 层级代码
+     */
+
+    private Integer itemlevelcode;
+    /**
+     *  处理类型  新增同级 ‘addEqual’ 新增下级 'addDown' '上移' 'moveUp' '下移' 'moveDown'
+     */
+    private String handletype;
+    /**
+     * 点击按钮的对象，处理层级结构
+     */
+    private FG_Organization handleitem;
+
     public String getId() {
         return id;
     }
@@ -144,5 +163,37 @@ public class FG_Organization {
 
     public void setModifydate(Date modifydate) {
         this.modifydate = modifydate;
+    }
+
+    public Integer getItemlevel() {
+        return itemlevel;
+    }
+
+    public void setItemlevel(Integer itemlevel) {
+        this.itemlevel = itemlevel;
+    }
+
+    public Integer getItemlevelcode() {
+        return itemlevelcode;
+    }
+
+    public void setItemlevelcode(Integer itemlevelcode) {
+        this.itemlevelcode = itemlevelcode;
+    }
+
+    public String getHandletype() {
+        return handletype;
+    }
+
+    public void setHandletype(String handletype) {
+        this.handletype = handletype;
+    }
+
+    public FG_Organization getHandleitem() {
+        return handleitem;
+    }
+
+    public void setHandleitem(FG_Organization handleitem) {
+        this.handleitem = handleitem;
     }
 }

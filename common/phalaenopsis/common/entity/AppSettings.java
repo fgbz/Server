@@ -98,6 +98,8 @@ public class AppSettings {
 
 	private String swfPath;
 
+	private String openoffice;
+
 	public String getMinDistance() {
 		return MinDistance;
 	}
@@ -162,6 +164,14 @@ public class AppSettings {
 		this.swfPath = swfPath;
 	}
 
+	public String getOpenoffice() {
+		return openoffice;
+	}
+
+	public void setOpenoffice(String openoffice) {
+		this.openoffice = openoffice;
+	}
+
 	public AppSettings() {
 		super();
 
@@ -211,7 +221,7 @@ public class AppSettings {
 			this.dataname = properties.getProperty("dataname");
 			this.PJMapSpotLocationService = properties.getProperty("PJMapSpotLocationService");
 			this.swfPath = properties.getProperty("swfPath");
-
+			this.openoffice = properties.getProperty("openoffice");
 		}
 		catch(IOException e1) {
 			e1.printStackTrace();

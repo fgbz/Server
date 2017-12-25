@@ -1,9 +1,6 @@
 package phalaenopsis.fgbz.dao;
 
-import phalaenopsis.fgbz.entity.FG_Menu;
-import phalaenopsis.fgbz.entity.FG_Organization;
-import phalaenopsis.fgbz.entity.FG_Role;
-import phalaenopsis.fgbz.entity.FG_User;
+import phalaenopsis.fgbz.entity.*;
 
 import java.util.List;
 import java.util.Map;
@@ -39,7 +36,19 @@ public interface SystemDao {
      * @return
      */
     int  DeleteOrganization(FG_Organization organization);
+    /**
+     * 获取最后的层级代码
+     * @param id
+     * @return
+     */
+    int getLastItemLevelcode(String id);
 
+    /**
+     *处理上移或下移
+     * @param organization
+     * @return
+     */
+    int handTreeLevel(FG_Organization organization);
     /**
      * 获取子节点
      * @param id

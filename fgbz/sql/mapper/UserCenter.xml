@@ -351,12 +351,14 @@ ORDER BY t.ApproveDate desc
 
     <!--通过父节点id获取所有子记录-->
     <select id="getFavoriteListByID" parameterType="String" resultType="Favorite">
-        SELECT t.id,t.`NAME` ,t.PARENTID from m_bs_favorite t where t.ID=#{id}
+        SELECT t.id,t.`NAME` ,t.PARENTID,  t.itemlevel,
+        t.itemlevelcode from m_bs_favorite t where t.ID=#{id} order by t.itemlevelcode
     </select>
 
     <!--通过父节点id获取所有子记录-->
     <select id="getFavoriteListByParentID" parameterType="String" resultType="Favorite">
-        SELECT t.id,t.`NAME` ,t.PARENTID from m_bs_favorite t where t.PARENTID=#{id}
+        SELECT t.id,t.`NAME` ,t.PARENTID,  t.itemlevel,
+        t.itemlevelcode from m_bs_favorite t where t.PARENTID=#{id} order by t.itemlevelcode
     </select>
 
     <!--删除收藏夹-->
@@ -464,6 +466,26 @@ ORDER BY t.ApproveDate desc
         </if>
     </insert>
 
+
+
+    <!--获取最新的结构层级-->
+    <select id="getLastItemLevelcode" parameterType="String" resultType="int">
+        select IF(ISNULL(max(t.ITEMLEVELCODE)),0,max(t.ITEMLEVELCODE)+1) from m_bs_favorite t where t.PARENTID= #{id}
+    </select>
+
+    <!--处理上移和下移-->
+    <update id="handTreeLevel" parameterType="Favorite">
+        <if test="handletype == 'moveUp'.toString()">
+            update m_bs_favorite t set t.ITEMLEVELCODE = (t.ITEMLEVELCODE+1) where t.PARENTID =#{parentid}  and t.ITEMLEVELCODE=(#{itemlevelcode}-1)
+        </if>
+        <if test="handletype == 'moveDown'.toString()">
+            update m_bs_favorite t set t.ITEMLEVELCODE = (t.ITEMLEVELCODE-1) where t.PARENTID =#{parentid}  and t.ITEMLEVELCODE=(#{itemlevelcode}+1)
+        </if>
+        <if test="handletype == 'delete'.toString()">
+            update m_bs_favorite t set t.ITEMLEVELCODE = (t.ITEMLEVELCODE-1) where t.PARENTID =#{parentid}  and t.ITEMLEVELCODE>#{itemlevelcode}
+        </if>
+    </update>
+
     <!--获取收藏夹关联的法规-->
     <select id="getLawsByLinkID" parameterType="map" resultType="Lawstandard">
 SELECT
@@ -512,6 +534,10 @@ where link.LAWSTANDRADID=#{id}
     <delete id="DismissFavorite" parameterType="map" >
         delete from m_bs_lawstandard_favorite where FAVORITEID =#{favid} and LAWSTANDRADID =#{lawid}
     </delete>
+
+
+
+
 
     <!--通过密码和用户id查看用户-->
     <select id="getUserByPasswordAndId" parameterType="map" resultType="int">

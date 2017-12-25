@@ -210,9 +210,9 @@ public class AttachmentController {
 	 */
 	@RequestMapping(value = "/getPreView", method = RequestMethod.GET)
 	@ResponseBody
-	public void getPreView(HttpServletResponse response) throws IOException {
-		String fileID = request.getParameter("fileid");
-//		return service.getPreView(fileID,response);
+	public void getPreView(HttpServletRequest request,HttpServletResponse response) throws IOException {
+		String fileID = request.getParameter("file");
+		 service.getPreView(fileID,response);
 	}
 
 
