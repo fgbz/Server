@@ -341,15 +341,16 @@ public class UserCenterService {
      * @return
      */
     @Transactional
-    public int DeleteFavoriteByID(String id){
+    public int DeleteFavoriteByID(Favorite favorite){
 
-        userCenterDao.DeleteFavoriteByID(id);
+        userCenterDao.DeleteFavoriteByID(favorite.getId());
 
         Map<String,Object> map =new HashMap<>();
-        map.put("id",id);
+        map.put("id",favorite.getId());
         map.put("type","fav");
         userCenterDao.DeleteFavoriteLawsLink(map);
 
+        handTreeLevel(favorite);
         return OpResult.Success;
     }
 
@@ -357,6 +358,7 @@ public class UserCenterService {
      * 保存或新增收藏夹
      * @return
      */
+    @Transactional
     public int SaveOrUpdateFavorite(Favorite favorite){
         if(favorite.getId()==null||favorite.getId().equals("")){
             favorite.setId(UUID.randomUUID().toString());

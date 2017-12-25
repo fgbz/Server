@@ -53,6 +53,7 @@ public class LawstandardService {
      * @param lawstandardType
      * @return
      */
+    @Transactional
     public int  AddOrUpdateLawstandardType(LawstandardType lawstandardType){
         //新增
         if(lawstandardType.getId().equals("")){
@@ -115,6 +116,7 @@ public class LawstandardService {
      * @param lawstandardType
      * @return
      */
+    @Transactional
     public int  DeleteLawstandardType(LawstandardType lawstandardType){
 
         handTreeLevel(lawstandardType);

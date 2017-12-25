@@ -108,6 +108,7 @@ public class TechnicalService {
      * @param technicalType
      * @return
      */
+    @Transactional
     public int  DeleteTechnicalType(TechnicalType technicalType){
         handTreeLevel(technicalType);
         technicalDao.DeleteTechnicalType(technicalType);

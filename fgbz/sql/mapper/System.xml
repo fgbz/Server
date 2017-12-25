@@ -261,7 +261,7 @@ FROM
 
     <!--创建用户收藏夹-->
     <insert id="SaveUserFavorite" parameterType="FG_User">
-        INSERT into m_bs_favorite (ID,NAME,PARENTID,INPUTUSERID,INPUTDATE) VALUES (#{favoriteid},'我的收藏夹',NULL ,#{inputuserid,jdbcType=VARCHAR},now())
+        INSERT into m_bs_favorite (ID,NAME,PARENTID,INPUTUSERID,INPUTDATE,ITEMLEVEL,ITEMLEVELCODE) VALUES (#{favoriteid},'我的收藏夹',NULL ,#{inputuserid,jdbcType=VARCHAR},now(),0,0)
     </insert>
 
     <!--删除用户角色-->

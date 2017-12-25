@@ -60,6 +60,7 @@ public class SystemServie {
      * @param organization
      * @return
      */
+    @Transactional
     public int  AddOrUpdateOrganizationType(FG_Organization organization){
         if(organization.getId()==null||organization.getId().equals("")){
             UUID uuid=UUID.randomUUID();
@@ -120,8 +121,11 @@ public class SystemServie {
      * @param organization
      * @return
      */
+    @Transactional
     public int DeleteOrganization(FG_Organization organization) {
-        return systemDao.DeleteOrganization(organization);
+        handTreeLevel(organization);
+         systemDao.DeleteOrganization(organization);
+        return OpResult.Success;
     }
 
     /**

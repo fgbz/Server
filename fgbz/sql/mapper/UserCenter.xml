@@ -352,13 +352,13 @@ ORDER BY t.ApproveDate desc
     <!--通过父节点id获取所有子记录-->
     <select id="getFavoriteListByID" parameterType="String" resultType="Favorite">
         SELECT t.id,t.`NAME` ,t.PARENTID,  t.itemlevel,
-        t.itemlevelcode from m_bs_favorite t where t.ID=#{id} order by t.itemlevelcode
+        t.itemlevelcode from m_bs_favorite t where t.ID=#{id} order by t.itemlevel,t.itemlevelcode
     </select>
 
     <!--通过父节点id获取所有子记录-->
     <select id="getFavoriteListByParentID" parameterType="String" resultType="Favorite">
         SELECT t.id,t.`NAME` ,t.PARENTID,  t.itemlevel,
-        t.itemlevelcode from m_bs_favorite t where t.PARENTID=#{id} order by t.itemlevelcode
+        t.itemlevelcode from m_bs_favorite t where t.PARENTID=#{id} order by t.itemlevel,t.itemlevelcode
     </select>
 
     <!--删除收藏夹-->
@@ -427,6 +427,7 @@ ORDER BY t.ApproveDate desc
                 </if>
                 INPUTDATE,
                 MODIFYDATE,
+                itemlevel,itemlevelcode,
             </trim>
             <trim prefix="values (" suffix=")" suffixOverrides=",">
                 <if test="id != null">
@@ -442,7 +443,7 @@ ORDER BY t.ApproveDate desc
                     #{inputuserid,jdbcType=VARCHAR},
                 </if>
                 now(),
-                now(),
+                now(),#{itemlevel,jdbcType=INTEGER},#{itemlevelcode,jdbcType=INTEGER},
             </trim>
 
         </if>
@@ -458,7 +459,7 @@ ORDER BY t.ApproveDate desc
                 </if>
 
 
-                MODIFYDATE= now(),
+                MODIFYDATE= now(),itemlevelcode = #{itemlevelcode,jdbcType=INTEGER}
             </trim>
             where ID=#{id}
 

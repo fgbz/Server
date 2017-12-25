@@ -174,10 +174,10 @@ public class UserCenterController {
      * 删除搜藏夹
      * @return
      */
-    @RequestMapping(value = "/DeleteFavoriteByID", method = RequestMethod.GET)
+    @RequestMapping(value = "/DeleteFavoriteByID", method = RequestMethod.POST)
     @ResponseBody
-    public int DeleteFavoriteByID(String id){
-        return userCenterService.DeleteFavoriteByID(id);
+    public int DeleteFavoriteByID(@RequestBody Favorite favorite){
+        return userCenterService.DeleteFavoriteByID(favorite);
     }
 
     /**
