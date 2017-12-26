@@ -99,6 +99,7 @@ public class LawstandardType {
 
     private List<LawstandardType> childLists;
 
+
     public String getId() {
         return id;
     }

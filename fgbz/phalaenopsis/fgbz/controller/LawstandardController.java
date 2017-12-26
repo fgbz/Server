@@ -195,11 +195,11 @@ public class LawstandardController {
      * 查看法规标准
      * @return
      */
-    @RequestMapping(value = "/getLawstandardById", method = RequestMethod.POST)
+    @RequestMapping(value = "/getLawstandardById", method = RequestMethod.GET)
     @ResponseBody
-    public Lawstandard getLawstandardById(@RequestBody Lawstandard lawstandard){
+    public Lawstandard getLawstandardById(String id){
 
-        return lawstandardService.getLawstandardById(lawstandard.getId());
+        return lawstandardService.getLawstandardById(id);
     }
 
     /**

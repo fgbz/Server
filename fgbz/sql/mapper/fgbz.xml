@@ -103,27 +103,27 @@
     <sql id="querySolr">
          (
             instr(
-            t. CODE,
+            t1. CODE,
             #{item}
             ) > 0
             OR instr(
-            t.CHINESENAME,
+            t1.CHINESENAME,
             #{item}
             ) > 0
             OR instr(
-            t.ENGLISHNAME,
+            t1.ENGLISHNAME,
             #{item}
             ) > 0
             OR instr(
-            t.KEYWORDS,
+            t1.KEYWORDS,
             #{item}
             ) > 0
             OR instr(
-            t.MEMO,
+            t1.MEMO,
             #{item}
             ) > 0
             OR instr(
-            t.SUMMARYINFO,
+            t1.SUMMARYINFO,
             #{item}
             ) > 0
             OR instr(
@@ -133,7 +133,7 @@
             FROM
             m_sa_fileinfo file
             WHERE
-            file.REFID = t.id
+            file.REFID = t1.id
             ),
             #{item}
             ) > 0
@@ -144,7 +144,7 @@
             FROM
             m_sa_lawstandardstatus stu
             WHERE
-            stu.id = t. STATUS
+            stu.id = t1. STATUS
             ),
             #{item}
             ) > 0
@@ -156,7 +156,7 @@
             m_sa_publishdep dep
             LEFT JOIN m_bs_lawstandard_pubdep pub ON dep.ID = pub.PUBDEPID
             WHERE
-            pub.sid = t.id
+            pub.sid = t1.id
             ),
             #{item}
             ) > 0
@@ -166,10 +166,12 @@
     <!--获取全文检索-->
     <select id="getSolrList" parameterType="map" resultType="Lawstandard">
 SELECT
-	t.CHINESENAME,
-	t.ENGLISHNAME,
-	t.SUMMARYINFO,
-	t.`CODE`
+	t1.CHINESENAME,
+	t1.ENGLISHNAME,
+	t1.SUMMARYINFO,
+	t1.`CODE`,
+        t1.id,
+        t1.CLICKCOUNT
 FROM
 	(
 		SELECT
@@ -178,13 +180,14 @@ FROM
 			m_bs_lawstandard
 			WHERE
 			APPROVESTATUS = 3
-	) t
-WHERE
+	) t1
+WHERE 1=1  <include refid="queryLawstandard"></include> and
         (
         <foreach collection="Solr" index="index" item="item" open="" close="" separator="or">
             <include refid="querySolr"></include>
         </foreach>
         )
+
         LIMIT #{startRow},#{endRow}
     </select>
 
@@ -200,8 +203,8 @@ WHERE
         m_bs_lawstandard
         WHERE
         APPROVESTATUS = 3
-        ) t
-        WHERE
+        ) t1
+        WHERE 1=1  <include refid="queryLawstandard"></include> and
         (
         <foreach collection="Solr" index="index" item="item" open="" close="" separator="or">
             <include refid="querySolr"></include>
@@ -255,13 +258,13 @@ WHERE
         </if>
 
         <!--全文检索-->
-        <if test="Solr != null and Solr != ''">
-            and (
-            <foreach collection="Solr" index="index" item="item" open="" close="" separator="or">
-                  instr((SELECT solr.solrtext from solrview solr where solr.id=t1.id),#{item} )>0
-            </foreach>
-            )
-        </if>
+        <!--<if test="Solr != null and Solr != ''">-->
+            <!--and (-->
+            <!--<foreach collection="Solr" index="index" item="item" open="" close="" separator="or">-->
+                  <!--instr((SELECT solr.solrtext from solrview solr where solr.id=t1.id),#{item} )>0-->
+            <!--</foreach>-->
+            <!--)-->
+        <!--</if>-->
 
         <!--模糊匹配多个关键字-->
         <if test="KeyWords != null and KeyWords != ''">
@@ -781,6 +784,15 @@ WHERE
     <!--获取状态id-->
     <select id="getStatusIdByName" parameterType="String" resultType="String">
           select t.id from m_sa_lawstandardstatus t where  t.STATUSNAME = #{name} LIMIT 0,1
+    </select>
+
+    <select id="getHomePageLawCount" parameterType="map" resultType="int">
+        SELECT  count(1) from m_bs_lawstandard t where t.APPROVESTATUS = 3
+        and  t.id in (select lt.SID from m_bs_lawstandard_type lt where lt.LAWSTYPEID in
+        <foreach collection="TreeValue" item="item" open="(" close=")" separator=",">
+            #{item.id}
+        </foreach>
+        )
     </select>
 
 </mapper>

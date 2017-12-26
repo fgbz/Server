@@ -721,11 +721,31 @@ public class LawstandardService {
         List<LawstandardType> result = new ArrayList<>();
         result = lawstandardDao.getHomePageLawsType();
         if(result.size()>0){
-            for (LawstandardType lawstandardType:result
-                 ) {
+            for (LawstandardType lawstandardType:result ) {
+
+                lawstandardType.setCount(getHomePageLawCount(lawstandardType.getId()));
                 lawstandardType.setChildLists(getChildNode(lawstandardType.getId()));
+                for(int i=0;i<lawstandardType.getChildLists().size();i++){
+                   int chlidLawCount =getHomePageLawCount( lawstandardType.getChildLists().get(i).getId());
+                   lawstandardType.getChildLists().get(i).setCount(chlidLawCount);
+
+                }
+
             }
         }
         return  result;
+    }
+
+    public int getHomePageLawCount(String id){
+
+        Map<String, Object> conditions = new HashMap<String, Object>();
+
+        ids =new ArrayList<>();
+        LawstandardType lawSelf = new LawstandardType();
+        lawSelf.setId(id);
+        ids.add(lawSelf);
+        getLawsTree(id);
+        conditions.put("TreeValue",ids );
+        return  lawstandardDao.getHomePageLawCount(conditions);
     }
 }

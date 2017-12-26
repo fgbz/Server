@@ -198,4 +198,11 @@ public interface LawstandardDao {
      * @return
      */
     String getStatusIdByName(String name);
+
+    /**
+     * 获取首页导航数量
+     * @param map
+     * @return
+     */
+    int getHomePageLawCount(Map<String, Object>  map);
 }

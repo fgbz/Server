@@ -97,11 +97,11 @@ public class TechnicalController {
      * 查看
      * @return
      */
-    @RequestMapping(value = "/getTechnicalById", method = RequestMethod.POST)
+    @RequestMapping(value = "/getTechnicalById", method = RequestMethod.GET)
     @ResponseBody
-    public Technical getTechnicalById(@RequestBody Technical technical){
+    public Technical getTechnicalById(String id){
 
-        return technicalService.getTechnicalById(technical.getId());
+        return technicalService.getTechnicalById(id);
     }
 
     /**
