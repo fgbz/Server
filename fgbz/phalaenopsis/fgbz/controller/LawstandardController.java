@@ -83,6 +83,18 @@ public class LawstandardController {
     }
 
     /**
+     * 获取法规标准列表
+     * @param page
+     * @return
+     */
+    @RequestMapping(value = "/getSolrList", method = RequestMethod.POST)
+    @ResponseBody
+    public PagingEntity<Lawstandard> getSolrList(@RequestBody Page page){
+        return  lawstandardService.getSolrList(page);
+    }
+
+
+    /**
      * 导出
      *
      * @param response 返回导出的excel

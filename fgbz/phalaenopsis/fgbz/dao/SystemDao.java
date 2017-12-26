@@ -159,6 +159,12 @@ public interface SystemDao {
     String getApproveSetting();
 
     /**
+     * 设置配置
+     * @return
+     */
+    int SaveOrUpdateSettingValue(Map<String, String> map);
+
+    /**
      * 保存审核设置
      * @return
      */

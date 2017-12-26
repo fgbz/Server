@@ -45,6 +45,13 @@ public interface UserCenterDao {
      */
     List<Adviceinfo> getAdviceList(Map<String, Object>  map);
 
+    /**
+     * 保存通知附件关联
+     * @param adviceinfo
+     * @return
+     */
+    int SaveAdviceinfoFileLink(Adviceinfo adviceinfo);
+
 
     /***********************************用户留言*********************************/
     int SaveOrUpdateSuggestion(Suggestion suggestion);

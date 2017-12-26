@@ -100,6 +100,115 @@
         <include refid="queryLawstandard"></include>
     </select>
 
+    <sql id="querySolr">
+         (
+            instr(
+            t. CODE,
+            #{item}
+            ) > 0
+            OR instr(
+            t.CHINESENAME,
+            #{item}
+            ) > 0
+            OR instr(
+            t.ENGLISHNAME,
+            #{item}
+            ) > 0
+            OR instr(
+            t.KEYWORDS,
+            #{item}
+            ) > 0
+            OR instr(
+            t.MEMO,
+            #{item}
+            ) > 0
+            OR instr(
+            t.SUMMARYINFO,
+            #{item}
+            ) > 0
+            OR instr(
+            (
+            SELECT
+            group_concat(file.Content)
+            FROM
+            m_sa_fileinfo file
+            WHERE
+            file.REFID = t.id
+            ),
+            #{item}
+            ) > 0
+            OR instr(
+            (
+            SELECT
+            stu.STATUSNAME
+            FROM
+            m_sa_lawstandardstatus stu
+            WHERE
+            stu.id = t. STATUS
+            ),
+            #{item}
+            ) > 0
+            OR instr(
+            (
+            SELECT
+            dep.PUBDEPNAME
+            FROM
+            m_sa_publishdep dep
+            LEFT JOIN m_bs_lawstandard_pubdep pub ON dep.ID = pub.PUBDEPID
+            WHERE
+            pub.sid = t.id
+            ),
+            #{item}
+            ) > 0
+
+            )
+    </sql>
+    <!--获取全文检索-->
+    <select id="getSolrList" parameterType="map" resultType="Lawstandard">
+SELECT
+	t.CHINESENAME,
+	t.ENGLISHNAME,
+	t.SUMMARYINFO,
+	t.`CODE`
+FROM
+	(
+		SELECT
+			*
+		FROM
+			m_bs_lawstandard
+			WHERE
+			APPROVESTATUS = 3
+	) t
+WHERE
+        (
+        <foreach collection="Solr" index="index" item="item" open="" close="" separator="or">
+            <include refid="querySolr"></include>
+        </foreach>
+        )
+        LIMIT #{startRow},#{endRow}
+    </select>
+
+    <!--获取全文检索-->
+    <select id="getSolrListCount" parameterType="map" resultType="int">
+        SELECT
+        count(1)
+        FROM
+        (
+        SELECT
+        *
+        FROM
+        m_bs_lawstandard
+        WHERE
+        APPROVESTATUS = 3
+        ) t
+        WHERE
+        (
+        <foreach collection="Solr" index="index" item="item" open="" close="" separator="or">
+            <include refid="querySolr"></include>
+        </foreach>
+        )
+    </select>
+
     <sql id="queryLawstandard">
         <if test="Number != null and Number != ''">
             and instr(t1.CODE,#{Number})> 0

@@ -32,9 +32,14 @@ public class UserCenterService {
      * @param adviceinfo
      * @return
      */
+    @Transactional
     public int SaveOrUpdateAdvice(Adviceinfo adviceinfo){
         if(adviceinfo.getId()==null||adviceinfo.getId().equals("")){
             adviceinfo.setId(UUID.randomUUID().toString());
+        }
+        //建立与附件的关系
+        if(adviceinfo.getFileids().size()>0){
+            userCenterDao.SaveAdviceinfoFileLink(adviceinfo);
         }
         userCenterDao.SaveOrUpdateAdvice(adviceinfo);
         return OpResult.Success;

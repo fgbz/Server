@@ -186,12 +186,8 @@ public class LawstandardService {
                     conditions.put("KeyWords", condition.getValue());
                 }else if(condition.getKey().equals("ApproveStatus")){
                     conditions.put("ApproveStatus", condition.getValue());
-                }else if(condition.getKey().equals("EnglishTitle")){
-                    conditions.put("EnglishTitle", condition.getValue());
                 }else if(condition.getKey().equals("KeyWordsSingle")){
                     conditions.put("KeyWordsSingle", condition.getValue());
-                }else if(condition.getKey().equals("Summaryinfo")){
-                    conditions.put("Summaryinfo", condition.getValue());
                 }else if(condition.getKey().equals("Solr")){
                     String[] solrList  = condition.getValue().split(" ");
                     conditions.put("Solr", solrList);
@@ -224,7 +220,6 @@ public class LawstandardService {
             conditions.put("endRow", page.getPageSize());
         }
 
-
         // 2, 查询到当前页数的数据
         List<Lawstandard> list = lawstandardDao.getLawstandardList(conditions);
 
@@ -240,6 +235,84 @@ public class LawstandardService {
 
         return result;
     }
+
+    /**
+     * 获取法规标准列表
+     * @param page
+     * @return
+     */
+    public PagingEntity<Lawstandard> getSolrList(@RequestBody Page page){
+
+        Map<String, Object> conditions = new HashMap<String, Object>();
+
+        if(page.getConditions()!=null) {
+            //查询条件
+            for (Condition condition : page.getConditions()) {
+                if (condition.getKey().equals("Number")) {
+                    conditions.put("Number", condition.getValue());
+                } else if (condition.getKey().equals("Title")) {
+                    conditions.put("Title", condition.getValue());
+                } else if (condition.getKey().equals("FiledTimeStart")) {
+                    conditions.put("FiledTimeStart", condition.getValue());
+                } else if (condition.getKey().equals("FiledTimeEnd")) {
+                    conditions.put("FiledTimeEnd", condition.getValue());
+                } else if (condition.getKey().equals("State")) {
+                    conditions.put("State", condition.getValue());
+                }   else if (condition.getKey().equals("TreeValue")) {
+                    ids =new ArrayList<>();
+                    LawstandardType lawSelf = new LawstandardType();
+                    lawSelf.setId(condition.getValue());
+                    ids.add(lawSelf);
+                    getLawsTree(condition.getValue());
+                    conditions.put("TreeValue",ids );
+                }else if (condition.getKey().equals("KeyWords")){
+                    conditions.put("KeyWords", condition.getValue());
+                }else if(condition.getKey().equals("ApproveStatus")){
+                    conditions.put("ApproveStatus", condition.getValue());
+                }else if(condition.getKey().equals("EnglishTitle")){
+                    conditions.put("EnglishTitle", condition.getValue());
+                }else if(condition.getKey().equals("KeyWordsSingle")){
+                    conditions.put("KeyWordsSingle", condition.getValue());
+                }else if(condition.getKey().equals("Summaryinfo")){
+                    conditions.put("Summaryinfo", condition.getValue());
+                }else if(condition.getKey().equals("Solr")){
+                    String[] solrList  = condition.getValue().split(" ");
+                    conditions.put("Solr", solrList);
+                }
+
+            }
+        }
+
+
+        // 1,根据条件一共查询到的数据条数
+        int count = lawstandardDao.getSolrListCount(conditions);
+
+
+            if(page.getPageNo()==1){
+                conditions.put("startRow", 0 );
+            }else{
+                conditions.put("startRow", page.getPageSize() * (page.getPageNo() - 1) );
+            }
+            conditions.put("endRow", page.getPageSize());
+
+
+        // 2, 查询到当前页数的数据
+        List<Lawstandard> list = lawstandardDao.getSolrList(conditions);
+
+        PagingEntity<Lawstandard> result = new PagingEntity<Lawstandard>();
+        result.setPageCount(count);
+
+        int pageCount = 0 == count ? 1 : (count - 1) / page.getPageSize() + 1; // 由于计算pageCount存在整除的情况，所以计算的时候先减1在除以pageSize
+        result.setPageNo(page.getPageNo());
+        result.setPageSize(page.getPageSize());
+        result.setPageCount(pageCount);
+        result.setRecordCount(count);
+        result.setCurrentList(list);
+
+        return result;
+    }
+
+
 
     /**
      * 导出法规列表

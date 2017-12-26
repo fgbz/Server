@@ -17,7 +17,20 @@ public interface LawstandardDao {
 
     int  getLawstandardListCount(Map<String, Object>  map);
 
+    /**
+     * 获取全文检索数量
+     * @param map
+     * @return
+     */
+    int  getSolrListCount(Map<String, Object>  map);
+
     List<Lawstandard> getLawstandardList(Map<String, Object>  map);
+    /**
+     * 获取全文检索的列表
+     * @param map
+     * @return
+     */
+    List<Lawstandard> getSolrList(Map<String, Object>  map);
 
     int deleteLawstandardById(String id);
 

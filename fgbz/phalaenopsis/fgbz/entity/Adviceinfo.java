@@ -1,6 +1,7 @@
 package phalaenopsis.fgbz.entity;
 
 import java.util.Date;
+import java.util.List;
 
 /**
  * Created by 13260 on 2017/12/17.
@@ -67,6 +68,8 @@ public class Adviceinfo {
      * 组织名
      */
     private  String orgname;
+
+    private List<String> fileids;
 
     public String getId() {
         return id;
@@ -162,5 +165,13 @@ public class Adviceinfo {
 
     public void setOrgname(String orgname) {
         this.orgname = orgname;
+    }
+
+    public List<String> getFileids() {
+        return fileids;
+    }
+
+    public void setFileids(List<String> fileids) {
+        this.fileids = fileids;
     }
 }

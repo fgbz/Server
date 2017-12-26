@@ -123,6 +123,14 @@ FROM
         <include refid="queryAdviceinfo"></include>
     </select>
 
+    <!--更新附件与通知的关系-->
+    <update id="SaveAdviceinfoFileLink" parameterType="Adviceinfo">
+        update m_sa_fileinfo t set t.REFID = #{id} where t.id IN
+        <foreach collection="fileids" item="item" open="(" close=")" separator=",">
+            #{item}
+        </foreach>
+    </update>
+
     <!--保存留言-->
     <insert id="SaveOrUpdateSuggestion" parameterType="Suggestion">
         <selectKey keyProperty="count" resultType="int" order="BEFORE">

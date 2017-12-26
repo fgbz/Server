@@ -6,6 +6,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
+import phalaenopsis.common.entity.OpResult;
 import phalaenopsis.common.entity.Page;
 import phalaenopsis.common.entity.PagingEntity;
 import phalaenopsis.common.method.cache.UserCache;
@@ -183,5 +184,15 @@ public class SystemController {
     public Map<String,Object> SaveOrUpdateApproveSetting(int status){
 
         return systemServie.SaveOrUpdateApproveSetting(status);
+    }
+
+    /**
+     * 保存设置
+     * @return
+     */
+    @RequestMapping(value = "/SaveOrUpdateSettingValue", method = RequestMethod.POST)
+    @ResponseBody
+    public int SaveOrUpdateSettingValue(@RequestBody Map<String,String> map){
+        return systemServie.SaveOrUpdateSettingValue(map);
     }
 }

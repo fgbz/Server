@@ -354,6 +354,15 @@ public class SystemServie {
    }
 
     /**
+     * 保存设置
+     * @return
+     */
+    public int SaveOrUpdateSettingValue(Map<String,String> map){
+        systemDao.SaveOrUpdateSettingValue(map);
+        return OpResult.Success;
+    }
+
+    /**
      * 保存审核设置
      * @return
      */

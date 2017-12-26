@@ -416,6 +416,11 @@ FROM
 
     </insert>
 
+    <!--更新设置-->
+    <update id="SaveOrUpdateSettingValue" parameterType="map" >
+        UPDATE m_sa_setting t set t.`VALUE`=#{value} WHERE  t.`KEY`=#{key}
+    </update>
+
     <!--待审核的数量-->
     <select id="getNeedCheckLawCount" resultType="int">
         SELECT count(1) FROM m_bs_lawstandard t where t.APPROVESTATUS =2
