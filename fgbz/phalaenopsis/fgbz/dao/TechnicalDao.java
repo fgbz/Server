@@ -108,6 +108,13 @@ public interface TechnicalDao {
     int checkTecCode(Technical technical);
 
     /**
+     * 判断技术文件名称是否重复
+     * @param technical
+     * @return
+     */
+    int checkTecName(Technical technical);
+
+    /**
      * 通过名称获取类别
      * @param name
      * @return

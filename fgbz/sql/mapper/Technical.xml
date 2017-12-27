@@ -86,16 +86,20 @@
         FROM
         m_bs_tech t
         LEFT JOIN m_bs_tech_type m ON m.SID = t.id
-        LEFT JOIN m_bs_techtype n ON n.id = m.LAWSTYPEID where 1=1
+        LEFT JOIN m_bs_techtype n ON n.id = m.LAWSTYPEID
+        left join m_sa_user ur on ur.ID = t.INPUTUSERID
+        where 1=1
         <include refid="queryTechnical"></include>
-        ORDER BY
+        ORDER BY t.approvestatus,
         t.MODIFYDATE DESC
         LIMIT #{startRow},#{endRow}
     </select>
 
     <!-- 查询列表的总数 -->
     <select id="getTechnicalListCount" resultType="int">
-        select count(1) from m_bs_tech t where 1=1
+        select count(1) from m_bs_tech t
+        left join m_sa_user ur on ur.ID = t.INPUTUSERID
+        where 1=1
         <include refid="queryTechnical"></include>
     </select>
 
@@ -142,6 +146,18 @@
         <!--草稿和审核状态只能自己看见-->
         <if test="TecInputuserid != null and TecInputuserid !='' ">
             and (t.INPUTUSERID = #{TecInputuserid}  or t.APPROVESTATUS =2)
+        </if>
+
+        <!--草稿和审核状态只能自己看见-->
+        <if test="TecInputuserid != null and TecInputuserid !='' ">
+            and (t.INPUTUSERID = #{TecInputuserid}  or (t.APPROVESTATUS =2 and ur.ORGID in
+            <foreach collection="OrgList" item="item" open="(" close=")" separator=",">
+                #{item.id}
+            </foreach>
+            ))
+        </if>
+        <if test="selectInputUser != null and selectInputUser !='' ">
+            and t.INPUTUSERID = #{selectInputUser} and t.APPROVESTATUS =2
         </if>
 
     </sql>
@@ -322,6 +338,7 @@
         t.KEYWORDS,
         t.MEMO,
         t.SUMMARYINFO,
+         t.approvestatus,
         n.TYPENAME,
         n.id as tectype,
         ur.USERREALNAME as inputusername,
@@ -350,6 +367,12 @@
     <!--判断技术文档编号是否重复-->
     <select id="checkTecCode" parameterType="Technical" resultType="int">
          select count(1) from m_bs_tech t where REPLACE(REPLACE(REPLACE(t.`CODE`,'/',''),'-',''),' ','') = REPLACE(REPLACE(REPLACE(#{code},'/',''),'-',''),' ','')
+        and t.id <![CDATA[  != ]]> #{id}
+    </select>
+
+    <!--判断技术文档名称是否重复-->
+    <select id="checkTecName" parameterType="Technical" resultType="int">
+   select count(1) from m_bs_tech t where t.CHINESENAME =#{chinesename}
         and t.id <![CDATA[  != ]]> #{id}
     </select>
 

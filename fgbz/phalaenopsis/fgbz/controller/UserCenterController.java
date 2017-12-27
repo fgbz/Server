@@ -207,7 +207,7 @@ public class UserCenterController {
      */
     @RequestMapping(value = "/SaveFavoriteTecsLink", method = RequestMethod.POST)
     @ResponseBody
-    public int SaveFavoriteTecsLink(Technical technical){
+    public int SaveFavoriteTecsLink(@RequestBody Technical technical){
         return userCenterService.SaveFavoriteTecsLink(technical);
     }
     /**

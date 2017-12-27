@@ -1,5 +1,6 @@
 package phalaenopsis.fgbz.service;
 
+import com.alibaba.fastjson.JSON;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -177,6 +178,12 @@ public class TechnicalService {
                     conditions.put("IsBatch", condition.getValue());
                 }else if(condition.getKey().equals("TecInputuserid")){
                     conditions.put("TecInputuserid", condition.getValue());
+                }else if(condition.getKey().equals("selectInputUser")){
+                    conditions.put("selectInputUser", condition.getValue());
+                }else if(condition.getKey().equals("OrgList")){
+
+                    FG_Organization org = JSON.parseObject(condition.getValue(),FG_Organization.class);
+                    conditions.put("OrgList", org.getChildsorg());
                 }
 
             }
@@ -263,14 +270,14 @@ public class TechnicalService {
                 technical.setChinesename(excel.getChinesename());
             }
             //验证编号不能为空
-            if(StrUtil.isNullOrEmpty(excel.getCode())){
-                map.put("Result",OpResult.Failed);
-                map.put("Msg","第"+rownum+"行编号为空");
-                return map;
-            }else{
-                technical.setCode(excel.getCode());
-            }
-
+//            if(StrUtil.isNullOrEmpty(excel.getCode())){
+//                map.put("Result",OpResult.Failed);
+//                map.put("Msg","第"+rownum+"行编号为空");
+//                return map;
+//            }else{
+//
+//            }
+            technical.setCode(excel.getCode());
             if(StrUtil.isNullOrEmpty(excel.getTypename())){
                 map.put("Result",OpResult.Failed);
                 map.put("Msg","第"+rownum+"行类别为空");
@@ -320,10 +327,10 @@ public class TechnicalService {
             String guid=uuid.toString();
             technical.setId(guid);
         }
-        int num = technicalDao.checkTecCode(technical);
+        int num = technicalDao.checkTecName(technical);
         if(num>0){
-            int isWorking = 461;
-            OpResult opResult = new OpResult(isWorking);
+            int isRepeat = 461;
+            OpResult opResult = new OpResult(isRepeat);
             return opResult.Code;
         }
 

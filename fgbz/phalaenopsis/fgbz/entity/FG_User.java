@@ -105,6 +105,16 @@ public class FG_User {
      */
     private List<FG_Menu> menus;
 
+    /**
+     * 登录人下用户集合
+     */
+    private List<FG_User> userList;
+
+    /**
+     * 登录人下组织集合
+     */
+    private List<FG_Organization> orgList;
+
 
     public String getId() {
         return id;
@@ -264,5 +274,21 @@ public class FG_User {
 
     public void setMenus(List<FG_Menu> menus) {
         this.menus = menus;
+    }
+
+    public List<FG_User> getUserList() {
+        return userList;
+    }
+
+    public void setUserList(List<FG_User> userList) {
+        this.userList = userList;
+    }
+
+    public List<FG_Organization> getOrgList() {
+        return orgList;
+    }
+
+    public void setOrgList(List<FG_Organization> orgList) {
+        this.orgList = orgList;
     }
 }

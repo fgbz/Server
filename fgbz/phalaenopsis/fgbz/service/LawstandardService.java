@@ -739,13 +739,13 @@ public class LawstandardService {
         if(result.size()>0){
             for (LawstandardType lawstandardType:result ) {
 
-                lawstandardType.setCount(getHomePageLawCount(lawstandardType.getId()));
+//                lawstandardType.setCount(getHomePageLawCount(lawstandardType.getId()));
                 lawstandardType.setChildLists(getChildNode(lawstandardType.getId()));
-                for(int i=0;i<lawstandardType.getChildLists().size();i++){
-                   int chlidLawCount =getHomePageLawCount( lawstandardType.getChildLists().get(i).getId());
-                   lawstandardType.getChildLists().get(i).setCount(chlidLawCount);
-
-                }
+//                for(int i=0;i<lawstandardType.getChildLists().size();i++){
+//                   int chlidLawCount =getHomePageLawCount( lawstandardType.getChildLists().get(i).getId());
+//                   lawstandardType.getChildLists().get(i).setCount(chlidLawCount);
+//
+//                }
 
             }
         }

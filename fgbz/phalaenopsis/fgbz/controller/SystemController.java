@@ -42,6 +42,9 @@ public class SystemController {
         if(user==null){
             map.put("LoginState", false);
         }else{
+            Map<String, Object> mapList =  grtUserListByOrgId(user.getOrgid());
+            user.setUserList((List<FG_User>)mapList.get("UserList"));
+            user.setOrgList((List<FG_Organization>) mapList.get("OrgList"));
             map.put("LoginState", true);
         }
         map.put("LoginResult", user);
