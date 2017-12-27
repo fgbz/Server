@@ -326,7 +326,9 @@
         n.id as tectype,
         ur.USERREALNAME as inputusername,
 				org.ORGNAME as inputorgname,
-				t.INPUTDATE
+				t.INPUTDATE,
+				case when (select count(1) from m_bs_lawstandard_favorite fav where fav.sid = t.id)>0
+			then 1 ELSE 0 END  as iscollect
         FROM
         `m_bs_tech` t
         LEFT JOIN m_bs_tech_type m ON m.SID = t.id
@@ -366,6 +368,18 @@
         `m_bs_techtype` t
         WHERE
         t.PARENTID = ( SELECT m.ID FROM m_bs_techtype m WHERE m.PARENTID IS NULL )
+    </select>
+
+    <!--通过附件id获取技术文档-->
+    <select id="getTecByFileId" parameterType="String" resultType="Technical">
+     SELECT
+	t.`CODE`,
+	t.CHINESENAME
+FROM
+	m_bs_tech t
+LEFT JOIN m_sa_fileinfo files ON t.ID = files.REFID
+WHERE
+        files.ID =#{id}
     </select>
 
 </mapper>

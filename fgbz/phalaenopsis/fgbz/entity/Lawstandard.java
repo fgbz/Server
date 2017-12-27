@@ -162,7 +162,7 @@ public class Lawstandard {
     private boolean iscollect;
 
     /**
-     * 关联的法规
+     * 关联的收藏夹
      */
     private List<Favorite> favs;
 

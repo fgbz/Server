@@ -195,4 +195,16 @@ public class SystemController {
     public int SaveOrUpdateSettingValue(@RequestBody Map<String,String> map){
         return systemServie.SaveOrUpdateSettingValue(map);
     }
+
+
+    /**
+     * 获取组织机构下的人员以及组织信息
+     * @return
+     */
+    @RequestMapping(value = "/grtUserListByOrgId", method = RequestMethod.GET)
+    @ResponseBody
+    public Map<String, Object> grtUserListByOrgId(String orgid){
+        return systemServie.grtUserListByOrgId(orgid);
+    }
+
 }

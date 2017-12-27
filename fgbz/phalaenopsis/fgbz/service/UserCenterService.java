@@ -426,13 +426,14 @@ public class UserCenterService {
     public int SaveFavoriteLawsLink(Lawstandard lawstandard){
 
         Map<String,Object> map  = new HashMap<>();
-        map.put("lawid",lawstandard.getId());
+        map.put("sid",lawstandard.getId());
         if(lawstandard.getFavs()!=null&&lawstandard.getFavs().size()>0){
             for (Favorite f:lawstandard.getFavs() ) {
                 f.setTableid(UUID.randomUUID().toString());
             }
         }
         map.put("fevlists",lawstandard.getFavs());
+        map.put("type",0);
 
         Map<String,Object> map1 =new HashMap<>();
         map1.put("id",lawstandard.getId());
@@ -447,10 +448,40 @@ public class UserCenterService {
     }
 
     /**
-     * 获取收藏夹相关的法规
+     * 保存收藏夹与技术文档的关联
+     * @param technical
      * @return
      */
-   public PagingEntity<Lawstandard> getLawsByLinkID(Page page){
+    @Transactional
+    public int SaveFavoriteTecsLink(Technical technical){
+
+        Map<String,Object> map  = new HashMap<>();
+        map.put("sid",technical.getId());
+        if(technical.getFavs()!=null&&technical.getFavs().size()>0){
+            for (Favorite f:technical.getFavs() ) {
+                f.setTableid(UUID.randomUUID().toString());
+            }
+        }
+        map.put("fevlists",technical.getFavs());
+        map.put("type",1);
+
+        Map<String,Object> map1 =new HashMap<>();
+        map1.put("id",technical.getId());
+        map1.put("type","tec");
+        userCenterDao.DeleteFavoriteLawsLink(map1);
+
+        if(technical.getFavs()!=null&&technical.getFavs().size()>0){
+            userCenterDao.SaveFavoriteLawsLink(map);
+        }
+
+        return OpResult.Success;
+    }
+
+    /**
+     * 获取收藏夹相关的法规和技术文件
+     * @return
+     */
+   public PagingEntity<FavoriteLink> getLawsAndTecByLinkID(Page page){
 
 
        Map<String, Object> conditions = new HashMap<String, Object>();
@@ -467,7 +498,7 @@ public class UserCenterService {
        }
 
        // 1,根据条件一共查询到的数据条数
-       int count = userCenterDao.getLawsByLinkIDCount(conditions);
+       int count = userCenterDao.getLawsAndTecByLinkIDCount(conditions);
 
        if(page.getPageNo()==1){
            conditions.put("startRow", 0 );
@@ -477,9 +508,9 @@ public class UserCenterService {
        conditions.put("endRow", page.getPageSize());
 
        // 2, 查询到当前页数的数据
-       List<Lawstandard> list = userCenterDao.getLawsByLinkID(conditions);
+       List<FavoriteLink> list = userCenterDao.getLawsAndTecByLinkID(conditions);
 
-       PagingEntity<Lawstandard> result = new PagingEntity<Lawstandard>();
+       PagingEntity<FavoriteLink> result = new PagingEntity<FavoriteLink>();
        result.setPageCount(count);
 
        int pageCount = 0 == count ? 1 : (count - 1) / page.getPageSize() + 1; // 由于计算pageCount存在整除的情况，所以计算的时候先减1在除以pageSize
@@ -505,11 +536,11 @@ public class UserCenterService {
      * 取消收藏
      * @return
      */
-   public int DismissFavorite(String favid,String lawid){
+   public int DismissFavorite(String favid,String sid){
 
        Map<String,Object> map =new HashMap<>();
        map.put("favid",favid);
-       map.put("lawid",lawid);
+       map.put("sid",sid);
        userCenterDao.DismissFavorite(map);
        return OpResult.Success;
    }

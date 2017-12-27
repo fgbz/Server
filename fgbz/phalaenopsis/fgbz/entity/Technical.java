@@ -100,6 +100,16 @@ public class Technical {
 
     private List<String> fileids;
 
+    /**
+     * 关联的收藏夹
+     */
+    private List<Favorite> favs;
+
+    /**
+     * 是否收藏
+     */
+    private boolean iscollect;
+
     public int getCount() {
         return count;
     }
@@ -278,5 +288,21 @@ public class Technical {
 
     public void setModifyuserid(String modifyuserid) {
         this.modifyuserid = modifyuserid;
+    }
+
+    public List<Favorite> getFavs() {
+        return favs;
+    }
+
+    public void setFavs(List<Favorite> favs) {
+        this.favs = favs;
+    }
+
+    public boolean isIscollect() {
+        return iscollect;
+    }
+
+    public void setIscollect(boolean iscollect) {
+        this.iscollect = iscollect;
     }
 }

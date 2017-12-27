@@ -426,5 +426,19 @@ FROM
         SELECT count(1) FROM m_bs_lawstandard t where t.APPROVESTATUS =2
     </select>
 
+    <!--获取组织下的人员-->
+    <select id="getUserListByOrgId" parameterType="map" resultType="FG_User">
+        SELECT
+	t.id,
+	t.USERREALNAME
+FROM
+	m_sa_user t
+WHERE
+	t.ORGID IN
+        <foreach collection="TreeValue" item="item" open="(" close=")" separator=",">
+            #{item.id}
+        </foreach>
+
+    </select>
 
 </mapper>

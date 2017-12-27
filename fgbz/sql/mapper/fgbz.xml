@@ -73,22 +73,21 @@
     <select id="getLawstandardList" parameterType="map" resultType="Lawstandard">
         select t.ID,t.`CODE`,t.CHINESENAME,t.APPROVESTATUS,sta.STATUSNAME,t.RELEASEDATE ,t.IMPDATE,n.TYPENAME,t.CLICKCOUNT , t.MEMO,
         t.SUMMARYINFO,t.ENGLISHNAME, t.KEYWORDS,t.IsBatch,t.INPUTDATE,
-        ur.USERREALNAME as inputusername, dep.PUBDEPNAME,
+        t.USERREALNAME as inputusername, dep.PUBDEPNAME,
         case when (select count(1) from m_bs_lawstandard_approve app where app.LawstandardID = t.id)>0 then 1 else 0 end as isapprove
         from
-        ( SELECT t1.* from m_bs_lawstandard t1
+        ( SELECT t1.*,pub.PUBDEPID as pubid,ur.USERREALNAME from m_bs_lawstandard t1
         left join m_bs_lawstandard_pubdep pub on t1.id = pub.SID
+        left join m_sa_user ur on ur.ID = t1.INPUTUSERID
         where 1=1
         <include refid="queryLawstandard"></include>
         order by if(ISNULL(t1.ISTOP),0,t1.ISTOP) desc ,t1.MODIFYDATE desc
         LIMIT #{startRow},#{endRow})
         t
         left join m_sa_lawstandardstatus sta on t.`STATUS` = sta.ID
-        left join m_bs_lawstandard_pubdep pub1 on t.id = pub1.SID
-        left join m_sa_publishdep dep on dep.ID = pub1.PUBDEPID
+        left join m_sa_publishdep dep on dep.ID = t.pubid
         left join m_bs_lawstandard_type m on m.SID = t.id
         left join m_bs_lawstandardtype n on n.id = m.LAWSTYPEID
-        left join m_sa_user ur on ur.ID = t.INPUTUSERID
 
     </select>
 
@@ -96,6 +95,7 @@
     <select id="getLawstandardListCount" resultType="int">
         select count(1) from m_bs_lawstandard t1
         left join m_bs_lawstandard_pubdep pub on t1.id = pub.SID
+        left join m_sa_user ur on ur.ID = t1.INPUTUSERID
         where 1=1
         <include refid="queryLawstandard"></include>
     </select>
@@ -292,7 +292,14 @@ WHERE 1=1  <include refid="queryLawstandard"></include> and
         </if>
         <!--草稿和审核状态只能自己看见-->
         <if test="LawInputuserid != null and LawInputuserid !='' ">
-            and (t1.INPUTUSERID = #{LawInputuserid}  or t1.APPROVESTATUS =3)
+            and (t1.INPUTUSERID = #{LawInputuserid}  or (t1.APPROVESTATUS =3 and ur.ORGID in
+            <foreach collection="OrgList" item="item" open="(" close=")" separator=",">
+                #{item.id}
+            </foreach>
+            ))
+        </if>
+        <if test="selectInputUser != null and selectInputUser !='' ">
+            and t1.INPUTUSERID = #{selectInputUser} and t1.APPROVESTATUS =3
         </if>
 
     </sql>
@@ -538,7 +545,7 @@ WHERE 1=1  <include refid="queryLawstandard"></include> and
 				ur.USERREALNAME as inputusername,
 				org.ORGNAME as inputorgname,
 				t.INPUTDATE,urmo.USERREALNAME as modifyusername,t.MODIFYDATE,
-			case when (select count(1) from m_bs_lawstandard_favorite fav where fav.LAWSTANDRADID = t.id)>0
+			case when (select count(1) from m_bs_lawstandard_favorite fav where fav.sid = t.id)>0
 			then 1 ELSE 0 END  as iscollect
         FROM
         `m_bs_lawstandard` t
@@ -793,6 +800,18 @@ WHERE
             #{item.id}
         </foreach>
         )
+    </select>
+
+    <!--通过附件id获取法规-->
+    <select id="getLawByFileId" parameterType="String" resultType="Lawstandard">
+       SELECT
+	t.`CODE`,
+	t.CHINESENAME
+FROM
+	m_bs_lawstandard t
+LEFT JOIN m_sa_fileinfo files ON t.ID = files.REFID
+WHERE
+	files.ID =#{id}
     </select>
 
 </mapper>

@@ -167,14 +167,14 @@ public interface UserCenterDao {
      * 获取收藏夹相关的法规
      * @return
      */
-    List<Lawstandard> getLawsByLinkID(Map<String,Object> map);
+    List<FavoriteLink> getLawsAndTecByLinkID(Map<String,Object> map);
 
     /**
      * 获取收藏相关法规总数
      * @param map
      * @return
      */
-    int getLawsByLinkIDCount(Map<String,Object> map);
+    int getLawsAndTecByLinkIDCount(Map<String,Object> map);
 
     /**
      * 获取法规对应的收藏夹Favorite

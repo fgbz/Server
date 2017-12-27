@@ -11,6 +11,7 @@ import phalaenopsis.common.entity.PagingEntity;
 import phalaenopsis.common.method.ExportExcel;
 import phalaenopsis.common.method.Tools.StrUtil;
 import phalaenopsis.fgbz.dao.TechnicalDao;
+import phalaenopsis.fgbz.dao.UserCenterDao;
 import phalaenopsis.fgbz.entity.*;
 
 import javax.servlet.http.HttpServletResponse;
@@ -24,6 +25,8 @@ public class TechnicalService {
     @Autowired
     private TechnicalDao technicalDao;
 
+    @Autowired
+    private UserCenterDao userCenterDao;
 
     private  List<TechnicalType> ids = new ArrayList<>();
 
@@ -345,6 +348,13 @@ public class TechnicalService {
     public int  DeleteTechnicalById( String id){
          technicalDao.DeleteTechnicalById(id);
          technicalDao.DeleteTecAndType(id);
+
+        //删除法规收藏夹关联
+        Map<String,Object> map1 =new HashMap<>();
+        map1.put("id",id);
+        map1.put("type","tec");
+
+        userCenterDao.DeleteFavoriteLawsLink(map1);
         return OpResult.Success;
     }
 

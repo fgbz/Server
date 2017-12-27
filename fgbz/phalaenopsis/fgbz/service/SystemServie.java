@@ -279,7 +279,7 @@ public class SystemServie {
     }
 
     /**
-     * 获取技术标准列表
+     * 获取人员
      * @param page
      * @return
      */
@@ -328,6 +328,36 @@ public class SystemServie {
         result.setRecordCount(count);
         result.setCurrentList(list);
 
+        return result;
+    }
+
+    /**
+     * 获取组织机构下的人员以及组织信息
+     * @return
+     */
+    public Map<String, Object> grtUserListByOrgId(String orgid){
+
+        Map<String, Object> conditions = new HashMap<String, Object>();
+        ids =new ArrayList<>();
+        FG_Organization orgSelf = new FG_Organization();
+        orgSelf.setId(orgid);
+        ids.add(orgSelf);
+        getOrgsTree(orgid);
+        conditions.put("TreeValue",ids );
+
+        List<FG_User> list= systemDao.getUserListByOrgId(conditions);
+//        String str = "";
+//        for(int i=0;i<ids.size();i++){
+//            if(i<ids.size()-1){
+//                str += "'"+ ids.get(i).getId()+"'"+",";
+//            }else{
+//                str += "'"+ids.get(i).getId()+"'";
+//            }
+//        }
+        //结果集
+        Map<String, Object> result = new HashMap<String, Object>();
+        result.put("OrgList",ids);
+        result.put("UserList",list);
         return result;
     }
 

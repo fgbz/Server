@@ -381,17 +381,20 @@ ORDER BY t.ApproveDate desc
             FAVORITEID= #{id}
         </if>
         <if test="type == 'law'.toString()">
-            LAWSTANDRADID = #{id}
+            sid = #{id}
+        </if>
+        <if test="type == 'tec'.toString()">
+            sid = #{id}
         </if>
 
     </delete>
 
     <!--建立法规与收藏夹关联-->
     <insert id="SaveFavoriteLawsLink" parameterType="map">
-          INSERT into m_bs_lawstandard_favorite (id,FAVORITEID,LAWSTANDRADID)
+          INSERT into m_bs_lawstandard_favorite (id,FAVORITEID,SID,type)
           VALUES
         <foreach collection="fevlists" item="item" open="" close="" separator=",">
-            (#{item.tableid},#{item.id},#{lawid})
+            (#{item.tableid},#{item.id},#{sid},#{type})
         </foreach>
     </insert>
 
@@ -496,31 +499,52 @@ ORDER BY t.ApproveDate desc
     </update>
 
     <!--获取收藏夹关联的法规-->
-    <select id="getLawsByLinkID" parameterType="map" resultType="Lawstandard">
-SELECT
-	t.ID,
-	t.CHINESENAME,
-	fav.INPUTDATE,
-    fav.name as favname,
-    fav.id as favid
-FROM
-	m_bs_lawstandard t
-LEFT JOIN m_bs_lawstandard_favorite link ON t.ID = link.LAWSTANDRADID
-LEFT JOIN m_bs_favorite fav ON link.FAVORITEID = fav.ID
+    <select id="getLawsAndTecByLinkID" parameterType="map" resultType="FavoriteLink">
+        SELECT
+        fav.INPUTDATE AS favoritetime,
+        fav. NAME AS favname,
+        fav.id AS favid,
+        link.type,
+        CASE
+        WHEN link.TYPE = 0 THEN
+        law.id
+        ELSE
+        tec.id
+        END AS id,
+        CASE
+        WHEN link.TYPE = 0 THEN
+        law.CHINESENAME
+        ELSE
+        tec.CHINESENAME
+        END AS title,
+        law.clickcount
+        FROM
+        m_bs_favorite fav
+        INNER JOIN m_bs_lawstandard_favorite link ON link.FAVORITEID = fav.ID
+        LEFT JOIN m_bs_lawstandard law ON link.SID = law.id
+        AND link.TYPE = 0
+        LEFT JOIN m_bs_tech tec ON link.SID = tec.id
+        AND link.TYPE = 1
 WHERE
 	fav.id IN
         <foreach collection="TreeValue" item="item" open="(" close=")" separator=",">
             #{item.id}
         </foreach>
 
-        order by fav.MODIFYDATE DESC
+        order by fav.INPUTDATE DESC
         LIMIT #{startRow},#{endRow}
     </select>
 
-    <select id="getLawsByLinkIDCount" parameterType="map" resultType="int">
-        select count(1) from m_bs_lawstandard t
-        LEFT JOIN m_bs_lawstandard_favorite link ON t.ID = link.LAWSTANDRADID
-        LEFT JOIN m_bs_favorite fav ON link.FAVORITEID = fav.ID
+    <select id="getLawsAndTecByLinkIDCount" parameterType="map" resultType="int">
+        SELECT
+        count(1)
+        FROM
+        m_bs_favorite fav
+        INNER JOIN m_bs_lawstandard_favorite link ON link.FAVORITEID = fav.ID
+        LEFT JOIN m_bs_lawstandard law ON link.SID = law.id
+        AND link.TYPE = 0
+        LEFT JOIN m_bs_tech tec ON link.SID = tec.id
+        AND link.TYPE = 1
         WHERE
         fav.id IN
         <foreach collection="TreeValue" item="item" open="(" close=")" separator=",">
@@ -536,12 +560,12 @@ FROM
 	m_bs_favorite t
 LEFT JOIN m_bs_lawstandard_favorite link ON t.ID = link.FAVORITEID
 
-where link.LAWSTANDRADID=#{id}
+where link.sid=#{id}
     </select>
 
     <!--取消收藏-->
     <delete id="DismissFavorite" parameterType="map" >
-        delete from m_bs_lawstandard_favorite where FAVORITEID =#{favid} and LAWSTANDRADID =#{lawid}
+        delete from m_bs_lawstandard_favorite where FAVORITEID =#{favid} and SID =#{sid}
     </delete>
 
 

@@ -1,5 +1,6 @@
 package phalaenopsis.fgbz.service;
 
+import com.alibaba.fastjson.JSON;
 import org.apache.poi.hssf.usermodel.*;
 import org.apache.poi.ss.util.*;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,6 +12,7 @@ import phalaenopsis.common.method.ExportExcel;
 import phalaenopsis.common.method.Tools.StrUtil;
 import phalaenopsis.fgbz.common.HssfHelper;
 import phalaenopsis.fgbz.dao.LawstandardDao;
+import phalaenopsis.fgbz.dao.UserCenterDao;
 import phalaenopsis.fgbz.entity.*;
 
 import javax.servlet.http.HttpServletResponse;
@@ -32,6 +34,9 @@ public class LawstandardService {
 
     @Autowired
     private LawstandardDao lawstandardDao;
+
+    @Autowired
+    private UserCenterDao userCenterDao;
 
     private  List<LawstandardType> ids = new ArrayList<>();
 
@@ -199,6 +204,12 @@ public class LawstandardService {
                     conditions.put("Userid", condition.getValue());
                 }else if(condition.getKey().equals("LawInputuserid")){
                     conditions.put("LawInputuserid", condition.getValue());
+                }else if(condition.getKey().equals("selectInputUser")){
+                    conditions.put("selectInputUser", condition.getValue());
+                }else if(condition.getKey().equals("OrgList")){
+
+                    FG_Organization org = JSON.parseObject(condition.getValue(),FG_Organization.class);
+                    conditions.put("OrgList", org.getChildsorg());
                 }
 
             }
@@ -466,6 +477,11 @@ public class LawstandardService {
         lawstandardDao.deleteReplaceAll(id);
         lawstandardDao.DeleteLawAndType(id);
 
+        //删除法规收藏夹关联
+        Map<String,Object> map1 =new HashMap<>();
+        map1.put("id",id);
+        map1.put("type","law");
+        userCenterDao.DeleteFavoriteLawsLink(map1);
 
         return OpResult.Success;
     }

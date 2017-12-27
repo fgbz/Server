@@ -118,4 +118,11 @@ public interface TechnicalDao {
      * 获取首页类别导航
      */
     List<TechnicalType> getHomePageTecsType();
+
+    /**
+     * 通过附件获取法规
+     * @param id
+     * @return
+     */
+    Technical getTecByFileId(String id);
 }

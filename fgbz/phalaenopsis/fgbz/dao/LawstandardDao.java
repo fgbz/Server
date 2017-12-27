@@ -205,4 +205,11 @@ public interface LawstandardDao {
      * @return
      */
     int getHomePageLawCount(Map<String, Object>  map);
+
+    /**
+     * 通过附件id获取法规
+     * @param id
+     * @return
+     */
+    Lawstandard  getLawByFileId(String id);
 }

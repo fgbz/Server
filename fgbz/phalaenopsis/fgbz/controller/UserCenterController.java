@@ -201,18 +201,28 @@ public class UserCenterController {
     }
 
     /**
-     *获取收藏夹对应的法规
+     * 保存收藏夹与技术文档的关联
+     * @param technical
+     * @return
+     */
+    @RequestMapping(value = "/SaveFavoriteTecsLink", method = RequestMethod.POST)
+    @ResponseBody
+    public int SaveFavoriteTecsLink(Technical technical){
+        return userCenterService.SaveFavoriteTecsLink(technical);
+    }
+    /**
+     *获取收藏夹对应的法规和技术文件
      * @param page
      * @return
      */
-    @RequestMapping(value = "/getLawsByLinkID", method = RequestMethod.POST)
+    @RequestMapping(value = "/getLawsAndTecByLinkID", method = RequestMethod.POST)
     @ResponseBody
-    public PagingEntity<Lawstandard> getLawsByLinkID(@RequestBody Page page){
-        return userCenterService.getLawsByLinkID(page);
+    public PagingEntity<FavoriteLink> getLawsAndTecByLinkID(@RequestBody Page page){
+        return userCenterService.getLawsAndTecByLinkID(page);
     }
 
     /**
-     * 获取法规对应的收藏夹Favorite
+     * 获取法规或技术文档对应的收藏夹Favorite
      * @param id
      * @return
      */
@@ -228,8 +238,8 @@ public class UserCenterController {
      */
     @RequestMapping(value = "/DismissFavorite", method = RequestMethod.GET)
     @ResponseBody
-    public int DismissFavorite(String favid,String lawid){
-        return userCenterService.DismissFavorite(favid,lawid);
+    public int DismissFavorite(String favid,String sid){
+        return userCenterService.DismissFavorite(favid,sid);
     }
 
 

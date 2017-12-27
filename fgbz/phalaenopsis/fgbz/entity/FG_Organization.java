@@ -1,6 +1,7 @@
 package phalaenopsis.fgbz.entity;
 
 import java.util.Date;
+import java.util.List;
 
 public class FG_Organization {
 
@@ -64,6 +65,8 @@ public class FG_Organization {
      *  处理类型  新增同级 ‘addEqual’ 新增下级 'addDown' '上移' 'moveUp' '下移' 'moveDown'
      */
     private String handletype;
+
+    private List<FG_Organization> childsorg;
     /**
      * 点击按钮的对象，处理层级结构
      */
@@ -195,5 +198,13 @@ public class FG_Organization {
 
     public void setHandleitem(FG_Organization handleitem) {
         this.handleitem = handleitem;
+    }
+
+    public List<FG_Organization> getChildsorg() {
+        return childsorg;
+    }
+
+    public void setChildsorg(List<FG_Organization> childsorg) {
+        this.childsorg = childsorg;
     }
 }

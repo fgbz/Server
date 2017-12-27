@@ -53,11 +53,21 @@ import phalaenopsis.common.util.FileHelper;
 import phalaenopsis.fgbz.common.FileConverter;
 import phalaenopsis.fgbz.common.ItextpdfUtil;
 import phalaenopsis.fgbz.common.office2PDF;
+import phalaenopsis.fgbz.dao.LawstandardDao;
+import phalaenopsis.fgbz.dao.TechnicalDao;
+import phalaenopsis.fgbz.entity.Lawstandard;
+import phalaenopsis.fgbz.entity.Technical;
 
 @Service("attachmentService")
 public class AttachmentService extends Basis {
 
 	public IAttachmentDao dao;
+
+	@Autowired
+	private LawstandardDao lawstandardDao;
+
+	@Autowired
+	private TechnicalDao technicalDao;
 
 
 	@Resource(name = "attachmentDao")
@@ -150,12 +160,37 @@ public class AttachmentService extends Basis {
 		return save(fileName, null, spotid, module, x, y, angle, request, true);
 	}
 
-	public void download(String fileID, HttpServletResponse response) {
+	public void download(String fileID, HttpServletResponse response,String module) throws UnsupportedEncodingException {
 		Attachment attachment = dao.getAttachmentById(fileID);
 		if (null == attachment)
 			return;
+
+		String responseFileName = "";
+		//法规和技术文件上传，修改下载名
+		if(module!=null){
+			if(module.equals("Law")){
+				Lawstandard lawstandard= lawstandardDao.getLawByFileId(fileID);
+
+				if(lawstandard!=null){
+					responseFileName=URLEncoder.encode(lawstandard.getChinesename(), "utf-8")+"+"+URLEncoder.encode(lawstandard.getCode(), "utf-8");
+				}
+
+			}else if(module.equals("Tec")){
+
+				Technical technical = technicalDao.getTecByFileId(fileID);
+
+				if(technical!=null){
+					if(!StrUtil.isNullOrEmpty(technical.getCode())){
+						responseFileName =URLEncoder.encode(technical.getChinesename(), "utf-8")+"+"+URLEncoder.encode(technical.getCode(), "utf-8");
+					}else{
+						responseFileName =technical.getChinesename();
+					}
+				}
+			}
+		}
+
 		String path = Attachment.GetFileStorageFolder(attachment.getActualFile()) + attachment.getActualFile();
-		DownloadAttachment(path, attachment.getFileName(), response);
+		DownloadAttachment(path, attachment.getFileName(), response,responseFileName);
 	}
 
 	public void getPreView(String fileID,HttpServletResponse response) throws IOException {
@@ -167,11 +202,11 @@ public class AttachmentService extends Basis {
 		preViewPath = preViewPath+".pdf";
 		String path = Attachment.GetFileStorageFolder(preViewPath) + preViewPath;
 
-		DownloadAttachment(path, attachment.getFileName(), response);
+		DownloadAttachment(path, attachment.getFileName(), response,null);
 	}
 
 
-	private void DownloadAttachment(String path, String fileName, HttpServletResponse response) {
+	private void DownloadAttachment(String path, String fileName, HttpServletResponse response,String responseFileName) {
 		Assert.hasLength(path);
 
 		File file = new File(path);
@@ -181,7 +216,12 @@ public class AttachmentService extends Basis {
 		}
 
 		try {
-			response.setHeader("content-disposition", "attachment;filename=" + URLEncoder.encode(fileName, "utf-8"));
+			if(!StrUtil.isNullOrEmpty(responseFileName)){
+				response.setHeader("content-disposition", "attachment;filename=" + responseFileName);
+			}else{
+				response.setHeader("content-disposition", "attachment;filename=" + URLEncoder.encode(fileName, "utf-8"));
+			}
+
 			OutputStream out = response.getOutputStream();
 			out.write(FileUtils.readFileToByteArray(file));
 			out.close();
@@ -205,7 +245,7 @@ public class AttachmentService extends Basis {
 
 		String path = Attachment.GetFileStorageFolder(attachment.getActualFile()) + attachment.getThumbFile();
 		String fileName = attachment.getFileName().split("\\.")[0] + ".thumb.jpg";
-		DownloadAttachment(path, fileName, response);
+		DownloadAttachment(path, fileName, response,null);
 	}
 
 	@Transactional(propagation = Propagation.REQUIRED)

@@ -3,6 +3,7 @@ package phalaenopsis.common.controller;
 import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.io.UnsupportedEncodingException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -198,9 +199,10 @@ public class AttachmentController {
 	 */
 	@RequestMapping(value = "/Download", method = RequestMethod.GET)
 	@ResponseBody
-	public void download(HttpServletRequest request, HttpServletResponse response) {
+	public void download(HttpServletRequest request, HttpServletResponse response) throws UnsupportedEncodingException {
 		String fileID = request.getParameter("file");
-		service.download(fileID, response);
+		String module = request.getParameter("module");
+		service.download(fileID, response,module);
 	}
 	/**
 	 * 预览

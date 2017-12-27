@@ -101,6 +101,13 @@ public interface SystemDao {
     List<FG_User> getUsersList(Map<String, Object> map);
 
     /**
+     * 通过组织机构获取其下人员
+     * @param map
+     * @return
+     */
+    List<FG_User> getUserListByOrgId(Map<String, Object> map);
+
+    /**
      * 获取用户个数
      * @param map
      * @return
