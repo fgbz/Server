@@ -27,7 +27,6 @@ public class SystemServie {
 
     private  List<FG_Organization> ids = new ArrayList<FG_Organization>();
 
-    @ILog(description="登陆")
     public  Map<String, Object> login(String accountJm, String passwordJm){
 
         Map<String, Object> map = new HashMap<String, Object>();

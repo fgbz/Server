@@ -1,0 +1,50 @@
+https://github.com/graywolf2013/fgbz.Server
+
+
+
+	<repositories>
+		<repository>
+			<id>phalaenopsis_Repo</id>
+			<name>phalaenopsis_Repo</name>23:13 2017/12/11
+			<url>http://maven.aliyun.com/nexus/content/groups/public/</url>
+		</repository>
+	</repositories>
+
+
+             // $.ajax({
+                //     type: "Get",
+                //     url: "http://api.pomesoft.com/sems-api/api//lawStandard.action",
+                //     data: { 'm': 'getPage', 'coopCode': 'sastind', 'frontUserId': 1, 'accessToken': 1, 'resourceType': 'resourceType' },
+                //     dataType: "jsonp",
+                //     contentType: "application/json;charset=utf-8",
+                //     success: function (result) {
+                //         if (result.ret == '0') {
+                //             $scope.items = result.data.list;
+                //             $scope.pager.total = result.data.total;
+                //             $scope.$apply();
+                //         }
+
+                //     },
+                //     error: function (err) {
+                //         window.alert(err.status);
+
+                //     }
+
+
+
+0不需要审核  1需要审核
+                // })
+
+
+
+    (instr(t.CODE,#{item})> 0 or
+                instr(t.CHINESENAME,#{item})> 0 or instr(t.ENGLISHNAME,#{item})> 0
+                or instr(t.KEYWORDS,#{item})> 0 or instr(t.MEMO,#{item})> 0 or instr(t.SUMMARYINFO,#{item})> 0
+                or instr((select group_concat(file.Content) from m_sa_fileinfo file where file.REFID=t.id),#{item})>0
+                )
+
+insert into m_sa_setting(id,`KEY`,VALUES) VALUES (UUID(),'PageSize',20)
+
+
+
+

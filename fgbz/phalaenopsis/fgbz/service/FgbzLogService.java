@@ -14,6 +14,7 @@ import phalaenopsis.fgbz.entity.*;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import static phalaenopsis.common.method.Basis.getCurrentFGUser;
 
@@ -46,7 +47,10 @@ public class FgbzLogService {
     @Pointcut("execution(* phalaenopsis.fgbz.service.*.*(..))")
     public void  SaveLog(){
     }
-
+    //保存登陆日志
+    @Pointcut("execution(* phalaenopsis.fgbz.service.SystemServie.login(..))")
+    public void  SaveLoginLog(){
+    }
     @Around( "changeLawTypeCount()")
     public int  saveLawTypeCount(ProceedingJoinPoint point) throws Throwable {
 
@@ -125,6 +129,25 @@ public class FgbzLogService {
         }
     }
 
+    @AfterReturning(pointcut = "SaveLoginLog()", returning = "returnValue")
+    public void SaveLoginLog(JoinPoint point,Object returnValue){
+        Map<String, Object> map = (Map<String, Object>) returnValue;
+
+        if(map!=null){
+            if((boolean)map.get("LoginState")){
+                FG_User user = (FG_User) map.get("LoginResult");
+                //日志对象
+                Fg_Log log = new Fg_Log();
+                log.setOperationname("登录");
+                log.setUserid(user.getId());
+                log.setUsername(user.getUserrealname());
+                log.setOrganizationid(user.getOrgid());
+                log.setOrganizationname(user.getOrgname());
+
+                systemDao.SaveFgLog(log);
+            }
+        }
+    }
 
     /**
      * 获取类别树
