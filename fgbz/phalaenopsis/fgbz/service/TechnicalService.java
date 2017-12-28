@@ -11,6 +11,7 @@ import phalaenopsis.common.entity.Page;
 import phalaenopsis.common.entity.PagingEntity;
 import phalaenopsis.common.method.ExportExcel;
 import phalaenopsis.common.method.Tools.StrUtil;
+import phalaenopsis.fgbz.dao.ILog;
 import phalaenopsis.fgbz.dao.TechnicalDao;
 import phalaenopsis.fgbz.dao.UserCenterDao;
 import phalaenopsis.fgbz.entity.*;
@@ -47,6 +48,7 @@ public class TechnicalService {
      * @return
      */
     @Transactional
+    @ILog(description="保存技术文档")
     public int AddOrUpdateTechnicalType(TechnicalType technicalType) {
 
         //新增
@@ -113,6 +115,7 @@ public class TechnicalService {
      * @return
      */
     @Transactional
+    @ILog(description="删除技术文档类别")
     public int  DeleteTechnicalType(TechnicalType technicalType){
         handTreeLevel(technicalType);
         technicalDao.DeleteTechnicalType(technicalType);
@@ -216,8 +219,9 @@ public class TechnicalService {
         return result;
     }
     /**
-     * 导出法规列表
+     * 导出技术文档
      */
+    @ILog(description="导出技术文档")
     public void exportExcel( List<Condition> list,HttpServletResponse response){
 
         Page page = new Page();
@@ -250,6 +254,7 @@ public class TechnicalService {
      * @return
      */
     @Transactional
+    @ILog(description="批量导入技术文档")
     public Map<String,Object> importTechnical( List<TechnicalExcel> list,FG_User user) throws ParseException {
 
         Map<String,Object> map = new HashMap<>();
@@ -320,6 +325,7 @@ public class TechnicalService {
      * @return
      */
     @Transactional
+    @ILog(description="保存技术文档")
     public int SaveOrUpdateTechnical(Technical technical){
 
         if(technical.getId()==null||technical.getId().equals("")){
@@ -352,6 +358,7 @@ public class TechnicalService {
      * @return
      */
     @Transactional
+    @ILog(description="删除技术文档")
     public int  DeleteTechnicalById( String id){
          technicalDao.DeleteTechnicalById(id);
          technicalDao.DeleteTecAndType(id);

@@ -11,6 +11,7 @@ import phalaenopsis.common.entity.*;
 import phalaenopsis.common.method.ExportExcel;
 import phalaenopsis.common.method.Tools.StrUtil;
 import phalaenopsis.fgbz.common.HssfHelper;
+import phalaenopsis.fgbz.dao.ILog;
 import phalaenopsis.fgbz.dao.LawstandardDao;
 import phalaenopsis.fgbz.dao.UserCenterDao;
 import phalaenopsis.fgbz.entity.*;
@@ -38,7 +39,8 @@ public class LawstandardService {
     @Autowired
     private UserCenterDao userCenterDao;
 
-    private  List<LawstandardType> ids = new ArrayList<>();
+    public List<LawstandardType> ids = new ArrayList<>();
+
 
     public int testCount(){
         int i = lawstandardDao.testCount();
@@ -59,6 +61,7 @@ public class LawstandardService {
      * @return
      */
     @Transactional
+    @ILog(description="保存法规标准类别")
     public int  AddOrUpdateLawstandardType(LawstandardType lawstandardType){
         //新增
         if(lawstandardType.getId().equals("")){
@@ -122,6 +125,7 @@ public class LawstandardService {
      * @return
      */
     @Transactional
+    @ILog(description="删除法规标准类别")
     public int  DeleteLawstandardType(LawstandardType lawstandardType){
 
         handTreeLevel(lawstandardType);
@@ -138,6 +142,19 @@ public class LawstandardService {
         return lawstandardDao.getChildNode(id);
     }
 
+    /**
+     * 获取父节点
+     * @return
+     */
+    public LawstandardType getParentLawstandardTypeById(String id){
+        return lawstandardDao.getParentLawstandardTypeById(id);
+    }
+
+    /**
+     * 向下递归树
+     * @param id
+     * @return
+     */
     public  List<LawstandardType> getLawsTree(String id){
 
         List<LawstandardType> list = getChildNode(id);
@@ -149,6 +166,20 @@ public class LawstandardService {
             }
         }
         return list;
+    }
+
+
+    /**
+     * 改变类别数量
+     * @param list
+     * @return
+     */
+    public int changeLawstandardCount(List<LawstandardType> list,String type){
+
+        Map<String, Object>  map =new HashMap<>();
+        map.put("type",type);
+        map.put("TreeValue",list);
+        return lawstandardDao.changeLawstandardCount(map);
     }
 
 
@@ -328,6 +359,7 @@ public class LawstandardService {
     /**
      * 导出法规列表
      */
+    @ILog(description="导出法规列表")
     public void exportExcel( List<Condition> list,HttpServletResponse response){
         Page page = new Page();
         page.setConditions(list);
@@ -362,6 +394,7 @@ public class LawstandardService {
      * @return
      */
     @Transactional
+    @ILog(description="批量导入法规")
     public  Map<String,Object> importLawstandard( List<LawstandardExcel> list,FG_User user) throws ParseException {
 
         Map<String,Object> map = new HashMap<>();
@@ -470,6 +503,7 @@ public class LawstandardService {
      * @return
      */
     @Transactional
+    @ILog(description="删除法规标准")
     public int  DeleteLawstandardById(String id){
 
         lawstandardDao.deleteLawstandardById(id);
@@ -491,6 +525,7 @@ public class LawstandardService {
      * @return
      */
     @Transactional
+    @ILog(description="批量删除法规")
     public int DeleteAllSelectLawstandard(List<String> list){
         for (String str:list
              ) {
@@ -505,6 +540,7 @@ public class LawstandardService {
      * @return
      */
     @Transactional
+    @ILog(description="保存法规标准")
     public int SaveOrUpdateLawstandard(Lawstandard lawstandard){
 
         if(lawstandard.getId()==null||lawstandard.getId().equals("")){
@@ -609,6 +645,7 @@ public class LawstandardService {
      * 置顶
      * @param lawstandard
      */
+    @ILog(description="置顶法规标准")
     public  void LawstandardIsTop(Lawstandard lawstandard){
         lawstandardDao.LawstandardIsTop(lawstandard);
     }
@@ -634,6 +671,7 @@ public class LawstandardService {
     /**
      * 首页导出
      */
+    @ILog(description="首页统计导出")
     public void downHomeChart(HttpServletResponse response) throws IOException {
 
         List<ChartInfo> listdPeople = lawstandardDao.getUploadPeople();
@@ -739,14 +777,7 @@ public class LawstandardService {
         if(result.size()>0){
             for (LawstandardType lawstandardType:result ) {
 
-//                lawstandardType.setCount(getHomePageLawCount(lawstandardType.getId()));
                 lawstandardType.setChildLists(getChildNode(lawstandardType.getId()));
-//                for(int i=0;i<lawstandardType.getChildLists().size();i++){
-//                   int chlidLawCount =getHomePageLawCount( lawstandardType.getChildLists().get(i).getId());
-//                   lawstandardType.getChildLists().get(i).setCount(chlidLawCount);
-//
-//                }
-
             }
         }
         return  result;

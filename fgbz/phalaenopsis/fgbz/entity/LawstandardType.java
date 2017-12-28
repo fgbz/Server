@@ -99,6 +99,11 @@ public class LawstandardType {
 
     private List<LawstandardType> childLists;
 
+    /**
+     * 法规数量
+     */
+    private int lawcount;
+
 
     public String getId() {
         return id;
@@ -263,5 +268,13 @@ public class LawstandardType {
 
     public void setHandleitem(LawstandardType handleitem) {
         this.handleitem = handleitem;
+    }
+
+    public int getLawcount() {
+        return lawcount;
+    }
+
+    public void setLawcount(int lawcount) {
+        this.lawcount = lawcount;
     }
 }

@@ -8,6 +8,7 @@ import phalaenopsis.common.entity.OpResult;
 import phalaenopsis.common.entity.Page;
 import phalaenopsis.common.entity.PagingEntity;
 import phalaenopsis.common.method.Tools.StrUtil;
+import phalaenopsis.fgbz.dao.ILog;
 import phalaenopsis.fgbz.dao.LawstandardDao;
 import phalaenopsis.fgbz.dao.UserCenterDao;
 import phalaenopsis.fgbz.entity.*;
@@ -33,6 +34,7 @@ public class UserCenterService {
      * @return
      */
     @Transactional
+    @ILog(description="保存通知")
     public int SaveOrUpdateAdvice(Adviceinfo adviceinfo){
         if(adviceinfo.getId()==null||adviceinfo.getId().equals("")){
             adviceinfo.setId(UUID.randomUUID().toString());
@@ -50,6 +52,7 @@ public class UserCenterService {
      * @param id
      * @return
      */
+    @ILog(description="删除通知")
     public int DeleteAdviceByID(String id){
         userCenterDao.DeleteAdviceByID(id);
         return OpResult.Success;
@@ -151,6 +154,7 @@ public class UserCenterService {
      * @param suggestion
      * @return
      */
+    @ILog(description="保存留言")
     public int SaveOrUpdateSuggestion(Suggestion suggestion){
         if(suggestion.getId()==null||suggestion.getId().equals("")){
             suggestion.setId(UUID.randomUUID().toString());
@@ -165,6 +169,7 @@ public class UserCenterService {
      * @return
      */
     @Transactional
+    @ILog(description="删除留言")
     public int DeleteSuggestionByID(String id){
         userCenterDao.DeleteSuggestionByID(id);
         userCenterDao.DeleteSuggestionFeedBack(id);
@@ -175,6 +180,7 @@ public class UserCenterService {
      * 保存反馈
      * @return
      */
+    @ILog(description="保存反馈")
     public int SaveSuggestionFeedBack(SuggestionFeedBack suggestionFeedBack){
 
         if(suggestionFeedBack.getId()==null&&suggestionFeedBack.getId().equals("")){
@@ -269,6 +275,7 @@ public class UserCenterService {
      * @return
      */
     @Transactional
+    @ILog(description="保存审核信息")
     public int SaveApprove(LawstandardApprove lawstandardApprove){
         if(lawstandardApprove.getId()==null||lawstandardApprove.getId().equals("")){
             lawstandardApprove.setId(UUID.randomUUID().toString());
@@ -346,6 +353,7 @@ public class UserCenterService {
      * @return
      */
     @Transactional
+    @ILog(description="删除搜藏夹")
     public int DeleteFavoriteByID(Favorite favorite){
 
         userCenterDao.DeleteFavoriteByID(favorite.getId());
@@ -364,6 +372,7 @@ public class UserCenterService {
      * @return
      */
     @Transactional
+    @ILog(description="保存收藏夹")
     public int SaveOrUpdateFavorite(Favorite favorite){
         if(favorite.getId()==null||favorite.getId().equals("")){
             favorite.setId(UUID.randomUUID().toString());
@@ -423,6 +432,7 @@ public class UserCenterService {
      * @return
      */
     @Transactional
+    @ILog(description="收藏法规标准")
     public int SaveFavoriteLawsLink(Lawstandard lawstandard){
 
         Map<String,Object> map  = new HashMap<>();
@@ -453,6 +463,7 @@ public class UserCenterService {
      * @return
      */
     @Transactional
+    @ILog(description="收藏技术文档")
     public int SaveFavoriteTecsLink(Technical technical){
 
         Map<String,Object> map  = new HashMap<>();
@@ -536,6 +547,7 @@ public class UserCenterService {
      * 取消收藏
      * @return
      */
+    @ILog(description="取消收藏")
    public int DismissFavorite(String favid,String sid){
 
        Map<String,Object> map =new HashMap<>();
@@ -549,6 +561,7 @@ public class UserCenterService {
      * 更新用户密码
      * @return
      */
+    @ILog(description="更新用户密码")
     public int  updateUserPassword(String id,String oldpassword,String newpassword){
 
         Map<String,Object> map = new HashMap<>();

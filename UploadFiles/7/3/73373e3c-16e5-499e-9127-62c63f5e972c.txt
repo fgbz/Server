@@ -1,0 +1,58 @@
+http://192.168.5.73/Phalaenopsis/Client.Java.githttp://192.168.5.73/Phalaenopsis/Server.Java.git
+
+
+		<plugins>
+			<plugin>
+              <groupId>org.apache.tomcat.maven</groupId>
+              <artifactId>tomcat7-maven-plugin</artifactId>
+              <version>2.2</version>
+              <configuration>
+                  <server>tomcat8</server>
+                  <username>admin</username>
+                  <password>admin</password>
+                  <path>/</path>
+              </configuration>
+              <!-- 在打包的时候运行这个容器 -->
+                 <executions>
+                     <execution>
+                         <phase>package</phase>
+                         <goals>
+                             <goal>run</goal>
+                         </goals>
+                     </execution>
+                 </executions>
+           </plugin>
+	</plugins>
+
+http://blog.csdn.net/zsg88/article/details/58049206
+
+soffice -headless -accept="socket,host=127.0.0.1,port=8100;urp;" -nofirststartwizard
+     if (dataList.length > 0) {
+                        var node = {};
+                        for (var i = 0; i < dataList.length; i++) {
+                            if (!dataList[i].ParentID) {
+                                node = dataList[i];
+                                dataList[i].Extend = true;
+                                break;
+                            }
+                        }
+                        for (var i = 0; i < dataList.length; i++) {
+                            if (dataList[i].ParentID == node.Id) {
+                                dataList[i].Extend = true;
+                            }
+                        }
+                    }
+
+
+自愿有偿退出公示
+现有?Street?街?HouseHold?农村村民申请自愿有偿退出宅基地,经
+?Onrecord? 街（乡、镇、场）批准和区国土资源和规划局备案。
+附备案信息如下:
+申请户姓名 ?Name? 退出宅基地地址 ?Address?
+宅基地面积 ?LandArea?平方米 补偿情况 ?Compensation?
+万元
+批准时间 ?ApprovalTime?
+特此公告
+签发时间 ?FiledTime?
+
+regexp_replace(jt.tdsyzbh,'[^a-zA-Z0-9-]')

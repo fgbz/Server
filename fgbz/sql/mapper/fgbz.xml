@@ -14,6 +14,7 @@
         t.PARENTID,
          t.itemlevel,
         t.itemlevelcode,
+        t.LAWCOUNT,
         CASE
     WHEN (
         SELECT
@@ -56,8 +57,8 @@
         </selectKey>
 
         <if test="count==0">
-            INSERT into m_bs_lawstandardtype  (ID,TYPENAME, PARENTID,INPUTUSERID,INPUTDATE,MODIFYDATE,itemlevel,itemlevelcode )
-            VALUES (#{id},#{typename},#{parentid},#{inputuserid,jdbcType=VARCHAR},now(),now(),#{itemlevel,jdbcType=INTEGER},#{itemlevelcode,jdbcType=INTEGER});
+            INSERT into m_bs_lawstandardtype  (ID,TYPENAME, PARENTID,INPUTUSERID,INPUTDATE,MODIFYDATE,itemlevel,itemlevelcode,LAWCOUNT )
+            VALUES (#{id},#{typename},#{parentid},#{inputuserid,jdbcType=VARCHAR},now(),now(),#{itemlevel,jdbcType=INTEGER},#{itemlevelcode,jdbcType=INTEGER},0);
         </if>
         <if test="count==1">
             UPDATE  m_bs_lawstandardtype t  SET t.TYPENAME = #{typename,jdbcType=VARCHAR},t.MODIFYUSERID=#{modifyuserid,jdbcType=VARCHAR},t.MODIFYDATE = now(),t.itemlevelcode = #{itemlevelcode,jdbcType=INTEGER}
@@ -66,8 +67,57 @@
     </insert>
 
     <select id="getChildNode" parameterType="String" resultType="LawstandardType">
-        select t.id,t.TYPENAME from m_bs_lawstandardtype t where t.PARENTID=#{id}
+        select t.id,t.TYPENAME,t.PARENTID, t.LAWCOUNT from m_bs_lawstandardtype t where t.PARENTID=#{id}
     </select>
+
+    <!--获取父级法规标准类别-->
+    <select id="getParentLawstandardTypeById" parameterType="String" resultType="LawstandardType">
+SELECT
+	m.ID,
+	m.TYPENAME,
+	m.PARENTID,
+	m.LAWCOUNT
+FROM
+	m_bs_lawstandardtype m
+WHERE
+	m.ID = (
+		SELECT
+			t.PARENTID
+		FROM
+			m_bs_lawstandardtype t
+		WHERE
+			t.ID = #{id}
+	)
+    </select>
+
+    <!--改变类别法规数量-->
+    <update id="changeLawstandardCount" parameterType="map">
+       UPDATE m_bs_lawstandardtype t
+SET
+    <if test="type == 'add'.toString()">
+        t.LAWCOUNT =
+        IF (
+        ISNULL(t.LAWCOUNT),
+        0,
+        t.LAWCOUNT
+        ) + 1
+    </if>
+    <if test="type == 'delete'.toString()">
+            t.LAWCOUNT =
+            IF (
+            ISNULL(t.LAWCOUNT),
+            0,
+            t.LAWCOUNT
+            ) - 1
+    </if>
+
+WHERE
+	t.ID IN
+        <foreach collection="TreeValue" item="item" open="(" close=")" separator=",">
+        #{item.id}
+        </foreach>
+
+    </update>
 
     <!--查询法律标准列表-->
     <select id="getLawstandardList" parameterType="map" resultType="Lawstandard">
@@ -771,7 +821,8 @@ ty.ID
         SELECT
 	t.id,
 	t.TYPENAME,
-	t.PARENTID
+	t.PARENTID,
+	t.LAWCOUNT
 FROM
 	`m_bs_lawstandardtype` t
 WHERE

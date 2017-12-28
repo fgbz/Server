@@ -189,4 +189,19 @@ public interface SystemDao {
      */
     int getNeedCheckLawCount();
 
+    /**
+     * 保存日志
+     * @return
+     */
+    int SaveFgLog(Fg_Log log);
+
+    /**
+     * 查询日志
+     * @param map
+     * @return
+     */
+    List<Fg_Log> SelectLog(Map<String, Object> map);
+
+    int SelectLogCount(Map<String, Object> map);
+
 }

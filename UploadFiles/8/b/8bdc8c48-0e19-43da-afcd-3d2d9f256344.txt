@@ -1,0 +1,105 @@
+https://192.168.20.127:8181/svn/Phalaenopsis
+http://192.168.5.73
+
+git
+http://http://192.168.5.73/Phalaenopsis/Server.Java.git
+
+http://http://192.168.5.73/Phalaenopsis/Client.Java.git
+
+http://192.168.5.68/redmine/projects/phalaenopsis
+
+git config --global user.name "yuhangc"
+git config user.name 
+
+ .replace(/(fill|stroke)="rgba\(([ 0-9]+,[ 0-9]+,[ 0-9]+),([ 0-9\.]+)\)"/g,
+                     '$1="rgb($2)" $1-opacity="$3"').replace(/(opacity)="([0-9])"/g,
+                     ''
+                     ).replace(
+                     /(opacity)="(undefined)"/g,
+                     ''
+                    );
+
+点
+sdo_relate(t.shape, sdo_geometry(2001,坐标系,sdo_point_type(                              坐标,NULL),NULL,NULL),'mask=anyinteract') = 'TRUE'
+
+面（坐标要闭合）
+sdo_relate( 
+T.SHAPE, SDO_GEOMETRY(2003,坐标系, NULL, SDO_ELEM_INFO_ARRAY(1, 1003, 1),SDO_ORDINATE_ARRAY(" + locat + ")), 'mask=anyinteract') = 'TRUE'"
+
+$scope.alerts = [
+        { type: 'danger', msg: '出错消息' },
+        { type: 'success', msg: '成功消息' },
+        { type: 'info', msg: '提示消息' },
+             { type: 'warning', msg: '警告信息' }
+             ];
+
+
+
+http://192.168.5.107:9090/#all-updates
+
+http://192.168.5.147:42000 信访系统的地址 hbxf 888888
+
+install:install-file -DgroupId=oracle -DartifactId=sdoapi -Dversion=11.2.0 -Dpackaging=jar -Dfile=D:\MyCode\zhuhaidisui\Clematis\05Code\Maven
+
+阳光信访
+http://115.239.135.28:8001/HZ12345Web/a
+CX_GTJ 123456
+
+长兴信访remine
+
+1504590204000
+330522100001
+
+exp Michelia0721/8888888@192.168.5.149:1521/orcl1 file=d:\123.dmp tables=mc_workflow
+
+pumpkin20170906_功能描述.sql
+
+需求
+http://192.168.5.68/redmine/projects/pumpkin?jump=new_issue
+缺陷
+http://192.168.5.68/redmine/projects/pumpkin_defect/issues
+版本
+http://192.168.5.71:8013/#/home
+接口
+http://192.168.5.56:8090/  
+发版本
+http://192.168.5.71:8088/  
+
+不动产
+http://192.168.5.115/yuz790/Michelia-wn.Web.git
+http://192.168.5.115/yuz790/Michelia-wn.Server.git
+
+192.168.5.71:9051
+
+361129016001GB00008F00040040  1505260800000
+
+ng-class="{'excellentScoreShowStyle':item.finalScore>=90,'qualifiedScoreShowStyle':item.finalScore>=70&&item.finalScore<90,'unQualifiedScoreShowStyle':item.finalScore<70}"
+
+信访
+http://192.168.5.115/Pumpkin/Server.githttp://192.168.5.115/Pumpkin/Web.git
+
+宅基地项目 SVN地址： https://knsvn-dev.dev.kotei.co:8181/svn/Cantaloupe/redmine地址：
+http://192.168.5.68/redmine/projects/cantaloupe/issues
+
+宅基地
+http://192.168.5.115/Cantaloupezjd/Cantaloupe.Web.git
+http://192.168.5.115/Cantaloupezjd/Cantaloupe.Server.git
+
+  byte[] id_bytes = directoryId.ToByteArray();
+
+  byte[] first = new byte[8];
+  byte[] last = new byte[8];
+
+  Array.Copy(id_bytes, 0, first, 0, 8);
+  Array.Copy(id_bytes, 8, last, 0, 8);
+ulong first_number = BitConverter.ToUInt64(first, 0);
+ulong last_number = BitConverter.ToUInt64(last, 0);
+
+ int first_index = Convert.ToInt32(first_number % 16);
+int last_index = Convert.ToInt32(last_number % 16);
+
+
+
+http://192.168.5.73/Clematis/Clematis_server.git
+http://192.168.5.73/Clematis/Clematis_client.githttp://192.168.5.73/Clematis/Clematis_Maven.git
+

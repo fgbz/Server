@@ -8,12 +8,11 @@ import phalaenopsis.common.entity.OpResult;
 import phalaenopsis.common.entity.Page;
 import phalaenopsis.common.entity.PagingEntity;
 import phalaenopsis.common.method.Tools.StrUtil;
+import phalaenopsis.common.method.cache.UserCache;
+import phalaenopsis.fgbz.dao.ILog;
 import phalaenopsis.fgbz.dao.LawstandardDao;
 import phalaenopsis.fgbz.dao.SystemDao;
-import phalaenopsis.fgbz.entity.FG_Menu;
-import phalaenopsis.fgbz.entity.FG_Organization;
-import phalaenopsis.fgbz.entity.FG_Role;
-import phalaenopsis.fgbz.entity.FG_User;
+import phalaenopsis.fgbz.entity.*;
 
 import java.util.*;
 
@@ -28,21 +27,36 @@ public class SystemServie {
 
     private  List<FG_Organization> ids = new ArrayList<FG_Organization>();
 
+    @ILog(description="登陆")
+    public  Map<String, Object> login(String accountJm, String passwordJm){
 
-    public FG_User login(String accountJm, String passwordJm){
+        Map<String, Object> map = new HashMap<String, Object>();
 
-        Map<String,Object> map = new HashMap<>();
+        Map<String,Object> map1 = new HashMap<>();
 
-        map.put("account",accountJm);
-        map.put("password",passwordJm);
-        FG_User user = systemDao.getUserByAccount(map);
+        map1.put("account",accountJm);
+        map1.put("password",passwordJm);
+        FG_User user = systemDao.getUserByAccount(map1);
 
         if(user!=null&&user.getRoles()!=null&&user.getRoles().size()>0){
             //获取用户所有权限
             user.setMenus(systemDao.getUserMenu(user));
         }
 
-        return user;
+        if(user==null){
+            map.put("LoginState", false);
+        }else{
+            Map<String, Object> mapList =  grtUserListByOrgId(user.getOrgid());
+            user.setUserList((List<FG_User>)mapList.get("UserList"));
+            user.setOrgList((List<FG_Organization>) mapList.get("OrgList"));
+            map.put("LoginState", true);
+        }
+        map.put("LoginResult", user);
+        String ticket = UUID.randomUUID().toString();
+        map.put("ticket", ticket);
+        UserCache.put(ticket, user);
+
+        return map;
 
     }
     /**
@@ -61,6 +75,7 @@ public class SystemServie {
      * @return
      */
     @Transactional
+    @ILog(description="保存组织机构")
     public int  AddOrUpdateOrganizationType(FG_Organization organization){
         if(organization.getId()==null||organization.getId().equals("")){
             UUID uuid=UUID.randomUUID();
@@ -122,6 +137,7 @@ public class SystemServie {
      * @return
      */
     @Transactional
+    @ILog(description="删除组织机构")
     public int DeleteOrganization(FG_Organization organization) {
         handTreeLevel(organization);
          systemDao.DeleteOrganization(organization);
@@ -199,6 +215,7 @@ public class SystemServie {
      * @param id
      * @return
      */
+    @ILog(description="删除角色")
     public int deleteRoleByID(String id){
         return  systemDao.deleteRoleByID(id);
     }
@@ -209,6 +226,7 @@ public class SystemServie {
      * @return
      */
     @Transactional
+    @ILog(description="保存权限")
     public int SaveOrEditRole(FG_Role role){
         if(role.getId()==null||role.getId().equals("")){
             UUID uuid=UUID.randomUUID();
@@ -231,6 +249,7 @@ public class SystemServie {
      * @return
      */
     @Transactional
+    @ILog(description="保存用户")
     public int SaveOrUpdateUser(FG_User user){
 
         int num = systemDao.checkUserRepeat(user);
@@ -362,6 +381,7 @@ public class SystemServie {
     }
 
     @Transactional
+    @ILog(description="删除用户")
     public int deleteUserByID(FG_User user){
         systemDao.deleteUserFav(user.getFavoriteid());
         systemDao.DeleteUserRolesByUserID(user.getId());
@@ -397,6 +417,7 @@ public class SystemServie {
      * @return
      */
     @Transactional
+    @ILog(description="修改审核设置")
     public Map<String,Object> SaveOrUpdateApproveSetting(int status){
 
         int num =0;
@@ -414,6 +435,58 @@ public class SystemServie {
         }
         result.put("count",num);
         result.put("Result",OpResult.Success);
+        return result;
+    }
+
+    /**
+     * 获取日志
+     * @param page
+     * @return
+     */
+    public PagingEntity<Fg_Log> getLogList(Page page){
+
+        Map<String, Object> conditions = new HashMap<String, Object>();
+
+        if(page.getConditions()!=null) {
+            //查询条件
+            for (Condition condition : page.getConditions()) {
+                if (condition.getKey().equals("OperationName")) {
+                    conditions.put("OperationName", condition.getValue());
+                }   if (condition.getKey().equals("Userid")) {
+                    conditions.put("Userid", condition.getValue());
+                }  if (condition.getKey().equals("FiledTimeStart")) {
+                    conditions.put("FiledTimeStart", condition.getValue());
+                }  if (condition.getKey().equals("FiledTimeEnd")) {
+                    conditions.put("FiledTimeEnd", condition.getValue());
+                }
+
+            }
+        }
+
+
+        // 1,根据条件一共查询到的数据条数
+        int count = systemDao.SelectLogCount(conditions);
+
+        if(page.getPageNo()==1){
+            conditions.put("startRow", 0 );
+        }else{
+            conditions.put("startRow", page.getPageSize() * (page.getPageNo() - 1) );
+        }
+        conditions.put("endRow", page.getPageSize());
+
+        // 2, 查询到当前页数的数据
+        List<Fg_Log> list = systemDao.SelectLog(conditions);
+
+        PagingEntity<Fg_Log> result = new PagingEntity<Fg_Log>();
+        result.setPageCount(count);
+
+        int pageCount = 0 == count ? 1 : (count - 1) / page.getPageSize() + 1; // 由于计算pageCount存在整除的情况，所以计算的时候先减1在除以pageSize
+        result.setPageNo(page.getPageNo());
+        result.setPageSize(page.getPageSize());
+        result.setPageCount(pageCount);
+        result.setRecordCount(count);
+        result.setCurrentList(list);
+
         return result;
     }
 }

@@ -7,6 +7,7 @@ import phalaenopsis.common.entity.OpResult;
 import phalaenopsis.common.entity.Page;
 import phalaenopsis.common.entity.PagingEntity;
 import phalaenopsis.fgbz.dao.FgbzDicDao;
+import phalaenopsis.fgbz.dao.ILog;
 import phalaenopsis.fgbz.entity.FG_Menu;
 import phalaenopsis.fgbz.entity.FgbzDictory;
 import phalaenopsis.fgbz.entity.LawstandardStatus;
@@ -101,6 +102,7 @@ public class FgbzDicService {
      * @param id
      * @return
      */
+    @ILog(description="删除发布部门")
     public int DeletePublishdepByID(String id){
         fgbzDicDao.DeletePublishdepByID(id);
         return OpResult.Success;
@@ -111,6 +113,7 @@ public class FgbzDicService {
      * @param publishdep
      * @return
      */
+    @ILog(description="保存发布部门")
     public int SaveOrUpdatePublishdep(Publishdep publishdep){
 
         int num =fgbzDicDao.checkPublichName(publishdep);
@@ -183,6 +186,7 @@ public class FgbzDicService {
      * @param id
      * @return
      */
+    @ILog(description="删除执行状态")
     public int DeleteLawstandardStatusByID(String id){
         fgbzDicDao.DeleteLawstandardStatusByID(id);
         return OpResult.Success;
@@ -193,6 +197,7 @@ public class FgbzDicService {
      * @param lawstandardStatus
      * @return
      */
+    @ILog(description="保存执行状态")
     public int SaveOrUpdateLawstandardStatus(LawstandardStatus lawstandardStatus){
 
         int num =fgbzDicDao.checkLawstandardStatusName(lawstandardStatus);

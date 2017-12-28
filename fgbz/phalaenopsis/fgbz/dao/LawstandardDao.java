@@ -25,6 +25,14 @@ public interface LawstandardDao {
     int  getSolrListCount(Map<String, Object>  map);
 
     List<Lawstandard> getLawstandardList(Map<String, Object>  map);
+
+    /**
+     *获取父级法规类别
+     * @return
+     */
+    LawstandardType getParentLawstandardTypeById(String id);
+
+    int changeLawstandardCount(Map<String, Object>  map);
     /**
      * 获取全文检索的列表
      * @param map

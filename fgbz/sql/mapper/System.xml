@@ -441,4 +441,46 @@ WHERE
 
     </select>
 
+    <!--保存日志-->
+   <insert id="SaveFgLog" parameterType="Fg_Log">
+        insert into m_bs_log (ID,OperationName,Userid,UserName,OperationTime,OrganizationName,OrganizationID)
+        VALUES (uuid(),
+        #{operationname,jdbcType=VARCHAR},
+        #{userid,jdbcType=VARCHAR},
+        #{username,jdbcType=VARCHAR},
+        now(),
+        #{organizationname,jdbcType=VARCHAR},
+        #{organizationid,jdbcType=VARCHAR})
+   </insert>
+
+    <!--查询日志-->
+    <select id="SelectLog" parameterType="map" resultType="Fg_Log">
+        SELECT ID,OperationName,Userid,UserName,OperationTime,OrganizationName,OrganizationID from m_bs_log
+        where 1=1
+        <include refid="queryLog"></include>
+        ORDER by OperationTime desc
+        LIMIT #{startRow},#{endRow}
+    </select>
+
+    <sql id="queryLog">
+        <if test="OperationName != null and OperationName != ''">
+            and instr(OperationName,#{OperationName})> 0
+        </if>
+        <if test="Userid != null and Userid != ''">
+            and Userid = #{Userid}
+        </if>
+        <if test="FiledTimeStart != null and FiledTimeStart != ''">
+            and Date(OperationTime) <![CDATA[  >=  ]]> #{FiledTimeStart}
+        </if>
+        <if test="FiledTimeEnd != null and FiledTimeEnd != ''">
+            and Date(OperationTime) <![CDATA[  <=  ]]> #{FiledTimeEnd}
+        </if>
+    </sql>
+
+    <select id="SelectLogCount" parameterType="map" resultType="int">
+        SELECT count(1) from m_bs_log
+        where 1=1
+        <include refid="queryLog"></include>
+    </select>
+
 </mapper>

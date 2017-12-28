@@ -15,6 +15,7 @@ import phalaenopsis.fgbz.dao.LawstandardDao;
 import phalaenopsis.fgbz.entity.FG_Organization;
 import phalaenopsis.fgbz.entity.FG_Role;
 import phalaenopsis.fgbz.entity.FG_User;
+import phalaenopsis.fgbz.entity.Fg_Log;
 import phalaenopsis.fgbz.service.SystemServie;
 
 import java.util.HashMap;
@@ -37,20 +38,9 @@ public class SystemController {
         final String passwordJm = (String) map1.get("password");
         Map<String, Object> map = new HashMap<String, Object>();
 
-        FG_User user = systemServie.login(accountJm, passwordJm);
+        map = systemServie.login(accountJm, passwordJm);
 
-        if(user==null){
-            map.put("LoginState", false);
-        }else{
-            Map<String, Object> mapList =  grtUserListByOrgId(user.getOrgid());
-            user.setUserList((List<FG_User>)mapList.get("UserList"));
-            user.setOrgList((List<FG_Organization>) mapList.get("OrgList"));
-            map.put("LoginState", true);
-        }
-        map.put("LoginResult", user);
-        String ticket = UUID.randomUUID().toString();
-        map.put("ticket", ticket);
-        UserCache.put(ticket, user);
+
 
         return map;
     }
@@ -210,4 +200,9 @@ public class SystemController {
         return systemServie.grtUserListByOrgId(orgid);
     }
 
+    @RequestMapping(value = "/getLogList", method = RequestMethod.POST)
+    @ResponseBody
+    public PagingEntity<Fg_Log> getLogList(@RequestBody Page page){
+        return systemServie.getLogList(page);
+    }
 }
