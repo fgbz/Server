@@ -26,6 +26,8 @@ public interface LawstandardDao {
 
     List<Lawstandard> getLawstandardList(Map<String, Object>  map);
 
+
+    List<Lawstandard> getUptodateLawstandardList(Map<String, Object>  map);
     /**
      *获取父级法规类别
      * @return

@@ -188,7 +188,7 @@ public class LawstandardService {
      * @param page
      * @return
      */
-    public PagingEntity<Lawstandard> getLawstandardList(@RequestBody Page page,String type){
+    public PagingEntity<Lawstandard> getLawstandardList(Page page){
 
         Map<String, Object> conditions = new HashMap<String, Object>();
 
@@ -224,10 +224,7 @@ public class LawstandardService {
                     conditions.put("ApproveStatus", condition.getValue());
                 }else if(condition.getKey().equals("KeyWordsSingle")){
                     conditions.put("KeyWordsSingle", condition.getValue());
-                }else if(condition.getKey().equals("Solr")){
-                    String[] solrList  = condition.getValue().split(" ");
-                    conditions.put("Solr", solrList);
-                } else if(condition.getKey().equals("ReplaceOrRefenceid")){
+                }else if(condition.getKey().equals("ReplaceOrRefenceid")){
                     conditions.put("ReplaceOrRefenceid", condition.getValue());
                 }else if(condition.getKey().equals("IsBatch")){
                     conditions.put("IsBatch", condition.getValue());
@@ -250,17 +247,12 @@ public class LawstandardService {
         // 1,根据条件一共查询到的数据条数
         int count = lawstandardDao.getLawstandardListCount(conditions);
 
-        if(type!=null&&type.equals("uptodate")){
-            conditions.put("startRow", 0 );
-            conditions.put("endRow", 10);
-        }else{
             if(page.getPageNo()==1){
                 conditions.put("startRow", 0 );
             }else{
                 conditions.put("startRow", page.getPageSize() * (page.getPageNo() - 1) );
             }
             conditions.put("endRow", page.getPageSize());
-        }
 
         // 2, 查询到当前页数的数据
         List<Lawstandard> list = lawstandardDao.getLawstandardList(conditions);
@@ -278,6 +270,31 @@ public class LawstandardService {
         return result;
     }
 
+    //首页查询法规单独写
+    public List<Lawstandard> getUptodateLawstandardList(Page page) {
+        Map<String, Object> conditions = new HashMap<String, Object>();
+        if (page.getConditions() != null) {
+            //查询条件
+            for (Condition condition : page.getConditions()) {
+                if (condition.getKey().equals("TreeValue")) {
+                    ids = new ArrayList<>();
+                    LawstandardType lawSelf = new LawstandardType();
+                    lawSelf.setId(condition.getValue());
+                    ids.add(lawSelf);
+                    getLawsTree(condition.getValue());
+                    conditions.put("TreeValue", ids);
+                } else if (condition.getKey().equals("ApproveStatus")) {
+                    conditions.put("ApproveStatus", condition.getValue());
+                }
+            }
+        }
+        conditions.put("startRow", 0);
+        conditions.put("endRow", 10);
+
+        List<Lawstandard> list = lawstandardDao.getLawstandardList(conditions);
+
+        return list;
+    }
     /**
      * 获取法规标准列表
      * @param page
@@ -366,7 +383,7 @@ public class LawstandardService {
         page.setPageNo(1);
         page.setPageSize(Integer.MAX_VALUE);
 
-        List<Lawstandard>  listLaws = getLawstandardList(page,null).getCurrentList();
+        List<Lawstandard>  listLaws = getLawstandardList(page).getCurrentList();
 
         ExportExcel exportExcel = new ExportExcel();
 

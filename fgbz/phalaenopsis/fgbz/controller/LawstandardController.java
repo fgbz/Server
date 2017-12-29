@@ -79,7 +79,7 @@ public class LawstandardController {
     @RequestMapping(value = "/getLawstandardList", method = RequestMethod.POST)
     @ResponseBody
     public PagingEntity<Lawstandard> getLawstandardList(@RequestBody Page page){
-        return  lawstandardService.getLawstandardList(page,null);
+        return  lawstandardService.getLawstandardList(page);
     }
 
     /**
@@ -156,8 +156,8 @@ public class LawstandardController {
      */
     @RequestMapping(value = "/getUptodateLawstandardList", method = RequestMethod.POST)
     @ResponseBody
-    public PagingEntity<Lawstandard> getUptodateLawstandardList(@RequestBody Page page){
-        return  lawstandardService.getLawstandardList(page,"uptodate");
+    public List<Lawstandard> getUptodateLawstandardList(@RequestBody Page page){
+        return  lawstandardService.getUptodateLawstandardList(page);
     }
 
     /**

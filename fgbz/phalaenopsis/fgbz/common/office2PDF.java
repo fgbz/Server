@@ -2,21 +2,15 @@ package phalaenopsis.fgbz.common;
 
 
 
-
-
-
-
-
-
 import com.artofsolving.jodconverter.DocumentConverter;
 import com.artofsolving.jodconverter.openoffice.connection.OpenOfficeConnection;
 import com.artofsolving.jodconverter.openoffice.connection.SocketOpenOfficeConnection;
 import com.artofsolving.jodconverter.openoffice.converter.OpenOfficeDocumentConverter;
 
 import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.IOException;
 import java.net.ConnectException;
+
+
 
 public class office2PDF {
 
@@ -65,8 +59,6 @@ public class office2PDF {
 //            return -1;
 //        }
         catch (ConnectException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
             e.printStackTrace();
         }
 

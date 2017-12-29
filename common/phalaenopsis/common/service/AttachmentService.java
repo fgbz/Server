@@ -336,7 +336,7 @@ public class AttachmentService extends Basis {
 	}
 	private boolean isDocFile(String extName) {
 		boolean result = false;
-		String fileExt = ".doc;.txt;";
+		String fileExt = ".doc;.txt;.docx;";
 		result = fileExt.contains(extName.toLowerCase());
 
 		return result;

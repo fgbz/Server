@@ -138,7 +138,7 @@ WHERE
         left join m_sa_publishdep dep on dep.ID = t.pubid
         left join m_bs_lawstandard_type m on m.SID = t.id
         left join m_bs_lawstandardtype n on n.id = m.LAWSTYPEID
-
+        order by if(ISNULL(t.ISTOP),0,t.ISTOP) desc,t.MODIFYDATE desc
     </select>
 
     <!-- 查询列表的总数 -->
@@ -148,6 +148,24 @@ WHERE
         left join m_sa_user ur on ur.ID = t1.INPUTUSERID
         where 1=1
         <include refid="queryLawstandard"></include>
+    </select>
+
+
+    <select id="getUptodateLawstandardList" parameterType="map" resultType="Lawstandard">
+        SELECT t.ID,t.`CODE`,t.CHINESENAME,t.APPROVESTATUS,dep.PUBDEPNAME,t.CLICKCOUNT,t.RELEASEDATE ,t.IMPDATE from m_bs_lawstandard t
+        left join m_bs_lawstandard_pubdep pub on t.id = pub.SID
+        left join m_sa_publishdep dep on dep.ID = pub.PUBDEPID where 1=1
+
+        <if test="TreeValue !=null and TreeValue!=''" >
+            and t.id in (select lt.SID from m_bs_lawstandard_type lt where lt.LAWSTYPEID in
+            <foreach collection="TreeValue" item="item" open="(" close=")" separator=",">
+                #{item.id}
+            </foreach>
+            )
+        </if>
+        <if test="ApproveStatus != null and ApproveStatus != ''">
+            and t.APPROVESTATUS = #{ApproveStatus}
+        </if>
     </select>
 
     <sql id="querySolr">
