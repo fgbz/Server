@@ -291,7 +291,7 @@ public class LawstandardService {
         conditions.put("startRow", 0);
         conditions.put("endRow", 10);
 
-        List<Lawstandard> list = lawstandardDao.getLawstandardList(conditions);
+        List<Lawstandard> list = lawstandardDao.getUptodateLawstandardList(conditions);
 
         return list;
     }

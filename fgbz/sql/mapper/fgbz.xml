@@ -166,6 +166,7 @@ WHERE
         <if test="ApproveStatus != null and ApproveStatus != ''">
             and t.APPROVESTATUS = #{ApproveStatus}
         </if>
+        LIMIT #{startRow},#{endRow}
     </select>
 
     <sql id="querySolr">
