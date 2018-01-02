@@ -287,6 +287,14 @@ public class UserCenterService {
             status = 1;
         }else{
             status = 3;
+            //通过,如果有替代关系，更新状态
+            List<Lawstandard> listReplace= lawstandardDao.getReplaceList(lawstandardApprove.getLawstandardID());
+
+            if(listReplace!=null&&listReplace.size()>0){
+                for (Lawstandard lawstandard:listReplace) {
+                    lawstandardDao.updateRleplaceStaus(lawstandard.getId());
+                }
+            }
         }
         Map<String, Object> map = new HashMap<String, Object>();
         map.put("id",lawstandardApprove.getLawstandardID());

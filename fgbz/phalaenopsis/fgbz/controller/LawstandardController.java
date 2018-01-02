@@ -319,4 +319,9 @@ public class LawstandardController {
         return  lawstandardService.getHomePageLawsType();
     }
 
+    @RequestMapping(value = "/UpdateAllLawstandardCode", method = RequestMethod.GET)
+    @ResponseBody
+    public int UpdateAllLawstandardCode(){
+        return lawstandardService.UpdateAllLawstandardCode();
+    }
 }

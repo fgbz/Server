@@ -238,6 +238,30 @@ public class LawstandardService {
 
                     FG_Organization org = JSON.parseObject(condition.getValue(),FG_Organization.class);
                     conditions.put("OrgList", org.getChildsorg());
+                }else if(condition.getKey().equals("Ordertype")){
+                    String ordertest ="";
+                    String ordertest1 ="";
+                    //排序
+                    switch (condition.getValue()){
+                        case "0":
+                            ordertest = " ,t.INPUTDATE ";
+                            ordertest1 = " ,t1.INPUTDATE ";
+                            break;
+                        case "1":
+                            ordertest = " ,t.INPUTDATE DESC ";
+                            ordertest1 = " ,t1.INPUTDATE DESC ";
+                            break;
+                        case "2":
+                            ordertest = " ,t.MODIFYDATE ";
+                            ordertest1 = " ,t1.MODIFYDATE  ";
+                            break;
+                        case "3":
+                            ordertest = " ,t.MODIFYDATE DESC ";
+                            ordertest1 = " ,t1.MODIFYDATE DESC ";
+                            break;
+                    }
+                    conditions.put("Ordertype",ordertest);
+                    conditions.put("Ordertype1",ordertest1);
                 }
 
             }
@@ -439,6 +463,8 @@ public class LawstandardService {
                 return map;
             }else{
                 lawstandard.setCode(excel.getCode());
+                String checkcode = filter(lawstandard.getCode());
+                lawstandard.setCheckcode(checkcode);
             }
             if(StrUtil.isNullOrEmpty(excel.getTypename())){
                 map.put("Result",OpResult.Failed);
@@ -565,6 +591,11 @@ public class LawstandardService {
             String guid=uuid.toString();
             lawstandard.setId(guid);
         }
+
+        //处理编码，以便查重
+        String checkcode = filter(lawstandard.getCode());
+        lawstandard.setCheckcode(checkcode);
+
         int num = lawstandardDao.checklawCode(lawstandard);
 
         if(num>0){
@@ -621,7 +652,10 @@ public class LawstandardService {
                 refenceOrReplace.setSid(item.getId());
                 refenceOrReplace.setRelatedid(lawstandard.getId());
                 lawstandardDao.addReplace(refenceOrReplace);
-                lawstandardDao.updateRleplaceStaus(item.getId());
+                //发布时修改替代关系
+                if(lawstandard.getApprovestatus()==3){
+                    lawstandardDao.updateRleplaceStaus(item.getId());
+                }
             }
 
         }
@@ -629,6 +663,26 @@ public class LawstandardService {
         return OpResult.Success;
     }
 
+    //更新所有法规的编号
+    public int UpdateAllLawstandardCode(){
+        List<Lawstandard> list =lawstandardDao.getAllLawstandard();
+        if(list!=null&&list.size()>0){
+            for (Lawstandard lawstandard:list){
+                //处理编码，以便查重
+                String checkcode = filter(lawstandard.getCode());
+                lawstandard.setCheckcode(checkcode);
+                lawstandardDao.updateLawCheckCode(lawstandard);
+            }
+        }
+        return OpResult.Success;
+    }
+
+    //提取中文数字和字母
+    public String filter(String character)
+    {
+        character = character.replaceAll("[^a-zA-Z0-9\\u4e00-\\u9fa5]", "");
+        return character;
+    }
     /**
      * 获取法规信息
      * @param id

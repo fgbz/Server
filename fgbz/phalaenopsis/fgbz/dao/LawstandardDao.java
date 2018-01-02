@@ -222,4 +222,31 @@ public interface LawstandardDao {
      * @return
      */
     Lawstandard  getLawByFileId(String id);
+
+    /**
+     * 获取所有的法规
+     * @return
+     */
+    List<Lawstandard> getAllLawstandard();
+
+    /**
+     * 更新验重编号
+     * @param lawstandard
+     * @return
+     */
+    int updateLawCheckCode(Lawstandard lawstandard);
+
+    /**
+     * 保存索引
+     * @param id
+     * @return
+     */
+    int SaveSolrTextById(String id);
+
+    /**
+     * 删除索引
+     * @param id
+     * @return
+     */
+    int DeleteSolrTextById(String id);
 }

@@ -51,6 +51,12 @@ public class FgbzLogService {
     @Pointcut("execution(* phalaenopsis.fgbz.service.SystemServie.login(..))")
     public void  SaveLoginLog(){
     }
+
+    //保存法规时,记录solr表
+    @Pointcut("execution(* phalaenopsis.fgbz.service.LawstandardService.SaveOrUpdateLawstandard(..))")
+    public void SaveLawSolr(){
+    }
+
     @Around( "changeLawTypeCount()")
     public int  saveLawTypeCount(ProceedingJoinPoint point) throws Throwable {
 
@@ -146,6 +152,18 @@ public class FgbzLogService {
 
                 systemDao.SaveFgLog(log);
             }
+        }
+    }
+
+    @AfterReturning(pointcut = "SaveLawSolr()", returning = "returnValue")
+    public void SaveLawSolr(JoinPoint point,Object returnValue){
+        int result = (int)returnValue;
+
+        Object[] args=point.getArgs();
+        Lawstandard lawstandard = (Lawstandard) args[0];
+
+        if(result==OpResult.Success){
+
         }
     }
 

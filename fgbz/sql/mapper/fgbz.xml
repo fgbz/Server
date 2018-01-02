@@ -131,14 +131,14 @@ WHERE
         left join m_sa_user ur on ur.ID = t1.INPUTUSERID
         where 1=1
         <include refid="queryLawstandard"></include>
-        order by if(ISNULL(t1.ISTOP),0,t1.ISTOP) desc ,t1.MODIFYDATE desc
+        order by if(ISNULL(t1.ISTOP),0,t1.ISTOP) desc  ${Ordertype1}
         LIMIT #{startRow},#{endRow})
         t
         left join m_sa_lawstandardstatus sta on t.`STATUS` = sta.ID
         left join m_sa_publishdep dep on dep.ID = t.pubid
         left join m_bs_lawstandard_type m on m.SID = t.id
         left join m_bs_lawstandardtype n on n.id = m.LAWSTYPEID
-        order by if(ISNULL(t.ISTOP),0,t.ISTOP) desc,t.MODIFYDATE desc
+        order by if(ISNULL(t.ISTOP),0,t.ISTOP) desc  ${Ordertype}
     </select>
 
     <!-- 查询列表的总数 -->
@@ -379,7 +379,7 @@ WHERE 1=1  <include refid="queryLawstandard"></include> and
 
     <!--判断法规编号是否重复-->
     <select id="checklawCode" parameterType="Lawstandard" resultType="int">
-        select count(1) from m_bs_lawstandard t where REPLACE(REPLACE(REPLACE(t.`CODE`,'/',''),'-',''),' ','') = REPLACE(REPLACE(REPLACE(#{code},'/',''),'-',''),' ','')
+        select count(1) from m_bs_lawstandard t where t.CHECKCODE = #{checkcode}
         and t.id <![CDATA[  != ]]> #{id}
     </select>
 
@@ -462,6 +462,9 @@ WHERE 1=1  <include refid="queryLawstandard"></include> and
                 <if test="approvestatus != null">
                     APPROVESTATUS,
                 </if>
+                <if test="checkcode != null">
+                    checkcode,
+                </if>
             </trim>
             <trim prefix="values (" suffix=")" suffixOverrides=",">
                 <if test="id != null">
@@ -525,6 +528,9 @@ WHERE 1=1  <include refid="queryLawstandard"></include> and
                 <if test="approvestatus != null">
                     #{approvestatus,jdbcType=INTEGER},
                 </if>
+                <if test="checkcode != null">
+                    #{checkcode,jdbcType=VARCHAR},
+                </if>
             </trim>
 
         </if>
@@ -582,6 +588,9 @@ WHERE 1=1  <include refid="queryLawstandard"></include> and
                 </if>
                 <if test="approvestatus != null">
                     APPROVESTATUS= #{approvestatus,jdbcType=INTEGER},
+                </if>
+                <if test="checkcode != null">
+                    checkcode= #{checkcode,jdbcType=VARCHAR},
                 </if>
             </trim>
             where ID=#{id}
@@ -883,5 +892,18 @@ LEFT JOIN m_sa_fileinfo files ON t.ID = files.REFID
 WHERE
 	files.ID =#{id}
     </select>
+
+    <!--获取所有的法规-->
+    <select id="getAllLawstandard" resultType="Lawstandard">
+        SELECT t.id,t.code from m_bs_lawstandard t
+    </select>
+
+    <update id="updateLawCheckCode" parameterType="Lawstandard">
+        UPDATE m_bs_lawstandard t set t.CHECKCODE=#{checkcode} where t.id = #{id}
+    </update>
+
+    <delete id="DeleteSolrTextById" parameterType="String">
+        DELETE from m_bs_solr where LAWSTANDARDID = #{id}
+    </delete>
 
 </mapper>

@@ -178,6 +178,10 @@ public class Lawstandard {
      * 是否审核
      */
     private boolean isapprove;
+    /**
+     * 验证编号是否重复的字段
+     */
+    private String checkcode;
 
     public String getPubdepname() {
         return pubdepname;
@@ -545,5 +549,13 @@ public class Lawstandard {
 
     public void setIsapprove(boolean isapprove) {
         this.isapprove = isapprove;
+    }
+
+    public String getCheckcode() {
+        return checkcode;
+    }
+
+    public void setCheckcode(String checkcode) {
+        this.checkcode = checkcode;
     }
 }

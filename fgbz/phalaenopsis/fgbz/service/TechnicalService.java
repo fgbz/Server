@@ -187,6 +187,24 @@ public class TechnicalService {
 
                     FG_Organization org = JSON.parseObject(condition.getValue(),FG_Organization.class);
                     conditions.put("OrgList", org.getChildsorg());
+                }else if(condition.getKey().equals("Ordertype")){
+                    String ordertest ="";
+                    //排序
+                    switch (condition.getValue()){
+                        case "0":
+                            ordertest = " ,t.INPUTDATE ";
+                            break;
+                        case "1":
+                            ordertest = " ,t.INPUTDATE DESC ";
+                            break;
+                        case "2":
+                            ordertest = " ,t.MODIFYDATE ";
+                            break;
+                        case "3":
+                            ordertest = " ,t.MODIFYDATE DESC ";
+                            break;
+                    }
+                    conditions.put("Ordertype",ordertest);
                 }
 
             }
