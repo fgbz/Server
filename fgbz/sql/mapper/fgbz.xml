@@ -902,8 +902,116 @@ WHERE
         UPDATE m_bs_lawstandard t set t.CHECKCODE=#{checkcode} where t.id = #{id}
     </update>
 
+    <!--删除索引-->
     <delete id="DeleteSolrTextById" parameterType="String">
         DELETE from m_bs_solr where LAWSTANDARDID = #{id}
     </delete>
+
+    <!--更新索引-->
+    <insert id="SaveSolrTextById" parameterType="String">
+        INSERT INTO m_bs_solr (LAWSTANDARDID, SOLRTEXT) SELECT
+	`m`.`id` AS LAWSTANDARDID,
+	concat(
+		`m`.`CODE`,
+		';',
+		`m`.`CHINESENAME`,
+		';',
+		`m`.`ENGLISHNAME`,
+		';',
+		`m`.`KEYWORDS`,
+		';',
+		`m`.`MEMO`,
+		';',
+		`m`.`SUMMARYINFO`,
+		';',
+		`m`.`STATUSNAME`,
+		';',
+		`m`.`PUBDEPNAME`,
+		';',
+		`m`.`TYPENAME`,
+		';',
+
+	IF (
+		isnull(`m`.`filecontent`),
+		'',
+		`m`.`filecontent`
+	)
+	) AS SOLRTEXT
+FROM
+	(
+		SELECT
+			`t`.`ID` AS `id`,
+			`t`.`CODE` AS `CODE`,
+			`t`.`CHINESENAME` AS `CHINESENAME`,
+
+		IF (
+			isnull(`t`.`ENGLISHNAME`),
+			'',
+			`t`.`ENGLISHNAME`
+		) AS `ENGLISHNAME`,
+
+	IF (
+		isnull(`t`.`KEYWORDS`),
+		'',
+		`t`.`KEYWORDS`
+	) AS `KEYWORDS`,
+
+IF (
+	isnull(`t`.`MEMO`),
+	'',
+	`t`.`MEMO`
+) AS `MEMO`,
+
+IF (
+	isnull(`t`.`SUMMARYINFO`),
+	'',
+	`t`.`SUMMARYINFO`
+) AS `SUMMARYINFO`,
+
+IF (
+	isnull(`sta`.`STATUSNAME`),
+	'',
+	`sta`.`STATUSNAME`
+) AS `STATUSNAME`,
+
+IF (
+	isnull(`dep`.`PUBDEPNAME`),
+	'',
+	`dep`.`PUBDEPNAME`
+) AS `PUBDEPNAME`,
+ `n`.`TYPENAME` AS `TYPENAME`,
+ (
+	SELECT
+		group_concat(
+			`file`.`CONTENT` SEPARATOR ','
+		)
+	FROM
+		`m_sa_fileinfo` `file`
+	WHERE
+		`file`.`REFID` = `t`.`ID`
+	GROUP BY
+		`t`.`ID`
+) AS `filecontent`
+FROM
+	`m_bs_lawstandard` `t`
+LEFT JOIN `m_sa_lawstandardstatus` `sta` ON `t`.`STATUS` = `sta`.`ID`
+LEFT JOIN `m_bs_lawstandard_pubdep` `pub` ON `t`.`ID` = `pub`.`SID`
+LEFT JOIN `m_sa_publishdep` `dep` ON `dep`.`ID` = `pub`.`PUBDEPID`
+LEFT JOIN `fgbz`.`m_bs_lawstandard_type` `m` ON `m`.`SID` = `t`.`ID`
+LEFT JOIN `fgbz`.`m_bs_lawstandardtype` `n` ON `n`.`ID` = `m`.`LAWSTYPEID`
+ 	 WHERE `t`.`ID` = #{id}
+	) `m`
+    </insert>
+
+    <!--通过法规状态获取所有的法规-->
+    <select id="getLawsByStaus" parameterType="String" resultType="Lawstandard">
+          SELECT t.ID from m_bs_lawstandard t where t.`STATUS`=#{id}
+    </select>
+
+    <!--通过发布部门获取所有的法规-->
+    <select id="getLawsByPubdep" parameterType="String" resultType="Lawstandard">
+ SELECT t.ID from m_bs_lawstandard t where t.`STATUS`=#{id}
+    </select>
+
 
 </mapper>

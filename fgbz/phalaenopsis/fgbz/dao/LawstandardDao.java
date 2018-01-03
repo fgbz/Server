@@ -249,4 +249,16 @@ public interface LawstandardDao {
      * @return
      */
     int DeleteSolrTextById(String id);
+
+    /**
+     *通过法规状态获取所有的法规
+     * @return
+     */
+    List<Lawstandard> getLawsByStaus(String id);
+
+    /**
+     *通过发布部门获取所有的法规
+     * @return
+     */
+    List<Lawstandard> getLawsByPubdep(String id);
 }

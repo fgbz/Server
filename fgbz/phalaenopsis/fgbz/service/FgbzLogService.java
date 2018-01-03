@@ -8,6 +8,7 @@ import org.springframework.stereotype.Component;
 import phalaenopsis.common.entity.OpResult;
 import phalaenopsis.common.method.Tools.StrUtil;
 import phalaenopsis.fgbz.dao.ILog;
+import phalaenopsis.fgbz.dao.LawstandardDao;
 import phalaenopsis.fgbz.dao.SystemDao;
 import phalaenopsis.fgbz.entity.*;
 
@@ -23,6 +24,9 @@ import static phalaenopsis.common.method.Basis.getCurrentFGUser;
 public class FgbzLogService {
     @Autowired
     private LawstandardService lawstandardService;
+
+    @Autowired
+    private LawstandardDao lawstandardDao;
 
     @Autowired
     private SystemDao systemDao;
@@ -53,9 +57,20 @@ public class FgbzLogService {
     }
 
     //保存法规时,记录solr表
-//    @Pointcut("execution(* phalaenopsis.fgbz.service.LawstandardService.SaveOrUpdateLawstandard(..))")
-//    public void SaveLawSolr(){
-//    }
+    @Pointcut("execution(* phalaenopsis.fgbz.service.LawstandardService.SaveOrUpdateLawstandard(..))")
+    public void SaveLawSolr(){
+    }
+
+    //修改状态时维护索引
+    @Pointcut("execution(* phalaenopsis.fgbz.service.FgbzDicService.SaveOrUpdateLawstandardStatus(..))")
+    public void SaveLawSolrStatusChange(){
+    }
+
+    //修改发布部门时维护索引
+    @Pointcut("execution(* phalaenopsis.fgbz.service.FgbzDicService.SaveOrUpdatePublishdep(..))")
+    public void SaveLawSolrPublishdepChange(){
+    }
+
 
     @Around( "changeLawTypeCount()")
     public int  saveLawTypeCount(ProceedingJoinPoint point) throws Throwable {
@@ -132,6 +147,10 @@ public class FgbzLogService {
         if(result== OpResult.Success&&lawstandardApprove.getStatus()==1){
             Lawstandard lawActual = lawstandardService.getLawstandardById(lawstandardApprove.getLawstandardID());
             lawstandardService.changeLawstandardCount(getLawtypeList(lawActual.getLawtype()),"add");
+
+            //维护索引
+            lawstandardDao.DeleteSolrTextById(lawActual.getId());
+            lawstandardDao.SaveSolrTextById(lawActual.getId());
         }
     }
 
@@ -154,18 +173,72 @@ public class FgbzLogService {
             }
         }
     }
-//
-//    @AfterReturning(pointcut = "SaveLawSolr()", returning = "returnValue")
-//    public void SaveLawSolr(JoinPoint point,Object returnValue){
-//        int result = (int)returnValue;
-//
-//        Object[] args=point.getArgs();
-//        Lawstandard lawstandard = (Lawstandard) args[0];
-//
-//        if(result==OpResult.Success){
-//
-//        }
-//    }
+
+    //保存法规时维护索引
+    @AfterReturning(pointcut = "SaveLawSolr()", returning = "returnValue")
+    public void SaveLawSolr(JoinPoint point,Object returnValue){
+        int result = (int)returnValue;
+
+        Object[] args=point.getArgs();
+        Lawstandard lawstandard = (Lawstandard) args[0];
+
+        if(result==OpResult.Success){
+            //发布时维护索引
+            if(!StrUtil.isNullOrEmpty(lawstandard.getId())&&lawstandard.getApprovestatus()==3){
+                lawstandardDao.DeleteSolrTextById(lawstandard.getId());
+                lawstandardDao.SaveSolrTextById(lawstandard.getId());
+            }
+        }
+    }
+
+    //修改状态时维护索引
+    @AfterReturning(pointcut = "SaveLawSolrStatusChange()", returning = "returnValue")
+    public void SaveLawSolrStatusChange(JoinPoint point,Object returnValue){
+        int result = (int)returnValue;
+
+        Object[] args=point.getArgs();
+        LawstandardStatus lawstandardStatus = (LawstandardStatus) args[0];
+
+        if(result==OpResult.Success){
+            //发布时维护索引
+            if(!StrUtil.isNullOrEmpty(lawstandardStatus.getId())){
+                List<Lawstandard> list = lawstandardDao.getLawsByStaus(lawstandardStatus.getId());
+
+                if(list!=null&&list.size()>0){
+                    for (Lawstandard lawstandard:list
+                         ) {
+                        lawstandardDao.DeleteSolrTextById(lawstandard.getId());
+                        lawstandardDao.SaveSolrTextById(lawstandard.getId());
+                    }
+                }
+
+            }
+        }
+    }
+    //修改发布部门时维护索引
+    @AfterReturning(pointcut = "SaveLawSolrPublishdepChange()", returning = "returnValue")
+    public void SaveLawSolrPublishdepChange(JoinPoint point,Object returnValue){
+        int result = (int)returnValue;
+
+        Object[] args=point.getArgs();
+        Publishdep publishdep = (Publishdep) args[0];
+
+        if(result==OpResult.Success){
+            //发布时维护索引
+            if(!StrUtil.isNullOrEmpty(publishdep.getId())){
+                List<Lawstandard> list = lawstandardDao.getLawsByStaus(lawstandardStatus.getId());
+
+                if(list!=null&&list.size()>0){
+                    for (Lawstandard lawstandard:list
+                            ) {
+                        lawstandardDao.DeleteSolrTextById(lawstandard.getId());
+                        lawstandardDao.SaveSolrTextById(lawstandard.getId());
+                    }
+                }
+
+            }
+        }
+    }
 
     /**
      * 获取类别树
