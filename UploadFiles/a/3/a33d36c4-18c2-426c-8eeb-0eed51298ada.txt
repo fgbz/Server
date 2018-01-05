@@ -1,0 +1,17 @@
+ALTER TABLE `m_bs_lawstandardtype`
+ADD COLUMN `LAWCOUNT`  int(11) NULL COMMENT '法规数量' AFTER `MODIFYDATE`;
+
+
+
+CREATE TABLE `m_bs_log` (
+`ID`  varchar(36) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL COMMENT '主键id' ,
+`OperationName`  varchar(1024) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL COMMENT '搜藏夹名称' ,
+`Userid`  varchar(36) NULL ,
+`UserName`  varchar(1024) NULL ,
+`OperationTime`  datetime NULL DEFAULT NULL COMMENT '录入时间' ,
+`OrganizationName`  varchar(1024) NULL ,
+`OrganizationID`  varchar(36) NOT NULL 
+)
+;
+
+

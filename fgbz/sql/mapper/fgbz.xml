@@ -166,6 +166,7 @@ WHERE
         <if test="ApproveStatus != null and ApproveStatus != ''">
             and t.APPROVESTATUS = #{ApproveStatus}
         </if>
+        order by t.MODIFYDATE DESC
         LIMIT #{startRow},#{endRow}
     </select>
 

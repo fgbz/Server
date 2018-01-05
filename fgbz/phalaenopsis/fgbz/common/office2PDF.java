@@ -6,8 +6,10 @@ import com.artofsolving.jodconverter.DocumentConverter;
 import com.artofsolving.jodconverter.openoffice.connection.OpenOfficeConnection;
 import com.artofsolving.jodconverter.openoffice.connection.SocketOpenOfficeConnection;
 import com.artofsolving.jodconverter.openoffice.converter.OpenOfficeDocumentConverter;
+import phalaenopsis.common.entity.AppSettings;
 
 import java.io.File;
+import java.io.IOException;
 import java.net.ConnectException;
 
 
@@ -28,15 +30,15 @@ public class office2PDF {
             }
 
 //            //这里是OpenOffice的安装目录, 需要时启动
-//            String OpenOffice_HOME = new AppSettings().getOpenoffice();
+            String OpenOffice_HOME = new AppSettings().getOpenoffice();
 //            // 如果从文件中读取的URL地址最后一个字符不是 '\'，则添加'\'
-//            if (OpenOffice_HOME.charAt(OpenOffice_HOME.length() - 1) != '\\') {
-//                OpenOffice_HOME += "\\";
-//            }
+            if (OpenOffice_HOME.charAt(OpenOffice_HOME.length() - 1) != '\\') {
+                OpenOffice_HOME += "\\";
+            }
 //            // 启动OpenOffice的服务
-//            String command = OpenOffice_HOME
-//                    + "program\\soffice.exe -headless -accept=\"socket,host=127.0.0.1,port=8100;urp;\"";
-//            Process pro = Runtime.getRuntime().exec(command);
+            String command = OpenOffice_HOME
+                    + "program\\soffice -headless -accept=\"socket,host=127.0.0.1,port=8100;urp;\" -nofirststartwizard";
+            Process pro = Runtime.getRuntime().exec(command);
             // connect to an OpenOffice.org instance running on port 8100
             OpenOfficeConnection connection = new SocketOpenOfficeConnection(
                     "127.0.0.1", 8100);
@@ -59,6 +61,8 @@ public class office2PDF {
 //            return -1;
 //        }
         catch (ConnectException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
             e.printStackTrace();
         }
 

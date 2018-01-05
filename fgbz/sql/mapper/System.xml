@@ -100,7 +100,7 @@ FROM
     </select>
 
     <select id="getRolesCount" resultType="int">
-        SELECT count(1) FROM m_sa_role t where 1=1
+        SELECT count(1) FROM m_sa_role t where 1=1 and ROLENAME <![CDATA[  != ]]> 'admin'
         <include refid="queryRole"></include>
     </select>
 
@@ -360,7 +360,7 @@ FROM
 
     <!--查询列表总数-->
     <select id="getUserListCount" parameterType="map" resultType="int">
-        select count(1) from m_sa_user t where 1=1
+        select count(1) from m_sa_user t where 1=1 and  t.USERNAME <![CDATA[  != ]]> 'admin'
         <include refid="queryUser"></include>
     </select>
 

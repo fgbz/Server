@@ -53,6 +53,7 @@ import phalaenopsis.common.util.FileHelper;
 import phalaenopsis.fgbz.common.FileConverter;
 import phalaenopsis.fgbz.common.ItextpdfUtil;
 import phalaenopsis.fgbz.common.office2PDF;
+import phalaenopsis.fgbz.dao.ILog;
 import phalaenopsis.fgbz.dao.LawstandardDao;
 import phalaenopsis.fgbz.dao.TechnicalDao;
 import phalaenopsis.fgbz.entity.Lawstandard;
@@ -129,7 +130,7 @@ public class AttachmentService extends Basis {
 	public FileState upload(String fileName, String explain, HttpServletRequest request) {
 		return save(fileName, explain, null, 0, 0, 0, request, false);
 	}
-
+	@ILog(description="上传附件")
 	public FileState uploadWithNoThum(String userid, String module, HttpServletRequest request) {
 		return saveWithNoThum(userid, module, request);
 	}
@@ -160,6 +161,7 @@ public class AttachmentService extends Basis {
 		return save(fileName, null, spotid, module, x, y, angle, request, true);
 	}
 
+	@ILog(description="下载附件")
 	public void download(String fileID, HttpServletResponse response,String module) throws UnsupportedEncodingException {
 		Attachment attachment = dao.getAttachmentById(fileID);
 		if (null == attachment)
@@ -193,6 +195,7 @@ public class AttachmentService extends Basis {
 		DownloadAttachment(path, attachment.getFileName(), response,responseFileName);
 	}
 
+	@ILog(description="预览附件")
 	public void getPreView(String fileID,HttpServletResponse response) throws IOException {
 		Attachment attachment = dao.getAttachmentById(fileID);
 		if (null == attachment)
@@ -276,6 +279,7 @@ public class AttachmentService extends Basis {
 //		file = new File(Attachment.GetFileStorageFolder(attachment.getActualFile()) + attachment.getThumbFile());
 //		file.deleteOnExit();
 	}
+
 
 	private FileState saveWithNoThum(String userid, String module, HttpServletRequest request) {
 		String guid = UUID.randomUUID().toString();
