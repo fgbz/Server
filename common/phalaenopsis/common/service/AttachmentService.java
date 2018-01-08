@@ -254,6 +254,8 @@ public class AttachmentService extends Basis {
 	@Transactional(propagation = Propagation.REQUIRED)
 	public boolean delete(List<String> fileIDs) {
 		List<Attachment> attachs = new ArrayList<Attachment>();
+		List<Lawstandard> listlaw = new ArrayList<>();
+
 		for (String fileID : fileIDs) {
 			Attachment file = dao.getAttachmentById(fileID);
 
@@ -264,12 +266,20 @@ public class AttachmentService extends Basis {
 		  Lawstandard lawstandard =	lawstandardDao.getLawByFileId(fileID);
 		  //更新索引
 		  if(lawstandard!=null){
-			  lawstandardDao.DeleteSolrTextById(lawstandard.getId());
-			  lawstandardDao.SaveSolrTextById(lawstandard.getId());
+			  listlaw.add(lawstandard);
 		  }
 		}
 		// 批量删除附件
 		dao.batchUpdate(fileIDs);
+
+		if(listlaw.size()>0){
+			for (Lawstandard lawstandard : listlaw) {
+				//更新索引
+				lawstandardDao.DeleteSolrTextById(lawstandard.getId());
+				lawstandardDao.SaveSolrTextById(lawstandard.getId());
+			}
+		}
+
 		for (Attachment attachment : attachs) {
 			deleteAttachment(attachment);
 		}

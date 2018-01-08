@@ -1050,7 +1050,7 @@ where pub.id=#{id}
 FROM
 	m_bs_lawstandard_type lawtype
 INNER JOIN m_bs_lawstandard law ON lawtype.SID = law.ID
-where lawtype.id = #{id}
+where lawtype.LAWSTYPEID= #{id}
     </select>
 
 
