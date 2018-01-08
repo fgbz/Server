@@ -261,4 +261,12 @@ public interface LawstandardDao {
      * @return
      */
     List<Lawstandard> getLawsByPubdep(String id);
+
+    /**
+     * 通过类别获取所有的法规
+     * @param id
+     * @return
+     */
+    List<Lawstandard> getLawsByLawType(String id);
+
 }

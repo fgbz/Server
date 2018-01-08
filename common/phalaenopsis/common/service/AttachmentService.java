@@ -260,6 +260,13 @@ public class AttachmentService extends Basis {
 			if (null == file)
 				return false;
 			attachs.add(file);
+			//通过附件获取id
+		  Lawstandard lawstandard =	lawstandardDao.getLawByFileId(fileID);
+		  //更新索引
+		  if(lawstandard!=null){
+			  lawstandardDao.DeleteSolrTextById(lawstandard.getId());
+			  lawstandardDao.SaveSolrTextById(lawstandard.getId());
+		  }
 		}
 		// 批量删除附件
 		dao.batchUpdate(fileIDs);

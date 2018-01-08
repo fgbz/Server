@@ -247,39 +247,40 @@ FROM
 		SELECT
 			*
 		FROM
-			m_bs_lawstandard
+        m_bs_solr solr
 			WHERE
-			APPROVESTATUS = 3
-	) t1
-WHERE 1=1  <include refid="queryLawstandard"></include> and
         (
         <foreach collection="Solr" index="index" item="item" open="" close="" separator="or">
-            <include refid="querySolr"></include>
+            INSTR(solr.SOLRTEXT,#{item})>0
         </foreach>
         )
 
+	) t
+       left join m_bs_lawstandard t1 on t.lawstandardid = t1.id where t1.APPROVESTATUS=3
+     <include refid="queryLawstandard"></include>
+        order by t1.MODIFYDATE desc
         LIMIT #{startRow},#{endRow}
     </select>
 
     <!--获取全文检索-->
     <select id="getSolrListCount" parameterType="map" resultType="int">
         SELECT
-        count(1)
+       count(1)
         FROM
         (
         SELECT
         *
         FROM
-        m_bs_lawstandard
+        m_bs_solr solr
         WHERE
-        APPROVESTATUS = 3
-        ) t1
-        WHERE 1=1  <include refid="queryLawstandard"></include> and
         (
         <foreach collection="Solr" index="index" item="item" open="" close="" separator="or">
-            <include refid="querySolr"></include>
+            INSTR(solr.SOLRTEXT,#{item})>0
         </foreach>
         )
+        ) t
+        left join m_bs_lawstandard t1 on t.lawstandardid = t1.id where t1.APPROVESTATUS=3
+        <include refid="queryLawstandard"></include>
     </select>
 
     <sql id="queryLawstandard">
@@ -819,29 +820,50 @@ ORDER BY
     </select>
     <!--上传部门统计-->
     <select id="getUploadOrgname" resultType="ChartInfo">
-      SELECT
-	MAX(org.ORGNAME ) AS name,
-	count( 1 ) AS count
+  SELECT
+	*
 FROM
-	m_sa_fileinfo file
-	LEFT JOIN m_sa_user us ON file.INPUTUSERID = us.ID
-	left join m_sa_organization org on us.ORGID = org.ID
-GROUP BY
-	org.id
+	(
+		SELECT
+			MAX(org.ORGNAME) AS NAME,
+			count(1) AS count
+		FROM
+			m_sa_fileinfo file
+		LEFT JOIN m_sa_user us ON file.INPUTUSERID = us.ID
+		LEFT JOIN m_sa_organization org ON us.ORGID = org.ID
+		WHERE
+			 org.id IS NOT NULL
+		GROUP BY
+			org.id
+	) t
+ORDER BY
+	t.count DESC
+LIMIT 0,
+ 10
     </select>
     <!--上传分类统计-->
     <select id="getUploadType" resultType="ChartInfo">
-      SELECT
-	ty.TYPENAME AS name,
-	count( 1 ) AS count
+SELECT
+	*
 FROM
-	m_sa_fileinfo file
-LEFT JOIN m_bs_lawstandard law on file.REFID = law.ID
-left join m_bs_lawstandard_type link on law.ID = link.SID
-left join m_bs_lawstandardtype ty on ty.ID = link.LAWSTYPEID
-where file.REFID is not NULL
-GROUP BY
-ty.ID
+	(
+		SELECT
+			ty.TYPENAME AS NAME,
+			count(1) AS count
+		FROM
+			m_sa_fileinfo file
+		LEFT JOIN m_bs_lawstandard law ON file.REFID = law.ID
+		LEFT JOIN m_bs_lawstandard_type link ON law.ID = link.SID
+		LEFT JOIN m_bs_lawstandardtype ty ON ty.ID = link.LAWSTYPEID
+		WHERE
+			law.id IS NOT NULL
+		GROUP BY
+			ty.ID
+	) t
+ORDER BY
+	t.count DESC
+LIMIT 0,
+ 10
 
     </select>
 
@@ -885,6 +907,7 @@ WHERE
     <!--通过附件id获取法规-->
     <select id="getLawByFileId" parameterType="String" resultType="Lawstandard">
        SELECT
+    t.id,
 	t.`CODE`,
 	t.CHINESENAME
 FROM
@@ -998,8 +1021,8 @@ FROM
 LEFT JOIN `m_sa_lawstandardstatus` `sta` ON `t`.`STATUS` = `sta`.`ID`
 LEFT JOIN `m_bs_lawstandard_pubdep` `pub` ON `t`.`ID` = `pub`.`SID`
 LEFT JOIN `m_sa_publishdep` `dep` ON `dep`.`ID` = `pub`.`PUBDEPID`
-LEFT JOIN `fgbz`.`m_bs_lawstandard_type` `m` ON `m`.`SID` = `t`.`ID`
-LEFT JOIN `fgbz`.`m_bs_lawstandardtype` `n` ON `n`.`ID` = `m`.`LAWSTYPEID`
+LEFT JOIN m_bs_lawstandard_type `m` ON `m`.`SID` = `t`.`ID`
+LEFT JOIN m_bs_lawstandardtype `n` ON `n`.`ID` = `m`.`LAWSTYPEID`
  	 WHERE `t`.`ID` = #{id}
 	) `m`
     </insert>
@@ -1011,7 +1034,23 @@ LEFT JOIN `fgbz`.`m_bs_lawstandardtype` `n` ON `n`.`ID` = `m`.`LAWSTYPEID`
 
     <!--通过发布部门获取所有的法规-->
     <select id="getLawsByPubdep" parameterType="String" resultType="Lawstandard">
- SELECT t.ID from m_bs_lawstandard t where t.`STATUS`=#{id}
+SELECT
+	law.id
+FROM
+	m_sa_publishdep pub
+INNER JOIN m_bs_lawstandard_pubdep dep ON dep.PUBDEPID = pub.id
+INNER JOIN m_bs_lawstandard law ON dep.SID = law.ID
+where pub.id=#{id}
+    </select>
+
+    <!--通过类别获取所有的法规-->
+    <select id="getLawsByLawType" parameterType="String" resultType="Lawstandard">
+      SELECT
+	law.ID
+FROM
+	m_bs_lawstandard_type lawtype
+INNER JOIN m_bs_lawstandard law ON lawtype.SID = law.ID
+where lawtype.id = #{id}
     </select>
 
 

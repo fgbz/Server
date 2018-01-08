@@ -555,7 +555,7 @@ public class LawstandardService {
         lawstandardDao.DeleteLawAndType(id);
 
         //删除索引
-//        lawstandardDao.DeleteSolrTextById(id);
+        lawstandardDao.DeleteSolrTextById(id);
 
         //删除法规收藏夹关联
         Map<String,Object> map1 =new HashMap<>();
