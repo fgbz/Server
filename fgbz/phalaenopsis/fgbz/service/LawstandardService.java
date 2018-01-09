@@ -320,7 +320,7 @@ public class LawstandardService {
         return list;
     }
     /**
-     * 获取法规标准列表
+     * 获取全文检索法规标准列表
      * @param page
      * @return
      */

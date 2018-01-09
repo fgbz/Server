@@ -241,8 +241,9 @@ SELECT
 	t1.SUMMARYINFO,
 	t1.`CODE`,
         t1.id,
-        t1.CLICKCOUNT
-FROM
+        t1.CLICKCOUNT,
+        t1.KEYWORDS
+        FROM
 	(
 		SELECT
 			*
@@ -254,9 +255,8 @@ FROM
             INSTR(solr.SOLRTEXT,#{item})>0
         </foreach>
         )
-
 	) t
-       left join m_bs_lawstandard t1 on t.lawstandardid = t1.id where t1.APPROVESTATUS=3
+       left join m_bs_lawstandard t1 on t.lawstandardid = t1.id where 1=1
      <include refid="queryLawstandard"></include>
         order by t1.MODIFYDATE desc
         LIMIT #{startRow},#{endRow}
@@ -279,7 +279,7 @@ FROM
         </foreach>
         )
         ) t
-        left join m_bs_lawstandard t1 on t.lawstandardid = t1.id where t1.APPROVESTATUS=3
+        left join m_bs_lawstandard t1 on t.lawstandardid = t1.id where 1=1
         <include refid="queryLawstandard"></include>
     </select>
 
