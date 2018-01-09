@@ -174,7 +174,7 @@ public class AttachmentService extends Basis {
 				Lawstandard lawstandard= lawstandardDao.getLawByFileId(fileID);
 
 				if(lawstandard!=null){
-					responseFileName=URLEncoder.encode(lawstandard.getChinesename(), "utf-8")+"+"+URLEncoder.encode(lawstandard.getCode(), "utf-8");
+					responseFileName=URLEncoder.encode(lawstandard.getCode(), "utf-8")+"+"+URLEncoder.encode(lawstandard.getChinesename(), "utf-8")+"."+attachment.getFileExt();
 				}
 
 			}else if(module.equals("Tec")){
@@ -183,9 +183,9 @@ public class AttachmentService extends Basis {
 
 				if(technical!=null){
 					if(!StrUtil.isNullOrEmpty(technical.getCode())){
-						responseFileName =URLEncoder.encode(technical.getChinesename(), "utf-8")+"+"+URLEncoder.encode(technical.getCode(), "utf-8");
+						responseFileName =URLEncoder.encode(technical.getCode(), "utf-8")+"+"+URLEncoder.encode(technical.getChinesename(), "utf-8")+"."+attachment.getFileExt();
 					}else{
-						responseFileName =technical.getChinesename();
+						responseFileName =technical.getChinesename()+"."+attachment.getFileExt();
 					}
 				}
 			}

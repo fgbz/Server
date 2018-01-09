@@ -131,14 +131,14 @@ WHERE
         left join m_sa_user ur on ur.ID = t1.INPUTUSERID
         where 1=1
         <include refid="queryLawstandard"></include>
-        order by if(ISNULL(t1.ISTOP),0,t1.ISTOP) desc  ${Ordertype1}
+        order by  ${Ordertype1}
         LIMIT #{startRow},#{endRow})
         t
         left join m_sa_lawstandardstatus sta on t.`STATUS` = sta.ID
         left join m_sa_publishdep dep on dep.ID = t.pubid
         left join m_bs_lawstandard_type m on m.SID = t.id
         left join m_bs_lawstandardtype n on n.id = m.LAWSTYPEID
-        order by if(ISNULL(t.ISTOP),0,t.ISTOP) desc  ${Ordertype}
+        order by  ${Ordertype}
     </select>
 
     <!-- 查询列表的总数 -->

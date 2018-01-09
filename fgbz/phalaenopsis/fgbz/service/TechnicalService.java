@@ -192,16 +192,34 @@ public class TechnicalService {
                     //排序
                     switch (condition.getValue()){
                         case "0":
-                            ordertest = " ,t.INPUTDATE ";
+                            ordertest = " t.approvestatus,t.INPUTDATE ";
                             break;
                         case "1":
-                            ordertest = " ,t.INPUTDATE DESC ";
+                            ordertest = " t.approvestatus,t.INPUTDATE DESC ";
                             break;
                         case "2":
-                            ordertest = " ,t.MODIFYDATE ";
+                            ordertest = " t.approvestatus,t.MODIFYDATE ";
                             break;
                         case "3":
-                            ordertest = " ,t.MODIFYDATE DESC ";
+                            ordertest = " t.approvestatus,t.MODIFYDATE DESC ";
+                            break;
+                    }
+                    conditions.put("Ordertype",ordertest);
+                }else if(condition.getKey().equals("SearchOrdertype")){
+                    String ordertest ="";
+                    //排序
+                    switch (condition.getValue()){
+                        case "0":
+                            ordertest = " t.INPUTDATE ";
+                            break;
+                        case "1":
+                            ordertest = " t.INPUTDATE DESC ";
+                            break;
+                        case "2":
+                            ordertest = " t.RELEASEDATE ";
+                            break;
+                        case "3":
+                            ordertest = " t.RELEASEDATE DESC ";
                             break;
                     }
                     conditions.put("Ordertype",ordertest);

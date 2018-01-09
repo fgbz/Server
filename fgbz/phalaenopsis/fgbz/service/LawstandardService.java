@@ -244,20 +244,44 @@ public class LawstandardService {
                     //排序
                     switch (condition.getValue()){
                         case "0":
-                            ordertest = " ,t.INPUTDATE ";
-                            ordertest1 = " ,t1.INPUTDATE ";
+                            ordertest = " t.APPROVESTATUS ,t.INPUTDATE ";
+                            ordertest1 = " t1.APPROVESTATUS,t1.INPUTDATE ";
                             break;
                         case "1":
-                            ordertest = " ,t.INPUTDATE DESC ";
-                            ordertest1 = " ,t1.INPUTDATE DESC ";
+                            ordertest = " t.APPROVESTATUS  ,t.INPUTDATE DESC ";
+                            ordertest1 = " t1.APPROVESTATUS,t1.INPUTDATE DESC ";
                             break;
                         case "2":
-                            ordertest = " ,t.MODIFYDATE ";
-                            ordertest1 = " ,t1.MODIFYDATE  ";
+                            ordertest = " t.APPROVESTATUS,t.MODIFYDATE ";
+                            ordertest1 = " t1.APPROVESTATUS,t1.MODIFYDATE  ";
                             break;
                         case "3":
-                            ordertest = " ,t.MODIFYDATE DESC ";
-                            ordertest1 = " ,t1.MODIFYDATE DESC ";
+                            ordertest = " t.APPROVESTATUS  ,t.MODIFYDATE DESC ";
+                            ordertest1 = " t1.APPROVESTATUS ,t1.MODIFYDATE DESC ";
+                            break;
+                    }
+                    conditions.put("Ordertype",ordertest);
+                    conditions.put("Ordertype1",ordertest1);
+                }else if(condition.getKey().equals("SearchOrdertype")){
+                    String ordertest ="";
+                    String ordertest1 ="";
+                    //排序
+                    switch (condition.getValue()){
+                        case "0":
+                            ordertest = " if(ISNULL(t.ISTOP),0,t.ISTOP) desc  ,t.INPUTDATE ";
+                            ordertest1 = " if(ISNULL(t1.ISTOP),0,t1.ISTOP) desc ,t1.INPUTDATE ";
+                            break;
+                        case "1":
+                            ordertest = " if(ISNULL(t.ISTOP),0,t.ISTOP) desc  ,t.INPUTDATE DESC ";
+                            ordertest1 = " if(ISNULL(t1.ISTOP),0,t1.ISTOP) desc ,t1.INPUTDATE DESC ";
+                            break;
+                        case "2":
+                            ordertest = " if(ISNULL(t.ISTOP),0,t.ISTOP) desc ,t.IMPDATE ";
+                            ordertest1 = " if(ISNULL(t1.ISTOP),0,t1.ISTOP) desc ,t1.IMPDATE  ";
+                            break;
+                        case "3":
+                            ordertest = " if(ISNULL(t.ISTOP),0,t.ISTOP) desc  ,t.IMPDATE DESC ";
+                            ordertest1 = " if(ISNULL(t1.ISTOP),0,t1.ISTOP) desc  ,t1.IMPDATE DESC ";
                             break;
                     }
                     conditions.put("Ordertype",ordertest);
