@@ -1,20 +1,33 @@
 package phalaenopsis.fgbz.service;
 
+import org.apache.commons.io.FilenameUtils;
+import org.apache.pdfbox.pdmodel.PDDocument;
+import org.apache.pdfbox.text.PDFTextStripper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import phalaenopsis.common.dao.IAttachmentDao;
+import phalaenopsis.common.entity.Attachment.Attachment;
+import phalaenopsis.common.entity.Attachment.AttachmentSource;
 import phalaenopsis.common.entity.Condition;
 import phalaenopsis.common.entity.OpResult;
 import phalaenopsis.common.entity.Page;
 import phalaenopsis.common.entity.PagingEntity;
+import phalaenopsis.common.method.Attachment.Multipart;
 import phalaenopsis.common.method.Tools.StrUtil;
 import phalaenopsis.common.method.cache.UserCache;
+import phalaenopsis.common.service.AttachmentService;
+import phalaenopsis.fgbz.common.office2PDF;
 import phalaenopsis.fgbz.dao.ILog;
 import phalaenopsis.fgbz.dao.LawstandardDao;
 import phalaenopsis.fgbz.dao.SystemDao;
 import phalaenopsis.fgbz.entity.*;
 
+import javax.annotation.Resource;
+import java.io.*;
 import java.util.*;
+
+import static phalaenopsis.common.method.Basis.getCurrentFGUser;
 
 @Service("systemServie")
 public class SystemServie {
@@ -25,7 +38,19 @@ public class SystemServie {
     @Autowired
     private LawstandardDao lawstandardDao;
 
+    public IAttachmentDao dao;
+
+    @Resource(name = "attachmentDao")
+    public void setDao(IAttachmentDao dao) {
+        this.dao = dao;
+    }
+
+    @Autowired
+    private AttachmentService attachmentService;
+
     private  List<FG_Organization> ids = new ArrayList<FG_Organization>();
+
+    private List<File> filelist = new ArrayList<>();
 
     public  Map<String, Object> login(String accountJm, String passwordJm){
 
@@ -57,6 +82,142 @@ public class SystemServie {
 
         return map;
 
+    }
+
+    //提取中文数字和字母
+    public String filter(String character)
+    {
+        character = character.replaceAll("[^a-zA-Z0-9\\u4e00-\\u9fa5]", "");
+        return character;
+    }
+
+    @Transactional
+    public int handleHistory(String path) throws IOException {
+
+        filelist = new ArrayList<>();
+        getFileList(path);
+
+        if(filelist.size()==0){
+
+            return  OpResult.PreconditionFailed;
+        }
+        //历史法规
+        List<Lawstandard> histroyLaws = lawstandardDao.getHistroyLaws();
+
+        FG_User user = getCurrentFGUser();
+        if(histroyLaws!=null&&histroyLaws.size()>0) {
+
+            for (Lawstandard lawstandard:histroyLaws) {
+                List<Attachment> getAttachments =dao.getAttachmentsHistroy(lawstandard.getId());
+
+                lawstandard.setId(UUID.randomUUID().toString());
+                lawstandard.setInputuserid(user.getId());
+                lawstandard.setLawtype("0055d568-536b-4275-8e69-d5be69e3112c");
+                //处理编码，以便查重
+                String checkcode = filter(lawstandard.getCode());
+                lawstandard.setCheckcode(checkcode);
+
+                lawstandardDao.SaveOrUpdateLawstandard(lawstandard);
+                lawstandardDao.SaveOrUpdateLawAndType(lawstandard);
+
+                if(getAttachments!=null&&getAttachments.size()>0){
+                    for (Attachment attachment:getAttachments) {
+                        attachment.setRefid(lawstandard.getId());
+                        handleFile(attachment);
+                    }
+                }
+            }
+
+        }
+
+        return  OpResult.Success;
+    }
+
+    public void handleFile(Attachment attachment) throws IOException {
+
+        FG_User user = getCurrentFGUser();
+        for(int i=0;i<filelist.size();i++){
+            if(filelist.get(i).getName().equals(attachment.getActualFile())){
+                String guid = UUID.randomUUID().toString();
+                String fileName = attachment.getActualFile();
+                String ext = FilenameUtils.getExtension(fileName); // fileName.split("\\.")[1];
+                String storeFile =guid + "." + ext;
+
+                // 保存文件
+                String storageFolder = Attachment.GetFileStorageFolder(guid);
+                File file = new File(storageFolder + storeFile);
+
+                if (!file.exists())
+                    file.mkdirs();
+                InputStream ii = null;
+                OutputStream oo = null;
+                try {
+                    ii = new FileInputStream(filelist.get(i));
+                    oo = new FileOutputStream(file);
+                    int size = 0;
+                    byte[] buf = new byte[1024];
+                    while ((size = ii.read(buf)) != -1) {
+                        oo.write(buf,0,size);
+                    }
+                } catch (FileNotFoundException e) {
+                    e.printStackTrace();
+                }
+                finally
+                {
+                    oo.flush();
+                    oo.close();
+                    ii.close();
+                }
+
+                attachment.setPath(storageFolder);
+                attachment.setInputuserid(user.getId());
+                //法规上传需要解析获取pdf中的文字
+                if(ext.equals("pdf")){
+
+                    PDDocument document=PDDocument.load(file);
+
+                    // 获取页码
+                    int pages = document.getNumberOfPages();
+
+                    // 读文本内容
+                    PDFTextStripper stripper=new PDFTextStripper();
+                    // 设置按顺序输出
+                    stripper.setSortByPosition(true);
+                    stripper.setStartPage(1);
+                    stripper.setEndPage(pages);
+                    String content = stripper.getText(document);
+                    attachment.setContent(content);
+                }
+                if(isDocFile(ext)){
+                    //转化office pdf
+                    office2PDF.office2PDF(storageFolder + storeFile,storageFolder+guid+".pdf");
+                }
+                dao.saveFgbz(attachment);
+                break;
+            }
+        }
+    }
+
+    private boolean isDocFile(String extName) {
+        boolean result = false;
+        String fileExt = ".doc;.txt;.docx;";
+        result = fileExt.contains(extName.toLowerCase());
+
+        return result;
+    }
+
+    public  void getFileList(String strPath) {
+        File dir = new File(strPath);
+        File[] files = dir.listFiles(); // 该文件目录下文件全部放入数组
+        if (files != null) {
+            for (int i = 0; i < files.length; i++) {
+                if (files[i].isDirectory()) { // 判断是文件还是文件夹
+                    getFileList(files[i].getAbsolutePath()); // 获取文件绝对路径
+                } else {
+                    filelist.add(files[i]);
+                }
+            }
+        }
     }
     /**
      * 获取组织机构

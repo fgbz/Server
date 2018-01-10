@@ -16,6 +16,9 @@ public interface IAttachmentDao {
 	 * @return
 	 */
 	List<Attachment> getAttachments(String bizID);
+
+	List<Attachment> getAttachmentsHistroy(String bizID);
+
 	
 	/**
 	 * 获取附件列表 倒叙

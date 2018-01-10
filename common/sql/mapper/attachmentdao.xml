@@ -15,6 +15,15 @@
 		SERVERPATH as path
 		from m_sa_fileinfo where REFID = #{bizID}
 	</select>
+
+	<select id="getAttachmentsHistroy" parameterType="string" resultType="phalaenopsis.common.entity.Attachment.Attachment">
+		select  ID,
+		FILETYPE as fileExt,
+		SERVERFILENAME as actualFile,
+		CLIENTFILENAME as fileName,
+		SERVERPATH as path
+		from m_sa_fileinfo_copy1 where REFID = #{bizID}
+	</select>
 	
 	<!-- 根据业务数据Id，获取对应附件集合 （倒叙）  -->
 	<select id="getDescAttachments" parameterType="string" resultType="phalaenopsis.common.entity.Attachment.Attachment">
@@ -108,6 +117,7 @@
 	<insert id="saveFgbz" parameterType="phalaenopsis.common.entity.Attachment.Attachment">
 		insert into m_sa_fileinfo(
 		ID,
+		refid,
 		FILETYPE,
 		SERVERFILENAME,
 		CLIENTFILENAME,
@@ -117,6 +127,7 @@
 		INPUTUSERID
 		) values
 		(#{id},
+		#{refid,jdbcType=VARCHAR},
 		#{fileExt,jdbcType=VARCHAR},
 		#{actualFile,jdbcType=VARCHAR},
 		#{fileName,jdbcType=VARCHAR},

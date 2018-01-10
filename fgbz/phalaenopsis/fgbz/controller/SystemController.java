@@ -18,6 +18,7 @@ import phalaenopsis.fgbz.entity.FG_User;
 import phalaenopsis.fgbz.entity.Fg_Log;
 import phalaenopsis.fgbz.service.SystemServie;
 
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -43,6 +44,13 @@ public class SystemController {
 
 
         return map;
+    }
+
+    @RequestMapping(value = "/handleHistory", method = RequestMethod.POST)
+    @ResponseBody
+    public int handleHistory(@RequestBody Map<String, String> map) throws IOException {
+            String path =  (String) map.get("path");
+            return systemServie.handleHistory(path);
     }
     /**
      * 获取组织机构

@@ -269,4 +269,10 @@ public interface LawstandardDao {
      */
     List<Lawstandard> getLawsByLawType(String id);
 
+    /**
+     * 获取历史法规
+     * @return
+     */
+    List<Lawstandard> getHistroyLaws();
+
 }

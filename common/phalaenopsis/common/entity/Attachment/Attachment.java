@@ -136,6 +136,16 @@ public class Attachment implements Serializable   {
 
 	private String inputuserid;
 
+	private String refid;
+
+	public String getRefid() {
+		return refid;
+	}
+
+	public void setRefid(String refid) {
+		this.refid = refid;
+	}
+
 	public String getInputuserid() {
 		return inputuserid;
 	}

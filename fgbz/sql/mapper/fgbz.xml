@@ -1053,5 +1053,9 @@ INNER JOIN m_bs_lawstandard law ON lawtype.SID = law.ID
 where lawtype.LAWSTYPEID= #{id}
     </select>
 
+    <!--获取历史法规-->
+    <select id="getHistroyLaws" resultType="Lawstandard">
+          SELECT * FROM `m_bs_lawstandard_copy1` LIMIT 0,10
+    </select>
 
 </mapper>
