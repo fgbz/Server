@@ -118,6 +118,7 @@ public class TechnicalController {
             @RequestParam(value = "KeyWordsSingle", required = false) String KeyWordsSingle,
             @RequestParam(value = "TreeValue", required = false) String TreeValue,
             @RequestParam(value = "ApproveStatus", required = false) String ApproveStatus,
+            @RequestParam(value = "SearchOrdertype", required = false) String SearchOrdertype,
             HttpServletResponse response) {
         List<Condition> list = new ArrayList<>();
         if (Number != null&&!Number.equals("null")) {
@@ -141,7 +142,9 @@ public class TechnicalController {
         if (ApproveStatus != null&&!ApproveStatus.equals("null")) {
             list.add(new Condition("ApproveStatus", ApproveStatus));
         }
-
+        if (SearchOrdertype != null&&!SearchOrdertype.equals("null")) {
+            list.add(new Condition("SearchOrdertype", SearchOrdertype));
+        }
 
         technicalService.exportExcel(list, response);
 

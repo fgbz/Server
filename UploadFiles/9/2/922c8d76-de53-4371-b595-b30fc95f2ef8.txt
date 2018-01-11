@@ -1,0 +1,302 @@
+    // 树形
+    md.directive('comboTree', function () {
+        return {
+            restrict: 'EA',
+            templateUrl: '/partials/common/comboTree.html',
+            transclude: true,
+            replace: true,
+            scope: {
+                treeData: '=',      //数据源
+                treeModel: '=',     //默认选中值的Value
+                treeName: '@',      //输入框name
+                treeDisabled: '=',  //是否可用控制
+                displayTextNull: '@displayWhenNull', //当未选择时选项时，显示的文本
+                displayText: '=treeDisplay', //文本框展示文字
+                treeWidth: '@',     //下拉框宽度
+                treeHeight: '@',    //下拉框高度
+                treeMargin: '@', // 总体位置
+                expandFirst: '='    //是否默认展开第一组
+            },
+            require: '?uiTree',
+            link: function (scope, element, attributes) {
+                // 构建树数据
+                var dataList = []; // 数据列表，与树数据源指向相同引用
+                var dataListCopy = []; //数据备份，用于赋值
+                var count = 0;
+                var initParentID = '00000000-0000-0000-0000-000000000000';
+                function LoadTreeData(treeNodesData, parentId, flag) {
+                    var data = [];
+                    if (treeNodesData)
+                        angular.forEach(treeNodesData, function (item) {
+                            if (item.ParentID == parentId) {
+                                var t = {
+                                    'Id': item.Id,
+                                    'Name': item.Name,
+                                    'ParentID': item.ParentID,
+                                    'isExpander': flag ? true : false, // 是否展开
+                                    'persons': item.persons,//人员
+                                    'nodes': LoadTreeData(treeNodesData, item.Id, flag)
+                                };
+                                dataList.push(t);
+                                this.push(t);
+                            }
+                        }, data);
+                    return data;
+                };
+                scope.$watch('treeData', function (v) {
+                    if (v) {
+                        dataList = [];
+                        //找到根节点的parentid，需要服务查询时按code排序
+                        if (scope.treeData && scope.treeData.length > 0) {
+                            initParentID = scope.treeData[0].ParentID;
+                        }
+                        scope.source = LoadTreeData(scope.treeData, initParentID);
+                        if (count == 0 && scope.treeData.length > 0) {
+                            //获取最原始数据，保存起来 
+                            dataListCopy = JSON.parse(JSON.stringify(dataList));
+                            count++;
+                        }
+                    }
+                }, true)
+
+                /**
+                 * 单选Start
+                 */
+
+                // 获取节点的父节点  
+                function GetParentNode(node) {
+                    var parent = null;
+                    var currentNode = null;
+                    var flag = false;
+                    for (var v in dataList) {
+                        for (var j in dataList[v].persons) {
+                            if (dataList[v].persons[j].Id == node.Id) {
+                                currentNode = dataList[v]; //选中项 
+                                flag = true;
+                                break;
+                            }
+                        }
+                        if (flag) {
+                            break;
+                        }
+                    }
+                    if (currentNode != null) {
+                        for (var k in dataList) {
+                            if (dataList[k].Id == currentNode.ParentID) {
+                                parent = dataList[v];
+                                break;
+                            }
+                        }
+                    }
+
+                    return parent;
+                }
+                //通过节点找到父节点
+                function GetParentNodeByNode(node) {
+                    var parent = null;
+                    for (var k in dataList) {
+                        if (dataList[k].Id == node.ParentID) {
+                            parent = dataList[k];
+                            break;
+                        }
+                    }
+                    return parent;
+                }
+                // 展开父级
+                function ExpendParent(node, type) {
+                    var parent = null;
+                    if (type == "person") {
+                        parent = GetParentNode(node, scope.source);
+                    } else {
+                        parent = GetParentNodeByNode(node, scope.source);
+                    }
+
+                    if (parent != null) {
+                        parent.isExpander = true;
+                        ExpendParent(parent);
+                    }
+                }
+
+                // 初始化，单选设置选中项
+                function setSingleSelectedNode(checkedValue) {
+                    //标识是否退出外层循环
+                    var flag = false;
+                    for (var d in dataList) {
+                        var node = dataList[d];
+                        for (var j in node.persons) {
+                            if (node.persons[j].Id == checkedValue) {
+                                scope.selectedNode = node.persons[j]; //选中项
+                                flag = true;
+                                break;
+                            }
+                        }
+                        //是否退出外层循环
+                        if (flag) {
+                            break;
+                        }
+
+                    }
+                }
+
+                // 单击时，展示文本
+                scope.$watch('selectedNode', function (newValue) {
+                    if (newValue) {
+                        scope.treeModel = newValue.Id;
+                        scope.displayText = newValue.Name;
+                    } else {
+                        scope.displayText = "";
+                    }
+                }, true)
+                /**
+                 * 单选End
+                 */
+
+                //监视输入框的值,变化时查询
+                scope.$watch('displayText', function (newValue) {
+                    if (newValue) {
+                        var currentData = [];
+                        var flag = false;
+                        //重新赋值
+                        dataList = JSON.parse(JSON.stringify(dataListCopy));
+                        for (var d in dataList) {
+
+                            flag = false;
+                            var node = dataList[d];
+                            var currentPersons = [];
+                            //找到搜索的人
+                            for (var j in node.persons) {
+                                if (node.persons[j].Name.indexOf(newValue) != -1) {
+                                    currentPersons.push(node.persons[j]);
+                                    flag = true;
+                                }
+                            }
+                            if (flag) {
+                                node.persons = currentPersons;
+                                currentData.push(node);
+                            }
+                        }
+                        //节点父级也加入数据中
+                        for (var i in currentData) {
+                            var parent = GetParentNodeByNode(currentData[i]);
+                            while (parent != null) {
+                                var isContain = false;
+                                for (var m in currentData) {
+                                    if (currentData[m].Id == parent.Id) {
+                                        isContain = true;
+                                        break;
+                                    }
+                                }
+                                if (!isContain) {
+                                    parent.persons = [];
+                                    currentData.push(parent);
+                                }
+                                parent = GetParentNodeByNode(parent);
+                            }
+                        }
+
+                        dataList = [];
+                        scope.source = LoadTreeData(currentData, initParentID, true);
+                    } else {
+                        scope.treeModel = null;
+                        scope.selectedNode = null;
+                        dataList = [];
+                        scope.source = LoadTreeData(scope.treeData, initParentID);
+                    }
+                })
+
+                //第一次打开下拉框时，选中对应值
+                function initSelectedNode() {
+                    if (scope.treeModel) {
+                        scope.selectedNode = null;
+                        setSingleSelectedNode(scope.treeModel);
+                        //重新赋值
+                        dataList = [];
+                        scope.source = LoadTreeData(scope.treeData, initParentID);
+                        if (scope.selectedNode) {
+                            for (var v in dataList) {
+                                dataList[v].isExpander = false;
+                            }
+                            ExpendParent(scope.selectedNode, "person");
+                        } else
+                            scope.selectedNode = null;
+
+                    }
+                }
+                scope.$watch('source', function (v) {
+                    if (v) {
+                        // 展开第一组
+                        if (scope.expandFirst == true && scope.source) {
+                            angular.forEach(scope.source, function (v, k) {
+                                v.isExpander = true;
+                            });
+                        }
+                    };
+                })
+
+                // 外部改变treeModel值时，选中对应的项
+                scope.$watch('treeModel', function (newValue, oldValue) {
+                    if (!(oldValue == undefined && newValue == undefined)) {
+                        scope.selectedNode = null;
+                        setSingleSelectedNode(scope.treeModel);
+                        if (scope.selectedNode) {
+                            ExpendParent(scope.selectedNode, "person");
+                        } else
+                            scope.selectedNode = null;
+
+                    }
+                })
+
+                //单击选项事件
+                scope.selectNode = function (item, node) {
+                    scope.selectedNode = item;
+                    scope.showTree = false;
+                }
+
+                //展开下拉树
+                scope.expandTree = function () {
+                    if (!scope.showTree) {
+                        initSelectedNode();
+                    }
+                    scope.showTree = !scope.showTree;
+                };
+
+                //点击“+”时展开选项
+                scope.expandItem = function (item, $event) {
+                    $event.stopPropagation(); //阻止事件冒泡
+                    item.isExpander = !item.isExpander;
+                }
+
+                //点击其他除下拉框及显示文本框的其他地方时关闭下拉框
+                $(document).mousedown(function (e) {
+                    var event = window.event || e;
+                    var target = event.target || event.srcElement;
+                    var comboTrees = document.getElementsByName('combo_tree');
+                    var flag = true;
+                    do {
+                        if (target == document) {
+                            flag = false;
+                            break;
+                        }
+                        for (var i = 0; i < comboTrees.length; i++) {
+                            if (target == comboTrees[i]) {
+                                flag = false;
+                                break;
+                            }
+                        }
+                        if (flag)
+                            target = target.parentNode;
+                    } while (flag && target != null);
+
+                    if (target == document) {
+                        scope.$apply(function () {
+                            scope.showTree = false;
+                        })
+                    }
+                })
+            }
+        }
+    });
+
+
+    <combo-tree tree-name="build_Region4" nametext="请选择巡更点" tree-data="points" tree-model="patrolPlan.patrol_pointId" display-when-null=""
+                            tree-display="patrolPlanName1" tree-width="483" tree-height="400" expand-first="true"></combo-tree>

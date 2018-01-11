@@ -153,6 +153,8 @@ public class TechnicalService {
 
         Map<String, Object> conditions = new HashMap<String, Object>();
 
+        boolean isOrder = false;
+
         if(page.getConditions()!=null) {
             //查询条件
             for (Condition condition : page.getConditions()) {
@@ -189,6 +191,7 @@ public class TechnicalService {
                     conditions.put("OrgList", org.getChildsorg());
                 }else if(condition.getKey().equals("Ordertype")){
                     String ordertest ="";
+                    isOrder = true;
                     //排序
                     switch (condition.getValue()){
                         case "0":
@@ -207,6 +210,8 @@ public class TechnicalService {
                     conditions.put("Ordertype",ordertest);
                 }else if(condition.getKey().equals("SearchOrdertype")){
                     String ordertest ="";
+
+                    isOrder = true;
                     //排序
                     switch (condition.getValue()){
                         case "0":
@@ -228,7 +233,9 @@ public class TechnicalService {
             }
         }
 
-
+        if(!isOrder){
+            conditions.put("Ordertype"," t.MODIFYDATE DESC ");
+        }
         // 1,根据条件一共查询到的数据条数
         int count = technicalDao.getTechnicalListCount(conditions);
 

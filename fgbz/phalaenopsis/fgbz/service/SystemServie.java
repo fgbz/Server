@@ -148,7 +148,7 @@ public class SystemServie {
                 File file = new File(storageFolder + storeFile);
 
                 if (!file.exists())
-                    file.mkdirs();
+                    file.createNewFile();
                 InputStream ii = null;
                 OutputStream oo = null;
                 try {
@@ -168,7 +168,9 @@ public class SystemServie {
                     oo.close();
                     ii.close();
                 }
-
+                attachment.setId(UUID.randomUUID().toString());
+                attachment.setFileExt(ext);
+                attachment.setActualFile(storeFile);
                 attachment.setPath(storageFolder);
                 attachment.setInputuserid(user.getId());
                 //法规上传需要解析获取pdf中的文字

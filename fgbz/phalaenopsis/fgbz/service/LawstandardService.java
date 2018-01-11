@@ -192,6 +192,7 @@ public class LawstandardService {
 
         Map<String, Object> conditions = new HashMap<String, Object>();
 
+        boolean isOrder = false;
         if(page.getConditions()!=null) {
             //查询条件
             for (Condition condition : page.getConditions()) {
@@ -241,6 +242,7 @@ public class LawstandardService {
                 }else if(condition.getKey().equals("Ordertype")){
                     String ordertest ="";
                     String ordertest1 ="";
+                    isOrder = true;
                     //排序
                     switch (condition.getValue()){
                         case "0":
@@ -265,6 +267,7 @@ public class LawstandardService {
                 }else if(condition.getKey().equals("SearchOrdertype")){
                     String ordertest ="";
                     String ordertest1 ="";
+                    isOrder = true;
                     //排序
                     switch (condition.getValue()){
                         case "0":
@@ -291,6 +294,10 @@ public class LawstandardService {
             }
         }
 
+        if(!isOrder){
+            conditions.put("Ordertype"," t.MODIFYDATE DESC ");
+            conditions.put("Ordertype1"," t1.MODIFYDATE DESC ");
+        }
 
         // 1,根据条件一共查询到的数据条数
         int count = lawstandardDao.getLawstandardListCount(conditions);
@@ -639,8 +646,10 @@ public class LawstandardService {
             lawstandardDao.SaveOrUpdateLawAndType(lawstandard);
         }
 
-            if(lawstandard.getOrganization()!=null){
+            if(!StrUtil.isNullOrEmpty(lawstandard.getOrganization())){
                 lawstandardDao.SaveOrUpdateLawAndPublish(lawstandard);
+            }else{
+                lawstandardDao.deletePubByLaw(lawstandard.getId());
             }
 
 

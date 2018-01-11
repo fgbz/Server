@@ -774,6 +774,10 @@ SELECT
 
     </insert>
 
+    <delete id="deletePubByLaw" parameterType="String">
+        delete from m_bs_lawstandard_pubdep where SID=#{id}
+    </delete>
+
     <!--点击次数加一-->
     <update id="AddLawstandardCount" parameterType="Lawstandard">
         update m_bs_lawstandard t set t.CLICKCOUNT = #{clickcount}

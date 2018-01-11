@@ -86,6 +86,8 @@ public interface LawstandardDao {
      */
     int SaveOrUpdateLawAndPublish(Lawstandard lawstandard);
 
+    int deletePubByLaw(String id);
+
     /**
      * 获取法规详情
      * @param id
