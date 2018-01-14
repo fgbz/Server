@@ -47,6 +47,13 @@ public interface IAttachmentDao {
 	 * @param fileID
 	 */
 	int delete(String fileID);
+
+	/**
+	 * 删除法规标准附件
+	 * @param id
+	 * @return
+	 */
+	int deleteFgbzfile(String id);
 	/**
 	 * 批量删除附件(逻辑删除)
 	 * @param ids

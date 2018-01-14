@@ -327,7 +327,7 @@ public class AttachmentService extends Basis {
 			attachment.setPath(storageFolder);
 			attachment.setInputuserid(userid);
 			//法规上传需要解析获取pdf中的文字
-			if(ext.equals("pdf")&&module.equals("Law")){
+			if(ext.toLowerCase().equals("pdf")&&module.equals("Law")){
 
 				PDDocument document=PDDocument.load(file);
 

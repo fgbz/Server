@@ -13,6 +13,11 @@ public class Lawstandard {
 
     @ExcelTitle(value = "法规标准编号")
     private String code;
+
+    /**
+     *
+     */
+    private String oldid;
     /**
      * 中文名称
      */
@@ -182,6 +187,14 @@ public class Lawstandard {
      * 验证编号是否重复的字段
      */
     private String checkcode;
+
+    public String getOldid() {
+        return oldid;
+    }
+
+    public void setOldid(String oldid) {
+        this.oldid = oldid;
+    }
 
     public String getPubdepname() {
         return pubdepname;

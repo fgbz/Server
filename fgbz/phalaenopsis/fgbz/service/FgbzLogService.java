@@ -187,13 +187,18 @@ public class FgbzLogService {
         Object[] args=point.getArgs();
         Lawstandard lawstandard = (Lawstandard) args[0];
 
-        if(result==OpResult.Success){
-            //发布时维护索引
-            if(!StrUtil.isNullOrEmpty(lawstandard.getId())&&lawstandard.getApprovestatus()==3){
-                lawstandardDao.DeleteSolrTextById(lawstandard.getId());
-                lawstandardDao.SaveSolrTextById(lawstandard.getId());
+        try{
+            if(result==OpResult.Success){
+                //发布时维护索引
+                if(!StrUtil.isNullOrEmpty(lawstandard.getId())&&lawstandard.getApprovestatus()==3){
+                    lawstandardDao.DeleteSolrTextById(lawstandard.getId());
+                    lawstandardDao.SaveSolrTextById(lawstandard.getId());
+                }
             }
+        }catch(Exception e){
+
         }
+
     }
 
     //修改状态时维护索引

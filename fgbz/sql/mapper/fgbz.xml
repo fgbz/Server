@@ -126,8 +126,7 @@ WHERE
         t.USERREALNAME as inputusername, dep.PUBDEPNAME,
         case when (select count(1) from m_bs_lawstandard_approve app where app.LawstandardID = t.id)>0 then 1 else 0 end as isapprove
         from
-        ( SELECT t1.*,pub.PUBDEPID as pubid,ur.USERREALNAME from m_bs_lawstandard t1
-        left join m_bs_lawstandard_pubdep pub on t1.id = pub.SID
+        ( SELECT t1.*,ur.USERREALNAME from m_bs_lawstandard t1
         left join m_sa_user ur on ur.ID = t1.INPUTUSERID
         where 1=1
         <include refid="queryLawstandard"></include>
@@ -135,7 +134,8 @@ WHERE
         LIMIT #{startRow},#{endRow})
         t
         left join m_sa_lawstandardstatus sta on t.`STATUS` = sta.ID
-        left join m_sa_publishdep dep on dep.ID = t.pubid
+        left join (select temp.sid,max(temp.PUBDEPID) as PUBDEPID from `m_bs_lawstandard_pubdep` temp group by temp.sid) pub on t.id = pub.SID
+        left join m_sa_publishdep dep on dep.ID = pub.PUBDEPID
         left join m_bs_lawstandard_type m on m.SID = t.id
         left join m_bs_lawstandardtype n on n.id = m.LAWSTYPEID
         order by  ${Ordertype}
@@ -144,7 +144,6 @@ WHERE
     <!-- 查询列表的总数 -->
     <select id="getLawstandardListCount" resultType="int">
         select count(1) from m_bs_lawstandard t1
-        left join m_bs_lawstandard_pubdep pub on t1.id = pub.SID
         left join m_sa_user ur on ur.ID = t1.INPUTUSERID
         where 1=1
         <include refid="queryLawstandard"></include>
@@ -152,22 +151,26 @@ WHERE
 
 
     <select id="getUptodateLawstandardList" parameterType="map" resultType="Lawstandard">
-        SELECT t.ID,t.`CODE`,t.CHINESENAME,t.APPROVESTATUS,dep.PUBDEPNAME,t.CLICKCOUNT,t.RELEASEDATE ,t.IMPDATE from m_bs_lawstandard t
-        left join m_bs_lawstandard_pubdep pub on t.id = pub.SID
-        left join m_sa_publishdep dep on dep.ID = pub.PUBDEPID where 1=1
+        SELECT t.ID,t.`CODE`,t.CHINESENAME,t.APPROVESTATUS,dep.PUBDEPNAME,t.CLICKCOUNT,t.RELEASEDATE ,t.IMPDATE from
 
+        ( SELECT  *from m_bs_lawstandard m where 1=1
         <if test="TreeValue !=null and TreeValue!=''" >
-            and t.id in (select lt.SID from m_bs_lawstandard_type lt where lt.LAWSTYPEID in
+            and m.id in (select lt.SID from m_bs_lawstandard_type lt where lt.LAWSTYPEID in
             <foreach collection="TreeValue" item="item" open="(" close=")" separator=",">
                 #{item.id}
             </foreach>
             )
         </if>
         <if test="ApproveStatus != null and ApproveStatus != ''">
-            and t.APPROVESTATUS = #{ApproveStatus}
+            and m.APPROVESTATUS = #{ApproveStatus}
         </if>
-        order by t.MODIFYDATE DESC
+        order by m.MODIFYDATE DESC
         LIMIT #{startRow},#{endRow}
+        )t
+        left join (select temp.sid,max(temp.PUBDEPID) as PUBDEPID from `m_bs_lawstandard_pubdep` temp group by temp.sid) pub on t.id = pub.SID
+        left join m_sa_publishdep dep on dep.ID = pub.PUBDEPID where 1=1
+
+
     </select>
 
     <sql id="querySolr">
@@ -235,51 +238,38 @@ WHERE
     </sql>
     <!--获取全文检索-->
     <select id="getSolrList" parameterType="map" resultType="Lawstandard">
-SELECT
-	t1.CHINESENAME,
-	t1.ENGLISHNAME,
-	t1.SUMMARYINFO,
-	t1.`CODE`,
+		SELECT
+        t1.CHINESENAME,
+        t1.ENGLISHNAME,
+        t1.SUMMARYINFO,
+        t1.`CODE`,
         t1.id,
         t1.CLICKCOUNT,
         t1.KEYWORDS
-        FROM
-	(
-		SELECT
-			*
 		FROM
         m_bs_solr solr
-			WHERE
+        left join m_bs_lawstandard t1 on solr.lawstandardid = t1.id where
         (
         <foreach collection="Solr" index="index" item="item" open="" close="" separator="or">
             INSTR(solr.SOLRTEXT,#{item})>0
         </foreach>
         )
-	) t
-       left join m_bs_lawstandard t1 on t.lawstandardid = t1.id where 1=1
-     <include refid="queryLawstandard"></include>
-        order by t1.MODIFYDATE desc
+        <include refid="queryLawstandard"></include>
         LIMIT #{startRow},#{endRow}
     </select>
 
     <!--获取全文检索-->
     <select id="getSolrListCount" parameterType="map" resultType="int">
         SELECT
-       count(1)
-        FROM
-        (
-        SELECT
-        *
+      count(1)
         FROM
         m_bs_solr solr
-        WHERE
+        left join m_bs_lawstandard t1 on solr.lawstandardid = t1.id where
         (
         <foreach collection="Solr" index="index" item="item" open="" close="" separator="or">
             INSTR(solr.SOLRTEXT,#{item})>0
         </foreach>
         )
-        ) t
-        left join m_bs_lawstandard t1 on t.lawstandardid = t1.id where 1=1
         <include refid="queryLawstandard"></include>
     </select>
 
@@ -300,7 +290,7 @@ SELECT
             and t1.`STATUS` = #{State}
         </if>
         <if test="organization != null and organization != ''">
-            and pub.PUBDEPID = #{organization}
+            and  #{organization} in	(SELECT n.PUBDEPID from m_bs_lawstandard_pubdep n where n.sid =t1.ID)
         </if>
         <if test="MaterialTmeStart != null and MaterialTmeStart != ''">
             and Date(t1.IMPDATE) <![CDATA[  >=  ]]> #{MaterialTmeStart}
@@ -637,7 +627,7 @@ SELECT
 				left join m_sa_user ur on ur.ID = t.INPUTUSERID
 				left join m_sa_user urmo on urmo.ID = t.MODIFYUSERID
 				left join m_sa_organization org on org.ID = ur.ORGID
-				where t.id=#{id}
+				where t.id=#{id} LIMIT 0,1
 
     </select>
 
@@ -810,8 +800,7 @@ SELECT
 	MAX( us.USERREALNAME ) AS NAME,
 	count( 1 ) AS COUNT
 FROM
-	 m_bs_lawstandard t
-	left join m_sa_fileinfo file on t.id=file.REFID
+	 m_sa_fileinfo file
 	LEFT JOIN m_sa_user us ON file.INPUTUSERID = us.ID
 	where us.USERREALNAME is not null
 GROUP BY
@@ -853,16 +842,15 @@ FROM
 	(
 		SELECT
 			ty.TYPENAME AS NAME,
-			count(1) AS count
+			count(1) as count
 		FROM
 			m_sa_fileinfo file
-		LEFT JOIN m_bs_lawstandard law ON file.REFID = law.ID
-		LEFT JOIN m_bs_lawstandard_type link ON law.ID = link.SID
+		LEFT JOIN m_bs_lawstandard_type link ON file.REFID = link.SID
 		LEFT JOIN m_bs_lawstandardtype ty ON ty.ID = link.LAWSTYPEID
 		WHERE
-			law.id IS NOT NULL
+			link.SID IS NOT NULL
 		GROUP BY
-			ty.ID
+			link.LAWSTYPEID
 	) t
 ORDER BY
 	t.count DESC
@@ -1016,14 +1004,12 @@ IF (
 	FROM
 		`m_sa_fileinfo` `file`
 	WHERE
-		`file`.`REFID` = `t`.`ID`
-	GROUP BY
-		`t`.`ID`
+		`file`.`REFID` = #{id}
 ) AS `filecontent`
 FROM
 	`m_bs_lawstandard` `t`
 LEFT JOIN `m_sa_lawstandardstatus` `sta` ON `t`.`STATUS` = `sta`.`ID`
-LEFT JOIN `m_bs_lawstandard_pubdep` `pub` ON `t`.`ID` = `pub`.`SID`
+LEFT JOIN (select temp.sid,max(temp.PUBDEPID) as PUBDEPID from `m_bs_lawstandard_pubdep` temp group by temp.sid) `pub` ON `t`.`ID` = `pub`.`SID`
 LEFT JOIN `m_sa_publishdep` `dep` ON `dep`.`ID` = `pub`.`PUBDEPID`
 LEFT JOIN m_bs_lawstandard_type `m` ON `m`.`SID` = `t`.`ID`
 LEFT JOIN m_bs_lawstandardtype `n` ON `n`.`ID` = `m`.`LAWSTYPEID`
@@ -1059,7 +1045,123 @@ where lawtype.LAWSTYPEID= #{id}
 
     <!--获取历史法规-->
     <select id="getHistroyLaws" resultType="Lawstandard">
-          SELECT * FROM `m_bs_lawstandard_copy1` LIMIT 0,10
+          SELECT t1.`CODE`,
+        t1.id,t1.oldid FROM `m_bs_lawstandard` t1
     </select>
+
+    <!--更新历史发布部门-->
+    <update id="updatePublishByOldID" parameterType="Lawstandard">
+        UPDATE m_bs_lawstandard_pubdep set SID = #{id} where sid = #{oldid}
+    </update>
+
+    <!--更新替代关系-->
+    <update id="updateReplaceSidByOldID" parameterType="Lawstandard">
+        UPDATE m_bs_lsreplacerelation set SID = #{id} where sid = #{oldid}
+    </update>
+
+    <!--更新替代关系-->
+    <update id="updateReplacePidByOldID" parameterType="Lawstandard">
+        UPDATE m_bs_lsreplacerelation set PID = #{id} where PID = #{oldid}
+    </update>
+
+    <!--更新录入人-->
+    <update id="updateLawUser" parameterType="Lawstandard">
+        UPDATE m_bs_lawstandard t set t.INPUTUSERID = #{inputuserid} where t.id=#{id}
+    </update>
+
+    <!--更新索引-->
+    <update id="updateLawsolr">
+               INSERT INTO m_bs_solr (LAWSTANDARDID, SOLRTEXT) SELECT
+	`m`.`id` AS LAWSTANDARDID,
+	concat(
+		`m`.`CODE`,
+		';',
+		`m`.`CHINESENAME`,
+		';',
+		`m`.`ENGLISHNAME`,
+		';',
+		`m`.`KEYWORDS`,
+		';',
+		`m`.`MEMO`,
+		';',
+		`m`.`SUMMARYINFO`,
+		';',
+		`m`.`STATUSNAME`,
+		';',
+		`m`.`PUBDEPNAME`,
+		';',
+		`m`.`TYPENAME`,
+		';',
+
+	IF (
+		isnull(`m`.`filecontent`),
+		'',
+		`m`.`filecontent`
+	)
+	) AS SOLRTEXT
+FROM
+	(
+		SELECT
+			`t`.`ID` AS `id`,
+			`t`.`CODE` AS `CODE`,
+			`t`.`CHINESENAME` AS `CHINESENAME`,
+
+		IF (
+			isnull(`t`.`ENGLISHNAME`),
+			'',
+			`t`.`ENGLISHNAME`
+		) AS `ENGLISHNAME`,
+
+	IF (
+		isnull(`t`.`KEYWORDS`),
+		'',
+		`t`.`KEYWORDS`
+	) AS `KEYWORDS`,
+
+IF (
+	isnull(`t`.`MEMO`),
+	'',
+	`t`.`MEMO`
+) AS `MEMO`,
+
+IF (
+	isnull(`t`.`SUMMARYINFO`),
+	'',
+	`t`.`SUMMARYINFO`
+) AS `SUMMARYINFO`,
+
+IF (
+	isnull(`sta`.`STATUSNAME`),
+	'',
+	`sta`.`STATUSNAME`
+) AS `STATUSNAME`,
+
+IF (
+	isnull(`dep`.`PUBDEPNAME`),
+	'',
+	`dep`.`PUBDEPNAME`
+) AS `PUBDEPNAME`,
+ `n`.`TYPENAME` AS `TYPENAME`,
+ (
+	SELECT
+		group_concat(
+			`file`.`CONTENT` SEPARATOR ','
+		)
+	FROM
+		`m_sa_fileinfo` `file`
+	WHERE
+		`file`.`REFID` = `t`.`ID`
+	GROUP BY
+		`t`.`ID`
+) AS `filecontent`
+FROM
+	`m_bs_lawstandard` `t`
+LEFT JOIN `m_sa_lawstandardstatus` `sta` ON `t`.`STATUS` = `sta`.`ID`
+LEFT JOIN `m_bs_lawstandard_pubdep` `pub` ON `t`.`ID` = `pub`.`SID`
+LEFT JOIN `m_sa_publishdep` `dep` ON `dep`.`ID` = `pub`.`PUBDEPID`
+LEFT JOIN m_bs_lawstandard_type `m` ON `m`.`SID` = `t`.`ID`
+LEFT JOIN m_bs_lawstandardtype `n` ON `n`.`ID` = `m`.`LAWSTYPEID`
+	) `m`
+    </update>
 
 </mapper>

@@ -108,24 +108,40 @@ public class SystemServie {
         if(histroyLaws!=null&&histroyLaws.size()>0) {
 
             for (Lawstandard lawstandard:histroyLaws) {
-                List<Attachment> getAttachments =dao.getAttachmentsHistroy(lawstandard.getId());
+                List<Attachment> getAttachments =dao.getAttachments(lawstandard.getOldid());
 
-                lawstandard.setId(UUID.randomUUID().toString());
                 lawstandard.setInputuserid(user.getId());
                 lawstandard.setLawtype("0055d568-536b-4275-8e69-d5be69e3112c");
                 //处理编码，以便查重
                 String checkcode = filter(lawstandard.getCode());
                 lawstandard.setCheckcode(checkcode);
+                lawstandard.setApprovestatus(3);
+                lawstandard.setClickcount(0);
+                lawstandard.setIstop(0);
 
                 lawstandardDao.SaveOrUpdateLawstandard(lawstandard);
                 lawstandardDao.SaveOrUpdateLawAndType(lawstandard);
 
+                lawstandardDao.updateLawUser(lawstandard);
+
+                //替换历史id
+                lawstandardDao.updatePublishByOldID(lawstandard);
+                lawstandardDao.updateReplaceSidByOldID(lawstandard);
+                lawstandardDao.updateReplacePidByOldID(lawstandard);
+
+                //处理附件
                 if(getAttachments!=null&&getAttachments.size()>0){
                     for (Attachment attachment:getAttachments) {
                         attachment.setRefid(lawstandard.getId());
                         handleFile(attachment);
                     }
                 }
+                //更新solr
+//                lawstandardDao.DeleteSolrTextById(lawstandard.getId());
+//                lawstandardDao.SaveSolrTextById(lawstandard.getId());
+
+
+
             }
 
         }
@@ -138,6 +154,8 @@ public class SystemServie {
         FG_User user = getCurrentFGUser();
         for(int i=0;i<filelist.size();i++){
             if(filelist.get(i).getName().equals(attachment.getActualFile())){
+                String oldid = attachment.getId();
+
                 String guid = UUID.randomUUID().toString();
                 String fileName = attachment.getActualFile();
                 String ext = FilenameUtils.getExtension(fileName); // fileName.split("\\.")[1];
@@ -174,26 +192,32 @@ public class SystemServie {
                 attachment.setPath(storageFolder);
                 attachment.setInputuserid(user.getId());
                 //法规上传需要解析获取pdf中的文字
-                if(ext.equals("pdf")){
+                if(ext.toLowerCase().equals("pdf")){
+                    try {
+                        PDDocument document=PDDocument.load(file);
+                        // 获取页码
+                        int pages = document.getNumberOfPages();
 
-                    PDDocument document=PDDocument.load(file);
+                        // 读文本内容
+                        PDFTextStripper stripper=new PDFTextStripper();
+                        // 设置按顺序输出
+                        stripper.setSortByPosition(true);
+                        stripper.setStartPage(1);
+                        stripper.setEndPage(pages);
+                        String content = stripper.getText(document);
+                        attachment.setContent(content);
+                    }catch (Exception e){
 
-                    // 获取页码
-                    int pages = document.getNumberOfPages();
+                    }
 
-                    // 读文本内容
-                    PDFTextStripper stripper=new PDFTextStripper();
-                    // 设置按顺序输出
-                    stripper.setSortByPosition(true);
-                    stripper.setStartPage(1);
-                    stripper.setEndPage(pages);
-                    String content = stripper.getText(document);
-                    attachment.setContent(content);
+
+
                 }
                 if(isDocFile(ext)){
                     //转化office pdf
                     office2PDF.office2PDF(storageFolder + storeFile,storageFolder+guid+".pdf");
                 }
+                dao.deleteFgbzfile(oldid);
                 dao.saveFgbz(attachment);
                 break;
             }

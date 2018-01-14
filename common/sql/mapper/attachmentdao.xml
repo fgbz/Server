@@ -48,6 +48,11 @@
 		   		#{item}
 		 </foreach>
 	</update>
+
+	<!--删除法规标准附件-->
+	<delete id="deleteFgbzfile" parameterType="String">
+		DELETE from m_sa_fileinfo where id = #{id}
+	</delete>
     <!-- 更新附件对应的业务数据 -->
 	<update id="updateBizID" parameterType="string">
 		update SS_ATTACHMENT set bizid = #{bizID}

@@ -277,4 +277,38 @@ public interface LawstandardDao {
      */
     List<Lawstandard> getHistroyLaws();
 
+    /**
+     * 更新发布部门
+     * @param lawstandard
+     * @return
+     */
+    int updatePublishByOldID(Lawstandard lawstandard);
+
+    /**
+     * 更新替代关系sid
+     * @param lawstandard
+     * @return
+     */
+    int updateReplaceSidByOldID(Lawstandard lawstandard);
+
+    /**
+     * 更新替代关系pid
+     * @param lawstandard
+     * @return
+     */
+    int updateReplacePidByOldID(Lawstandard lawstandard);
+
+    /**
+     * 同步后更新solr
+     * @return
+     */
+    int updateLawsolr();
+
+    /**
+     * 更新录入人
+     * @param lawstandard
+     * @return
+     */
+    int updateLawUser(Lawstandard lawstandard);
+
 }
