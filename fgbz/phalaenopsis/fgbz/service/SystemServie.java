@@ -68,12 +68,14 @@ public class SystemServie {
         }
 
         if(user==null){
-            map.put("LoginState", false);
+            map.put("LoginState", "Fail");
+        }else if(user.getStatus()==1){
+            map.put("LoginState", "Disconnected");
         }else{
             Map<String, Object> mapList =  grtUserListByOrgId(user.getOrgid());
             user.setUserList((List<FG_User>)mapList.get("UserList"));
             user.setOrgList((List<FG_Organization>) mapList.get("OrgList"));
-            map.put("LoginState", true);
+            map.put("LoginState", "Success");
         }
         map.put("LoginResult", user);
         String ticket = UUID.randomUUID().toString();
@@ -467,6 +469,14 @@ public class SystemServie {
         }
 
 
+        return OpResult.Success;
+    }
+
+    public int SaveUserStatus(String id,int type){
+        Map<String, Object> map = new HashMap<>();
+        map.put("id",id);
+        map.put("status",type);
+        systemDao.SaveUserStatus(map);
         return OpResult.Success;
     }
 

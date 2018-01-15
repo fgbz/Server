@@ -185,6 +185,8 @@ public class TechnicalService {
                     conditions.put("TecInputuserid", condition.getValue());
                 }else if(condition.getKey().equals("selectInputUser")){
                     conditions.put("selectInputUser", condition.getValue());
+                }else if(condition.getKey().equals("Duty")){
+                    conditions.put("Duty", condition.getValue());
                 }else if(condition.getKey().equals("OrgList")){
 
                     FG_Organization org = JSON.parseObject(condition.getValue(),FG_Organization.class);

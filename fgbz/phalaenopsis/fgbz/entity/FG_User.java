@@ -114,6 +114,10 @@ public class FG_User {
      * 登录人下组织集合
      */
     private List<FG_Organization> orgList;
+    /**
+     * 职务
+     */
+    private Integer duty;
 
 
     public String getId() {
@@ -290,5 +294,13 @@ public class FG_User {
 
     public void setOrgList(List<FG_Organization> orgList) {
         this.orgList = orgList;
+    }
+
+    public Integer getDuty() {
+        return duty;
+    }
+
+    public void setDuty(Integer duty) {
+        this.duty = duty;
     }
 }

@@ -275,7 +275,7 @@ WHERE
 
     <sql id="queryLawstandard">
         <if test="Number != null and Number != ''">
-            and instr(t1.CODE,#{Number})> 0
+            and instr(t1.CHECKCODE,#{Number})> 0
         </if>
         <if test="Title != null and Title != ''">
             and instr(t1.CHINESENAME,#{Title})> 0
@@ -363,6 +363,9 @@ WHERE
             and t1.INPUTUSERID = #{selectInputUser} and t1.APPROVESTATUS =3
         </if>
 
+        <if test="Duty != null and Duty !='' ">
+            and t1.INPUTUSERID = #{Duty}
+        </if>
     </sql>
 
     <delete id="deleteLawstandardById" parameterType="String">

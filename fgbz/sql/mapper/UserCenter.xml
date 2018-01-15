@@ -112,6 +112,21 @@ FROM
         <if test="keyWords != null and keyWords != ''">
             and ( instr(t.TITLE,#{keyWords})> 0 or instr(t.DETAILS,#{keyWords})> 0)
         </if>
+        <if test="Title != null and Title != ''">
+            and instr(t.TITLE,#{Title})> 0
+        </if>
+        <if test="FiledTimeStart != null and FiledTimeStart != ''">
+            and Date(t.INPUTDATE) <![CDATA[  >=  ]]> #{FiledTimeStart}
+        </if>
+        <if test="FiledTimeEnd != null and FiledTimeEnd != ''">
+            and Date(t.INPUTDATE) <![CDATA[  <=  ]]> #{FiledTimeEnd}
+        </if>
+        <if test="TreeValue != null and TreeValue != ''">
+            and  us.ORGID in
+            <foreach collection="TreeValue" item="item" open="(" close=")" separator=",">
+                #{item.id}
+            </foreach>
+        </if>
     </sql>
 
     <!--获取通知列表总数-->
@@ -119,7 +134,9 @@ FROM
         SELECT
       count(1)
         FROM
-        m_bs_adviceinfo t WHERE 1=1
+        m_bs_adviceinfo t
+        LEFT JOIN m_sa_user us ON us.ID = t.INPUTUSERID
+        WHERE 1=1
         <include refid="queryAdviceinfo"></include>
     </select>
 

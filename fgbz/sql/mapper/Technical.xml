@@ -159,6 +159,10 @@
             and t.INPUTUSERID = #{selectInputUser} and t.APPROVESTATUS =2
         </if>
 
+        <if test="Duty != null and Duty !='' ">
+            and t.INPUTUSERID = #{Duty}
+        </if>
+
     </sql>
 
     <!--新增或编辑技术文件-->

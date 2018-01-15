@@ -197,7 +197,8 @@ public class LawstandardService {
             //查询条件
             for (Condition condition : page.getConditions()) {
                 if (condition.getKey().equals("Number")) {
-                    conditions.put("Number", condition.getValue());
+                    String checkcode = filter(condition.getValue());
+                    conditions.put("Number", checkcode);
                 } else if (condition.getKey().equals("Title")) {
                     conditions.put("Title", condition.getValue());
                 } else if (condition.getKey().equals("FiledTimeStart")) {
@@ -239,6 +240,8 @@ public class LawstandardService {
 
                     FG_Organization org = JSON.parseObject(condition.getValue(),FG_Organization.class);
                     conditions.put("OrgList", org.getChildsorg());
+                }else if(condition.getKey().equals("Duty")){
+                    conditions.put("Duty", condition.getValue());
                 }else if(condition.getKey().equals("Ordertype")){
                     String ordertest ="";
                     String ordertest1 ="";

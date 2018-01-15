@@ -167,6 +167,15 @@ public class SystemController {
     }
 
     /**
+     * 设置用户停用
+     * @return
+     */
+    @RequestMapping(value = "/SaveUserStatus", method = RequestMethod.GET)
+    @ResponseBody
+    public int SaveUserStatus(String id,int type){
+        return systemServie.SaveUserStatus(id,type);
+    }
+    /**
      * 获取审核设置
      * @return
      */

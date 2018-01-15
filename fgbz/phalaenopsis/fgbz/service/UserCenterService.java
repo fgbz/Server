@@ -28,6 +28,24 @@ public class UserCenterService {
 
     @Autowired
     private LawstandardDao lawstandardDao;
+
+    @Autowired
+    private SystemServie systemServie;
+
+    private  List<FG_Organization> ids = new ArrayList<FG_Organization>();
+
+    public  List<FG_Organization> getOrgsTree(String id){
+
+        List<FG_Organization> list = systemServie.getChildNode(id);
+
+        while (list!=null&&list.size()>0){
+            ids.addAll(list);
+            for(FG_Organization organization:list){
+                list=getOrgsTree(organization.getId());
+            }
+        }
+        return list;
+    }
     /**
      * 保存或编辑通知
      * @param adviceinfo
@@ -81,6 +99,21 @@ public class UserCenterService {
             for (Condition condition : page.getConditions()) {
                 if (condition.getKey().equals("keyWords")) {
                     conditions.put("keyWords", condition.getValue());
+                }else if (condition.getKey().equals("Title")) {
+                    conditions.put("Title", condition.getValue());
+                } else if (condition.getKey().equals("FiledTimeStart")) {
+                    conditions.put("FiledTimeStart", condition.getValue());
+                } else if (condition.getKey().equals("FiledTimeEnd")) {
+                    conditions.put("FiledTimeEnd", condition.getValue());
+                }  else if (condition.getKey().equals("organization")) {
+
+                    ids =new ArrayList<>();
+                    FG_Organization orgSelf = new FG_Organization();
+                    orgSelf.setId(condition.getValue());
+                    ids.add(orgSelf);
+                    getOrgsTree(condition.getValue());
+                    conditions.put("TreeValue",ids );
+
                 }
 
             }

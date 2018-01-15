@@ -164,7 +164,7 @@ public class FgbzLogService {
         Map<String, Object> map = (Map<String, Object>) returnValue;
 
         if(map!=null){
-            if((boolean)map.get("LoginState")){
+            if(map.get("LoginState")!=null&&map.get("LoginState").equals("Success")){
                 FG_User user = (FG_User) map.get("LoginResult");
                 //日志对象
                 Fg_Log log = new Fg_Log();

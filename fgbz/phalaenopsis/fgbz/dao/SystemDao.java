@@ -75,6 +75,13 @@ public interface SystemDao {
     List<FG_Role> getRoles(Map<String, Object> map);
 
     /**
+     * 用户停用
+     * @param map
+     * @return
+     */
+    int SaveUserStatus(Map<String, Object> map);
+
+    /**
      * 获取总数
      * @return
      */
