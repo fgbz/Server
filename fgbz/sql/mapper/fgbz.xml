@@ -366,6 +366,13 @@ WHERE
         <if test="Duty != null and Duty !='' ">
             and t1.INPUTUSERID = #{Duty}
         </if>
+
+        <if test="ApproveOrg != null and ApproveOrg != ''">
+            and  ur.ORGID in
+            <foreach collection="ApproveOrg" item="item" open="(" close=")" separator=",">
+                #{item.id}
+            </foreach>
+        </if>
     </sql>
 
     <delete id="deleteLawstandardById" parameterType="String">

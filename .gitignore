@@ -29,7 +29,7 @@ Phalaenopsis.iml
 .project
 .settings 
 
-##filter databfile¡¢sln file##
+##filter databfileï¿½ï¿½sln file##
 *.mdb  
 *.ldb  
 *.sln   
@@ -64,3 +64,6 @@ Phalaenopsis.iml
 Icon?  
 ehthumbs.db  
 Thumbs.db  
+*.pdf
+*.docx
+*.txt

@@ -47,6 +47,24 @@ public class LawstandardService {
         return i;
     }
 
+    @Autowired
+    private SystemServie systemServie;
+
+    private  List<FG_Organization> idorgs = new ArrayList<FG_Organization>();
+
+    public  List<FG_Organization> getOrgsTree(String id){
+
+        List<FG_Organization> list = systemServie.getChildNode(id);
+
+        while (list!=null&&list.size()>0){
+            idorgs.addAll(list);
+            for(FG_Organization organization:list){
+                list=getOrgsTree(organization.getId());
+            }
+        }
+        return list;
+    }
+
     /**
      * 查询法规标准类别目录
      * @return
@@ -242,6 +260,13 @@ public class LawstandardService {
                     conditions.put("OrgList", org.getChildsorg());
                 }else if(condition.getKey().equals("Duty")){
                     conditions.put("Duty", condition.getValue());
+                }else if(condition.getKey().equals("ApproveOrg")){
+                    idorgs =new ArrayList<>();
+                    FG_Organization orgSelf = new FG_Organization();
+                    orgSelf.setId(condition.getValue());
+                    idorgs.add(orgSelf);
+                    getOrgsTree(condition.getValue());
+                    conditions.put("ApproveOrg",idorgs );
                 }else if(condition.getKey().equals("Ordertype")){
                     String ordertest ="";
                     String ordertest1 ="";
@@ -442,6 +467,16 @@ public class LawstandardService {
         page.setPageSize(Integer.MAX_VALUE);
 
         List<Lawstandard>  listLaws = getLawstandardList(page).getCurrentList();
+
+        if(listLaws!=null&&listLaws.size()>0){
+            for (Lawstandard lawstandard:listLaws) {
+                if(!StrUtil.isNullOrEmpty(lawstandard.getSummaryinfo())){
+
+                    String str = lawstandard.getSummaryinfo().replaceAll("</?[a-zA-Z]+[^><]*>","");
+                    lawstandard.setSummaryinfo(str);
+                }
+            }
+        }
 
         ExportExcel exportExcel = new ExportExcel();
 

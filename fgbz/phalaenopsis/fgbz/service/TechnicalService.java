@@ -276,6 +276,16 @@ public class TechnicalService {
 
         List<Technical>  listTecs = getTechnicalList(page).getCurrentList();
 
+        if(listTecs!=null&&listTecs.size()>0){
+            for (Technical technical:listTecs) {
+                if(!StrUtil.isNullOrEmpty(technical.getSummaryinfo())){
+
+                    String str = technical.getSummaryinfo().replaceAll("</?[a-zA-Z]+[^><]*>","");
+                    technical.setSummaryinfo(str);
+                }
+            }
+        }
+
         ExportExcel exportExcel = new ExportExcel();
 
         String[] fields = {
