@@ -160,6 +160,12 @@ public class AttachmentService extends Basis {
 		}
 		return save(fileName, null, spotid, module, x, y, angle, request, true);
 	}
+	//提取中文数字和字母
+	public String filter(String character)
+	{
+		character = character.replaceAll("[^a-zA-Z0-9\\u4e00-\\u9fa5]", " ");
+		return character;
+	}
 
 	@ILog(description="下载附件")
 	public void download(String fileID, HttpServletResponse response,String module) throws UnsupportedEncodingException {
@@ -173,8 +179,11 @@ public class AttachmentService extends Basis {
 			if(module.equals("Law")){
 				Lawstandard lawstandard= lawstandardDao.getLawByFileId(fileID);
 
+				lawstandard.setCode(filter(lawstandard.getCode()));
+				lawstandard.setChinesename(filter(lawstandard.getChinesename()));
+
 				if(lawstandard!=null){
-					responseFileName=URLEncoder.encode(lawstandard.getCode(), "utf-8")+"+"+URLEncoder.encode(lawstandard.getChinesename(), "utf-8")+"."+attachment.getFileExt();
+					responseFileName=URLEncoder.encode(lawstandard.getCode(), "utf-8").replace("+","%20")+"+"+URLEncoder.encode(lawstandard.getChinesename(), "utf-8").replace("+","%20")+"."+attachment.getFileExt();
 				}
 
 			}else if(module.equals("Tec")){
@@ -182,10 +191,14 @@ public class AttachmentService extends Basis {
 				Technical technical = technicalDao.getTecByFileId(fileID);
 
 				if(technical!=null){
+
+					technical.setChinesename(filter(technical.getChinesename()));
+
 					if(!StrUtil.isNullOrEmpty(technical.getCode())){
-						responseFileName =URLEncoder.encode(technical.getCode(), "utf-8")+"+"+URLEncoder.encode(technical.getChinesename(), "utf-8")+"."+attachment.getFileExt();
+						technical.setCode(filter(technical.getCode()));
+						responseFileName =URLEncoder.encode(technical.getCode(), "utf-8").replace("+","%20")+"+"+URLEncoder.encode(technical.getChinesename(), "utf-8").replace("+","%20")+"."+attachment.getFileExt();
 					}else{
-						responseFileName =technical.getChinesename()+"."+attachment.getFileExt();
+						responseFileName =technical.getChinesename().replace("+","%20")+"."+attachment.getFileExt();
 					}
 				}
 			}

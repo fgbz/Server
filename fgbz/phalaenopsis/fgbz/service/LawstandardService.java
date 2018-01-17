@@ -940,4 +940,80 @@ public class LawstandardService {
         conditions.put("TreeValue",ids );
         return  lawstandardDao.getHomePageLawCount(conditions);
     }
+
+    /*****************************替代与引用**********************************/
+
+    public int SaveReplace(Lawstandard lawstandard){
+        if(lawstandard.getId()==null||lawstandard.getId().equals("")){
+            UUID uuid=UUID.randomUUID();
+            String guid=uuid.toString();
+            lawstandard.setId(guid);
+        }
+
+        //处理编码，以便查重
+        String checkcode = filter(lawstandard.getCode());
+        lawstandard.setCheckcode(checkcode);
+
+        int num = lawstandardDao.checklawCode(lawstandard);
+
+        if(num>0){
+            int isWorking = 461;
+            OpResult opResult = new OpResult(isWorking);
+            return opResult.Code;
+        }
+        lawstandardDao.SaveOrUpdateLawstandard(lawstandard);
+        return  OpResult.Success;
+    }
+
+    public int  DeleteReplece(String id){
+        lawstandardDao.deleteLawstandardById(id);
+        return OpResult.Success;
+    }
+
+    public PagingEntity<Lawstandard> getReplaceLawstandardList(Page page){
+
+        Map<String, Object> conditions = new HashMap<String, Object>();
+
+        boolean isOrder = false;
+        if(page.getConditions()!=null) {
+            //查询条件
+            for (Condition condition : page.getConditions()) {
+                if (condition.getKey().equals("Number")) {
+                    String checkcode = filter(condition.getValue());
+                    conditions.put("Number", checkcode);
+                } else if (condition.getKey().equals("Title")) {
+                    conditions.put("Title", condition.getValue());
+                }else if(condition.getKey().equals("ApproveStatus")){
+                    conditions.put("ApproveStatus", condition.getValue());
+                }else if(condition.getKey().equals("ReplaceOrRefenceid")){
+                    conditions.put("ReplaceOrRefenceid", condition.getValue());
+                }
+            }
+        }
+
+        // 1,根据条件一共查询到的数据条数
+        int count = lawstandardDao.getLawstandardListCount(conditions);
+
+        if(page.getPageNo()==1){
+            conditions.put("startRow", 0 );
+        }else{
+            conditions.put("startRow", page.getPageSize() * (page.getPageNo() - 1) );
+        }
+        conditions.put("endRow", page.getPageSize());
+
+        // 2, 查询到当前页数的数据
+        List<Lawstandard> list = lawstandardDao.getLawstandardList(conditions);
+
+        PagingEntity<Lawstandard> result = new PagingEntity<Lawstandard>();
+        result.setPageCount(count);
+
+        int pageCount = 0 == count ? 1 : (count - 1) / page.getPageSize() + 1; // 由于计算pageCount存在整除的情况，所以计算的时候先减1在除以pageSize
+        result.setPageNo(page.getPageNo());
+        result.setPageSize(page.getPageSize());
+        result.setPageCount(pageCount);
+        result.setRecordCount(count);
+        result.setCurrentList(list);
+
+        return result;
+    }
 }
