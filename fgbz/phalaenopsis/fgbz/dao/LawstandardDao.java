@@ -28,6 +28,20 @@ public interface LawstandardDao {
 
 
     List<Lawstandard> getUptodateLawstandardList(Map<String, Object>  map);
+
+    /**
+     * 获取引用和替代关系列表
+     * @param map
+     * @return
+     */
+    List<Lawstandard> getReplaceLawstandardList(Map<String, Object>  map);
+
+    /**
+     * 获取引用和替代关系列表总数
+     * @param map
+     * @return
+     */
+    int getReplaceLawstandardCount(Map<String, Object>  map);
     /**
      *获取父级法规类别
      * @return
@@ -179,6 +193,13 @@ public interface LawstandardDao {
     int checklawCode(Lawstandard lawstandard);
 
     /**
+     * 判断临时法规编号是否重复
+     * @param lawstandard
+     * @return
+     */
+    int checklawTempCode(Lawstandard lawstandard);
+
+    /**
      * 获取首页
      * @return
      */
@@ -311,4 +332,16 @@ public interface LawstandardDao {
      */
     int updateLawUser(Lawstandard lawstandard);
 
+    /**
+     * 保存时，替换临时法规
+     * @return
+     */
+    Lawstandard getTempLaw(String code);
+
+    /**
+     * 更新引用
+     * @param lawstandard
+     * @return
+     */
+    int updateRefenceByOldID(Lawstandard lawstandard);
 }

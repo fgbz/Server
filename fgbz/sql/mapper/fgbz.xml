@@ -128,7 +128,7 @@ WHERE
         from
         ( SELECT t1.*,ur.USERREALNAME from m_bs_lawstandard t1
         left join m_sa_user ur on ur.ID = t1.INPUTUSERID
-        where 1=1
+        where t1.APPROVESTATUS <![CDATA[  != ]]> 4
         <include refid="queryLawstandard"></include>
         order by  ${Ordertype1}
         LIMIT #{startRow},#{endRow})
@@ -145,7 +145,7 @@ WHERE
     <select id="getLawstandardListCount" resultType="int">
         select count(1) from m_bs_lawstandard t1
         left join m_sa_user ur on ur.ID = t1.INPUTUSERID
-        where 1=1
+        where t1.APPROVESTATUS <![CDATA[  != ]]> 4
         <include refid="queryLawstandard"></include>
     </select>
 
@@ -172,6 +172,55 @@ WHERE
         left join m_sa_user ur on ur.ID = t.INPUTUSERID
 
 
+    </select>
+
+    <!--获取引用和替代关系列表-->
+    <select id="getReplaceLawstandardList" parameterType="map" resultType="Lawstandard">
+SELECT
+	t.`CODE`,
+	t.CHINESENAME,
+	t.ID,
+	t.APPROVESTATUS,
+        t.inputuserid,
+CASE
+
+	WHEN (
+	( SELECT count( 1 ) FROM m_bs_lsrelatedrelation relate WHERE relate.RelatedID = t.id ) + ( SELECT count( 1 ) FROM m_bs_lsreplacerelation replacelaw WHERE replacelaw.SID = t.id )
+	) > 0 THEN
+		0 ELSE 1
+	END AS canDelete
+FROM
+m_bs_lawstandard t
+where t.APPROVESTATUS in ('3','4')
+        <include refid="queryReplaceLawstandard"></include>
+ORDER BY t.MODIFYDATE desc
+        LIMIT #{startRow},#{endRow}
+    </select>
+
+    <sql id="queryReplaceLawstandard">
+        <if test="Number != null and Number != ''">
+            and instr(t.CHECKCODE,#{Number})> 0
+        </if>
+        <if test="Title != null and Title != ''">
+            and instr(t.CHINESENAME,#{Title})> 0
+        </if>
+        <if test="ApproveStatus != null and ApproveStatus != ''">
+            and t.APPROVESTATUS = #{ApproveStatus}
+        </if>
+        <!--引用文件不查自己-->
+        <if test="ReplaceOrRefenceid != null and ReplaceOrRefenceid != ''">
+            and t.id <![CDATA[  != ]]> #{ReplaceOrRefenceid}
+        </if>
+    </sql>
+
+    <!--获取引用和替代关系列表总数-->
+    <select id="getReplaceLawstandardCount" parameterType="map" resultType="int">
+        SELECT
+      count(1)
+        FROM
+        m_bs_lawstandard t
+        where t.APPROVESTATUS in ('3','4')
+        <include refid="queryReplaceLawstandard"></include>
     </select>
 
     <sql id="querySolr">
@@ -382,6 +431,11 @@ WHERE
 
     <!--判断法规编号是否重复-->
     <select id="checklawCode" parameterType="Lawstandard" resultType="int">
+        select count(1) from m_bs_lawstandard t where t.CHECKCODE = #{checkcode}
+        and t.id <![CDATA[  != ]]> #{id} and t.APPROVESTATUS <![CDATA[  != ]]> 4
+    </select>
+
+    <select id="checklawTempCode" parameterType="Lawstandard" resultType="int">
         select count(1) from m_bs_lawstandard t where t.CHECKCODE = #{checkcode}
         and t.id <![CDATA[  != ]]> #{id}
     </select>
@@ -696,11 +750,11 @@ WHERE
 
         FROM
         m_bs_lsreplacerelation re
-        left join m_bs_lawstandard t on re.SID = t.ID
+        left join m_bs_lawstandard t on ((re.PID = t.ID and  re.SID = #{id}) or (re.SID = t.ID and  re.PID = #{id}))
         left join m_sa_lawstandardstatus sta on sta.id= t.`STATUS`
         left join m_bs_lawstandard_type m on m.SID = t.id
         left join m_bs_lawstandardtype n on n.id = m.LAWSTYPEID
-        where re.PID =#{id}
+        where t.id is not null
         ORDER BY t.RELEASEDATE desc
 
     </select>
@@ -1080,6 +1134,11 @@ where lawtype.LAWSTYPEID= #{id}
         UPDATE m_bs_lawstandard t set t.INPUTUSERID = #{inputuserid} where t.id=#{id}
     </update>
 
+    <!--更新引用关系-->
+    <update id="updateRefenceByOldID" parameterType="Lawstandard">
+      UPDATE m_bs_lsrelatedrelation t set t.RelatedID = #{id} where t.RelatedID=#{oldid}
+    </update>
+
     <!--更新索引-->
     <update id="updateLawsolr">
                INSERT INTO m_bs_solr (LAWSTANDARDID, SOLRTEXT) SELECT
@@ -1174,5 +1233,10 @@ LEFT JOIN m_bs_lawstandard_type `m` ON `m`.`SID` = `t`.`ID`
 LEFT JOIN m_bs_lawstandardtype `n` ON `n`.`ID` = `m`.`LAWSTYPEID`
 	) `m`
     </update>
+
+    <!--获取临时法规-->
+    <select id="getTempLaw" parameterType="String" resultType="Lawstandard">
+        SELECT t.id FROM `m_bs_lawstandard` t where t.CHECKCODE =#{code} and t.APPROVESTATUS=4
+    </select>
 
 </mapper>

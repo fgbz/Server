@@ -328,4 +328,32 @@ public class LawstandardController {
     public int UpdateAllLawstandardCode(){
         return lawstandardService.UpdateAllLawstandardCode();
     }
+
+
+    /***************************引用与替代****************************************/
+    @RequestMapping(value = "/SaveReplaceOrRefence", method = RequestMethod.POST)
+    @ResponseBody
+    public int SaveReplaceOrRefence(@RequestBody Lawstandard lawstandard){
+        return lawstandardService.SaveReplaceOrRefence(lawstandard);
+    }
+
+    /**
+     * 获取引用与替代列表
+     * @return
+     */
+    @RequestMapping(value = "/getReplaceLawstandardList", method = RequestMethod.POST)
+    @ResponseBody
+    public PagingEntity<Lawstandard> getReplaceLawstandardList(@RequestBody Page page){
+        return lawstandardService.getReplaceLawstandardList(page);
+    }
+
+    /**
+     * 删除临时法规
+     * @return
+     */
+    @RequestMapping(value = "/DeleteReplece", method = RequestMethod.GET)
+    @ResponseBody
+    public int DeleteReplece(String id){
+        return lawstandardService.DeleteReplece(id);
+    }
 }

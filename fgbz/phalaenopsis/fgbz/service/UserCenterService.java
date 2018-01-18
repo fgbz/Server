@@ -32,6 +32,9 @@ public class UserCenterService {
     @Autowired
     private SystemServie systemServie;
 
+    @Autowired
+    private LawstandardService lawstandardService;
+
     private  List<FG_Organization> ids = new ArrayList<FG_Organization>();
 
     public  List<FG_Organization> getOrgsTree(String id){
@@ -328,6 +331,7 @@ public class UserCenterService {
                     lawstandardDao.updateRleplaceStaus(lawstandard.getId());
                 }
             }
+            lawstandardService.ChangeTempLaw(lawstandardApprove.getLawstandardID());
         }
         Map<String, Object> map = new HashMap<String, Object>();
         map.put("id",lawstandardApprove.getLawstandardID());

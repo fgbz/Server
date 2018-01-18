@@ -188,6 +188,11 @@ public class Lawstandard {
      */
     private String checkcode;
 
+    /**
+     * 引用与替代是否可删除
+     */
+    private boolean canDelete;
+
     public String getOldid() {
         return oldid;
     }
@@ -570,5 +575,13 @@ public class Lawstandard {
 
     public void setCheckcode(String checkcode) {
         this.checkcode = checkcode;
+    }
+
+    public boolean isCanDelete() {
+        return canDelete;
+    }
+
+    public void setCanDelete(boolean canDelete) {
+        this.canDelete = canDelete;
     }
 }

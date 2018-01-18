@@ -675,7 +675,6 @@ public class LawstandardService {
             OpResult opResult = new OpResult(isWorking);
             return opResult.Code;
         }
-
         lawstandardDao.deleteRefence(lawstandard.getId());
         lawstandardDao.deleteReplace(lawstandard.getId());
         lawstandardDao.SaveOrUpdateLawstandard(lawstandard);
@@ -734,9 +733,31 @@ public class LawstandardService {
 
         }
 
+        if(lawstandard.getApprovestatus()==3){
+            ChangeTempLaw(lawstandard.getId());
+        }
+
         return OpResult.Success;
     }
 
+    //审核发布时，替换临时
+    public int ChangeTempLaw(String id){
+
+        Lawstandard law =getLawstandardById(id);
+
+        Lawstandard TempLaw = lawstandardDao.getTempLaw(law.getCode());
+        if(TempLaw!=null){
+            //删除临时的
+            lawstandardDao.deleteLawstandardById(TempLaw.getId());
+
+            law.setOldid(TempLaw.getId());
+            //替换历史id
+            lawstandardDao.updateRefenceByOldID(law);
+            lawstandardDao.updateReplaceSidByOldID(law);
+
+        }
+        return OpResult.Success;
+    }
     //更新所有法规的编号
     public int UpdateAllLawstandardCode(){
         List<Lawstandard> list =lawstandardDao.getAllLawstandard();
@@ -943,7 +964,7 @@ public class LawstandardService {
 
     /*****************************替代与引用**********************************/
 
-    public int SaveReplace(Lawstandard lawstandard){
+    public int SaveReplaceOrRefence(Lawstandard lawstandard){
         if(lawstandard.getId()==null||lawstandard.getId().equals("")){
             UUID uuid=UUID.randomUUID();
             String guid=uuid.toString();
@@ -954,7 +975,7 @@ public class LawstandardService {
         String checkcode = filter(lawstandard.getCode());
         lawstandard.setCheckcode(checkcode);
 
-        int num = lawstandardDao.checklawCode(lawstandard);
+        int num = lawstandardDao.checklawTempCode(lawstandard);
 
         if(num>0){
             int isWorking = 461;
@@ -992,7 +1013,7 @@ public class LawstandardService {
         }
 
         // 1,根据条件一共查询到的数据条数
-        int count = lawstandardDao.getLawstandardListCount(conditions);
+        int count = lawstandardDao.getReplaceLawstandardCount(conditions);
 
         if(page.getPageNo()==1){
             conditions.put("startRow", 0 );
@@ -1002,7 +1023,7 @@ public class LawstandardService {
         conditions.put("endRow", page.getPageSize());
 
         // 2, 查询到当前页数的数据
-        List<Lawstandard> list = lawstandardDao.getLawstandardList(conditions);
+        List<Lawstandard> list = lawstandardDao.getReplaceLawstandardList(conditions);
 
         PagingEntity<Lawstandard> result = new PagingEntity<Lawstandard>();
         result.setPageCount(count);
