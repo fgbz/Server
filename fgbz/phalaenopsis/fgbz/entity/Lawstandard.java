@@ -193,6 +193,19 @@ public class Lawstandard {
      */
     private boolean canDelete;
 
+    /**
+     * 发布部门可以多选
+     */
+    private List<String> organizationList;
+
+    public List<String> getOrganizationList() {
+        return organizationList;
+    }
+
+    public void setOrganizationList(List<String> organizationList) {
+        this.organizationList = organizationList;
+    }
+
     public String getOldid() {
         return oldid;
     }

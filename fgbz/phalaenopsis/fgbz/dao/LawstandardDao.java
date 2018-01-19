@@ -103,6 +103,15 @@ public interface LawstandardDao {
     int deletePubByLaw(String id);
 
     /**
+     * 获取发布部门
+     * @param id
+     * @return
+     */
+    List<String> GetPubOrgList(String id);
+
+    String GetpubOrgListName(Map<String, Object>  map);
+
+    /**
      * 获取法规详情
      * @param id
      * @return
@@ -122,6 +131,13 @@ public interface LawstandardDao {
      * @return
      */
     List<Lawstandard> getReplaceList(String id);
+
+    /**
+     * 获取详细界面的替代关系
+     * @param id
+     * @return
+     */
+    List<Lawstandard> getDetailReplaceList(String id);
 
     int deleteRefence(String id);
     //删除所有引用和被引用的

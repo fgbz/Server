@@ -475,6 +475,16 @@ public class LawstandardService {
                     String str = lawstandard.getSummaryinfo().replaceAll("</?[a-zA-Z]+[^><]*>","");
                     lawstandard.setSummaryinfo(str);
                 }
+
+                List<String> str=lawstandardDao.GetPubOrgList(lawstandard.getId());
+                String puborg = "";
+
+                if(str!=null&&str.size()>0){
+                    Map<String,Object> map = new HashMap<>();
+                    map.put("ids",str);
+                    puborg=lawstandardDao.GetpubOrgListName(map);
+                }
+                lawstandard.setPubdepname(puborg);
             }
         }
 
@@ -550,14 +560,23 @@ public class LawstandardService {
                }
             }
             if(!StrUtil.isNullOrEmpty(excel.getPubdepname())){
-                String pubid= lawstandardDao.getPubOrgnameByName(excel.getPubdepname());
-                if(StrUtil.isNullOrEmpty(pubid)){
-                    map.put("Result",OpResult.Failed);
-                    map.put("Msg","第"+rownum+"行发布部门不存在");
-                    return map;
-                }else{
-                    lawstandard.setOrganization(pubid);
+                List<String> publist = new ArrayList<>();
+                String[] lawpub = excel.getPubdepname().split(",|，");
+
+                for(int j=0;j<lawpub.length;j++){
+                    String pubid= lawstandardDao.getPubOrgnameByName(lawpub[j]);
+                    if(StrUtil.isNullOrEmpty(pubid)){
+                        map.put("Result",OpResult.Failed);
+                        map.put("Msg","第"+rownum+"行发布部门不存在");
+                        return map;
+                    }else{
+                        publist.add(pubid);
+
+                    }
                 }
+                lawstandard.setOrganizationList(publist);
+
+
             }
 
             if(!StrUtil.isNullOrEmpty(excel.getStatusname())){
@@ -601,8 +620,17 @@ public class LawstandardService {
         for(Lawstandard law:listImport){
 
             lawstandardDao.SaveOrUpdateLawAndType(law);
-            if(!StrUtil.isNullOrEmpty(law.getOrganization())){
-                lawstandardDao.SaveOrUpdateLawAndPublish(law);
+
+            if(law.getOrganizationList()!=null&&law.getOrganizationList().size()>0){
+                lawstandardDao.deletePubByLaw(law.getId());
+                for (String strorg:law.getOrganizationList()
+                        ) {
+                    Lawstandard  laworg = new Lawstandard();
+                    laworg.setId(law.getId());
+                    laworg.setOrganization(strorg);
+                    lawstandardDao.SaveOrUpdateLawAndPublish(laworg);
+                }
+
             }
             lawstandardDao.SaveOrUpdateLawstandard(law);
 
@@ -683,8 +711,16 @@ public class LawstandardService {
             lawstandardDao.SaveOrUpdateLawAndType(lawstandard);
         }
 
-            if(!StrUtil.isNullOrEmpty(lawstandard.getOrganization())){
-                lawstandardDao.SaveOrUpdateLawAndPublish(lawstandard);
+            if(lawstandard.getOrganizationList()!=null&&lawstandard.getOrganizationList().size()>0){
+                lawstandardDao.deletePubByLaw(lawstandard.getId());
+                for (String strorg:lawstandard.getOrganizationList()
+                     ) {
+                    Lawstandard  laworg = new Lawstandard();
+                    laworg.setId(lawstandard.getId());
+                    laworg.setOrganization(strorg);
+                    lawstandardDao.SaveOrUpdateLawAndPublish(laworg);
+                }
+
             }else{
                 lawstandardDao.deletePubByLaw(lawstandard.getId());
             }
@@ -792,6 +828,30 @@ public class LawstandardService {
         //获取替代关系
         lawstandard.setReplace(lawstandardDao.getReplaceList(id));
 
+        lawstandard.setOrganizationList(lawstandardDao.GetPubOrgList(id));
+
+
+        return lawstandard;
+    }
+
+    public Lawstandard getDetailLawstandardById(String id){
+        Lawstandard lawstandard = lawstandardDao.getLawstandardById(id);
+
+        //获取引用关系
+        lawstandard.setRefence(lawstandardDao.getRefenceList(id));
+        //获取替代关系
+        lawstandard.setReplace(lawstandardDao.getDetailReplaceList(id));
+
+        List<String> str=lawstandardDao.GetPubOrgList(id);
+        String puborg = "";
+
+        if(str!=null&&str.size()>0){
+            Map<String,Object> map = new HashMap<>();
+            map.put("ids",str);
+            puborg=lawstandardDao.GetpubOrgListName(map);
+        }
+        lawstandard.setOrganizationList(str);
+        lawstandard.setPubdepname(puborg);
         return lawstandard;
     }
 

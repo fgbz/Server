@@ -731,8 +731,8 @@ ORDER BY t.MODIFYDATE desc
         ORDER BY t.RELEASEDATE desc
     </select>
 
-    <!--获取替代关系-->
-    <select id="getReplaceList" parameterType="String" resultType="Lawstandard">
+    <!--详细界面获取替代关系-->
+    <select id="getDetailReplaceList" parameterType="String" resultType="Lawstandard">
         SELECT
         t.ID,
         t.`CODE`,
@@ -755,6 +755,34 @@ ORDER BY t.MODIFYDATE desc
         left join m_bs_lawstandard_type m on m.SID = t.id
         left join m_bs_lawstandardtype n on n.id = m.LAWSTYPEID
         where t.id is not null
+        ORDER BY t.RELEASEDATE desc
+
+    </select>
+
+    <!--获取替代关系-->
+    <select id="getReplaceList" parameterType="String" resultType="Lawstandard">
+        SELECT
+        t.ID,
+        t.`CODE`,
+        t.CHINESENAME,
+        t.ENGLISHNAME,
+        t.RELEASEDATE,
+        t.IMPDATE,
+        t.KEYWORDS,
+        t.MEMO,
+        t.SUMMARYINFO,
+        t.`STATUS`,
+        t.APPROVESTATUS ,
+        sta.STATUSNAME,
+        n.TYPENAME
+
+        FROM
+        m_bs_lsreplacerelation re
+        left join m_bs_lawstandard t on re.SID = t.ID
+        left join m_sa_lawstandardstatus sta on sta.id= t.`STATUS`
+        left join m_bs_lawstandard_type m on m.SID = t.id
+        left join m_bs_lawstandardtype n on n.id = m.LAWSTYPEID
+        where t.id is not null and  re.PID = #{id}
         ORDER BY t.RELEASEDATE desc
 
     </select>
@@ -814,20 +842,23 @@ ORDER BY t.MODIFYDATE desc
     </delete>
 
     <insert id="SaveOrUpdateLawAndPublish" parameterType="Lawstandard">
-        <selectKey keyProperty="count" resultType="int" order="BEFORE">
-            select count(1) from m_bs_lawstandard_pubdep t where t.SID=#{id}
-        </selectKey>
 
-        <if test="count == 0 and organization != null and organization != ''">
             insert into m_bs_lawstandard_pubdep  (ID,SID,PUBDEPID) VALUES
             (uuid(),#{id},#{organization,jdbcType=VARCHAR})
-        </if>
-        <if test="count>0 and organization != null and organization != ''" >
-            UPDATE m_bs_lawstandard_pubdep t set t.PUBDEPID = #{organization,jdbcType=VARCHAR}
-            where t.sid = #{id}
-        </if>
+
 
     </insert>
+
+    <select id="GetPubOrgList" parameterType="String" resultType="String">
+        SELECT pub.PUBDEPID from m_bs_lawstandard_pubdep pub where pub.sid=#{id}
+    </select>
+
+    <select id="GetpubOrgListName" parameterType="map" resultType="String">
+        SELECT group_concat(t.PUBDEPNAME) from m_sa_publishdep t where t.id in
+        <foreach collection="ids" item="item" open="(" close=")" separator=",">
+            #{item}
+        </foreach>
+    </select>
 
     <delete id="deletePubByLaw" parameterType="String">
         delete from m_bs_lawstandard_pubdep where SID=#{id}

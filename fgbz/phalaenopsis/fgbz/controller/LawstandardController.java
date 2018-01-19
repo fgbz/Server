@@ -206,6 +206,12 @@ public class LawstandardController {
         return lawstandardService.getLawstandardById(id);
     }
 
+    @RequestMapping(value = "/getDetailLawstandardById", method = RequestMethod.GET)
+    @ResponseBody
+    public Lawstandard getDetailLawstandardById(String id){
+        return lawstandardService.getDetailLawstandardById(id);
+    }
+
     /**
      * 点击次数+1
      * @return
