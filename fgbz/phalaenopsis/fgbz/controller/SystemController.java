@@ -46,6 +46,26 @@ public class SystemController {
         return map;
     }
 
+    /**
+     * 邮箱设置
+     * @return
+     */
+    @RequestMapping(value = "/MailSetting", method = RequestMethod.POST)
+    @ResponseBody
+    public int MailSetting(@RequestBody Map<String, String> map){
+        return systemServie.MailSetting(map);
+    }
+
+    /**
+     * 邮件设置
+     * @return
+     */
+    @RequestMapping(value = "/getMailSetting", method = RequestMethod.POST)
+    @ResponseBody
+    public Map<String, String> getMailSetting(){
+        return systemServie.getMailSetting();
+    }
+
     @RequestMapping(value = "/handleHistory", method = RequestMethod.POST)
     @ResponseBody
     public int handleHistory(@RequestBody Map<String, String> map) throws IOException {

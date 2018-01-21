@@ -362,4 +362,14 @@ public class LawstandardController {
     public int DeleteReplece(String id){
         return lawstandardService.DeleteReplece(id);
     }
+
+    /**
+     * 处理历史数据类别
+     * @return
+     */
+    @RequestMapping(value = "/hangldHistroyType", method = RequestMethod.GET)
+    @ResponseBody
+    public int hangldHistroyType(){
+        return lawstandardService.hangldHistroyType();
+    }
 }

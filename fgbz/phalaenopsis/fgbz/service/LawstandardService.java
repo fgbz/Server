@@ -41,6 +41,8 @@ public class LawstandardService {
 
     public List<LawstandardType> ids = new ArrayList<>();
 
+    public List<LawstandardType> upids =new ArrayList<>();
+
 
     public int testCount(){
         int i = lawstandardDao.testCount();
@@ -1096,5 +1098,80 @@ public class LawstandardService {
         result.setCurrentList(list);
 
         return result;
+    }
+
+    /**
+     * 处理历史数据type
+     * @return
+     */
+    @Transactional
+    public int hangldHistroyType(){
+
+        List<Lawstandard> list= lawstandardDao.handleHistoryLawList();
+
+        String datahistroyid = lawstandardDao.getDataChangeTypeid();
+
+        if(list!=null&&list.size()>0){
+            for (Lawstandard lawstandard:list
+                 ) {
+                HistroyLawType histroyLawType = lawstandardDao.selectHistroyLaw(lawstandard.getOldid());
+
+                if(histroyLawType!=null){
+                    String checkcode = filter(histroyLawType.getCode());
+                    lawstandard.setCode(histroyLawType.getCode());
+                    lawstandard.setCheckcode(checkcode);
+                    //保存编号
+                    lawstandardDao.updateLawHistroyCode(lawstandard);
+                    String selfType=histroyLawType.getType().replace(" ","");
+                    String parentType=histroyLawType.getParenttype().replace(" ","");
+
+                    histroyLawType.setType(selfType);
+                    histroyLawType.setParenttype(parentType);
+                    //类别
+                    String typeid=lawstandardDao.getHistroyLawType(histroyLawType);
+
+                    //保存类别
+                    if(!StrUtil.isNullOrEmpty(typeid)){
+                        lawstandard.setLawtype(typeid);
+                        lawstandardDao.SaveOrUpdateLawAndType(lawstandard);
+                        //原来的减一
+                        changeLawstandardCount(getLawtypeList(datahistroyid),"delete");
+                        //变化后的加一
+                        changeLawstandardCount(getLawtypeList(typeid),"add");
+                    }
+
+                }
+            }
+        }
+        return OpResult.Success;
+    }
+
+    /**
+     * 获取类别树
+     * @return
+     */
+    public List<LawstandardType> getLawtypeList(String id){
+        upids =  new ArrayList<>();
+        LawstandardType lawstandardType = new LawstandardType();
+        lawstandardType.setId(id);
+        upids.add(lawstandardType);
+        getLawsTreeUp(id);
+        return  upids;
+    }
+
+
+    /**
+     * 向上递归树
+     * @return
+     */
+    public LawstandardType getLawsTreeUp(String id){
+
+        LawstandardType lawstandardType = getParentLawstandardTypeById(id);
+
+        while (lawstandardType!=null){
+            upids.add(lawstandardType);
+            lawstandardType=getParentLawstandardTypeById(lawstandardType.getId());
+        }
+        return lawstandardType;
     }
 }

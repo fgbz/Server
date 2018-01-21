@@ -1270,4 +1270,39 @@ LEFT JOIN m_bs_lawstandardtype `n` ON `n`.`ID` = `m`.`LAWSTYPEID`
         SELECT t.id FROM `m_bs_lawstandard` t where t.CHECKCODE =#{code} and t.APPROVESTATUS=4
     </select>
 
+    <!--获取需要处理类别的法规-->
+    <select id="handleHistoryLawList" resultType="Lawstandard">
+SELECT
+	law.id,
+	law.OLDID
+FROM
+	m_bs_lawstandard_type t
+	LEFT JOIN m_bs_lawstandardtype type ON t.LAWSTYPEID = type.id
+	LEFT JOIN m_bs_lawstandard law ON t.SID = law.id
+WHERE
+	type.TYPENAME = '数据迁移'
+    </select>
+
+    <!--获取历史法规-->
+    <select id="selectHistroyLaw" parameterType="String" resultType="HistroyLawType">
+        	SELECT *from m_bs_changetype t where t.id=#{id}
+    </select>
+
+    <!--获取历史法规类别-->
+    <select id="getHistroyLawType" parameterType="HistroyLawType" resultType="String">
+         SELECT t1.id from m_bs_lawstandardtype t1
+ left join m_bs_lawstandardtype t2 on t1.PARENTID=t2.ID
+ where replace(t1.TYPENAME,' ','')= #{type} and replace(t2.TYPENAME,' ','') =#{parenttype}
+LIMIT 0,1
+    </select>
+
+    <!--更新编号-->
+    <update id="updateLawHistroyCode" parameterType="Lawstandard">
+        UPDATE m_bs_lawstandard t set t.CHECKCODE=#{checkcode},t.CODE = #{code} where t.id = #{id}
+    </update>
+    
+    <select id="getDataChangeTypeid" resultType="String">
+        SELECT t.id from m_bs_lawstandardtype t where t.TYPENAME='数据迁移'
+    </select>
+
 </mapper>

@@ -6,6 +6,7 @@ import org.apache.pdfbox.text.PDFTextStripper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.bind.annotation.RequestBody;
 import phalaenopsis.common.dao.IAttachmentDao;
 import phalaenopsis.common.entity.Attachment.Attachment;
 import phalaenopsis.common.entity.Attachment.AttachmentSource;
@@ -18,6 +19,7 @@ import phalaenopsis.common.method.Tools.StrUtil;
 import phalaenopsis.common.method.cache.UserCache;
 import phalaenopsis.common.service.AttachmentService;
 import phalaenopsis.fgbz.common.office2PDF;
+import phalaenopsis.fgbz.dao.FgbzDicDao;
 import phalaenopsis.fgbz.dao.ILog;
 import phalaenopsis.fgbz.dao.LawstandardDao;
 import phalaenopsis.fgbz.dao.SystemDao;
@@ -37,6 +39,9 @@ public class SystemServie {
 
     @Autowired
     private LawstandardDao lawstandardDao;
+
+    @Autowired
+    private FgbzDicDao fgbzDicDao;
 
     public IAttachmentDao dao;
 
@@ -86,6 +91,46 @@ public class SystemServie {
 
     }
 
+    /**
+     * 处理邮件
+     * @param map
+     * @return
+     */
+    @Transactional
+    public int MailSetting( Map<String, String> map){
+
+        Map<String, String> map1 = new HashMap<>();
+        map1.put("key","MailServerAddress");
+        map1.put("value",map.get("MailServerAddress").toString());
+        systemDao.SaveOrUpdateSettingValue(map1);
+
+        Map<String, String> map2 = new HashMap<>();
+        map2.put("key","HairBoxAddress");
+        map2.put("value",map.get("HairBoxAddress").toString());
+        systemDao.SaveOrUpdateSettingValue(map2);
+
+        Map<String, String> map3 = new HashMap<>();
+        map3.put("key","Theme");
+        map3.put("value",map.get("Theme").toString());
+        systemDao.SaveOrUpdateSettingValue(map3);
+
+        Map<String, String> map4 = new HashMap<>();
+        map4.put("key","Text");
+        map4.put("value",map.get("Text").toString());
+        systemDao.SaveOrUpdateSettingValue(map4);
+
+
+        return OpResult.Success;
+    }
+
+    public Map<String, String> getMailSetting(){
+        Map<String, String> map = new HashMap<>();
+        map.put("MailServerAddress",fgbzDicDao.getSettingByKey("MailServerAddress"));
+        map.put("HairBoxAddress",fgbzDicDao.getSettingByKey("HairBoxAddress"));
+        map.put("Theme",fgbzDicDao.getSettingByKey("Theme"));
+        map.put("Text",fgbzDicDao.getSettingByKey("Text"));
+        return map;
+    }
     //提取中文数字和字母
     public String filter(String character)
     {

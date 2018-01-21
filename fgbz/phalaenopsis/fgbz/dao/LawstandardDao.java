@@ -360,4 +360,35 @@ public interface LawstandardDao {
      * @return
      */
     int updateRefenceByOldID(Lawstandard lawstandard);
+
+    /***********************处理***************************/
+
+    /**
+     * 获取所有需要处理的法规
+     * @return
+     */
+     List<Lawstandard> handleHistoryLawList();
+
+    /**
+     * 获取历史法规
+     * @param id
+     * @return
+     */
+     HistroyLawType selectHistroyLaw(String id);
+
+    /**
+     * 获取历史法规
+     * @param histroyLawType
+     * @return
+     */
+     String getHistroyLawType(HistroyLawType histroyLawType);
+
+    /**
+     * 更新历史法规的编号
+     * @param lawstandard
+     * @return
+     */
+     int updateLawHistroyCode(Lawstandard lawstandard);
+
+     String getDataChangeTypeid();
 }
