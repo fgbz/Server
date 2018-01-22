@@ -129,6 +129,21 @@ public class SystemServie {
         map.put("HairBoxAddress",fgbzDicDao.getSettingByKey("HairBoxAddress"));
         map.put("Theme",fgbzDicDao.getSettingByKey("Theme"));
         map.put("Text",fgbzDicDao.getSettingByKey("Text"));
+
+        List<FG_User> list = lawstandardDao.getCheckPeople();
+        String mail="";
+        if(list!=null&&list.size()>0){
+            for (FG_User fG_User:list) {
+                if(!StrUtil.isNullOrEmpty(fG_User.getEmail())){
+                    mail+=fG_User.getEmail()+",";
+                }
+            }
+            if(!StrUtil.isNullOrEmpty(mail)){
+                mail = mail.substring(0,mail.length() - 1);
+            }
+
+        }
+        map.put("Email",mail);
         return map;
     }
     //提取中文数字和字母

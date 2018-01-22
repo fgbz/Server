@@ -1,6 +1,7 @@
 package phalaenopsis.fgbz.service;
 
 import com.alibaba.fastjson.JSON;
+import jdk.internal.org.objectweb.asm.tree.analysis.Analyzer;
 import org.apache.poi.hssf.usermodel.*;
 import org.apache.poi.ss.util.*;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,8 +25,6 @@ import java.net.URLEncoder;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
-
-
 
 /**
  *  法规标准
@@ -783,7 +782,9 @@ public class LawstandardService {
 
         Lawstandard law =getLawstandardById(id);
 
-        Lawstandard TempLaw = lawstandardDao.getTempLaw(law.getCode());
+        String code = filter(law.getCode());
+
+        Lawstandard TempLaw = lawstandardDao.getTempLaw(code);
         if(TempLaw!=null){
             //删除临时的
             lawstandardDao.deleteLawstandardById(TempLaw.getId());
@@ -1174,4 +1175,6 @@ public class LawstandardService {
         }
         return lawstandardType;
     }
+
+
 }

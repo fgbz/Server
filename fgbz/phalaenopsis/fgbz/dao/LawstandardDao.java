@@ -391,4 +391,10 @@ public interface LawstandardDao {
      int updateLawHistroyCode(Lawstandard lawstandard);
 
      String getDataChangeTypeid();
+
+    /**
+     * 获取有审核权限的人
+     * @return
+     */
+     List<FG_User> getCheckPeople();
 }

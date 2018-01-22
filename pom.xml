@@ -14,7 +14,7 @@
 			<id>phalaenopsis_Repo</id>
 			<name>phalaenopsis_Repo</name>
 			<url>http://maven.aliyun.com/nexus/content/groups/public/</url>
-			<!--<url> https://mvnrepository.com/artifact/org.artofsolving.jodconverter/jodconverter-core</url>-->
+			<!--<url>https://mvnrepository.com/artifact/org.apache.lucene/lucene-queryparser</url>-->
 		</repository>
 	</repositories>
 
@@ -49,6 +49,27 @@
 			<!--<artifactId>jodconverter-core</artifactId>-->
 			<!--<version>3.0-beta-4</version>-->
 		<!--</dependency>-->
+
+		<!-- https://mvnrepository.com/artifact/org.apache.lucene/lucene-core -->
+		<dependency>
+			<groupId>org.apache.lucene</groupId>
+			<artifactId>lucene-core</artifactId>
+			<version>4.0.0</version>
+		</dependency>
+
+		<!-- https://mvnrepository.com/artifact/org.apache.lucene/lucene-analyzers-common -->
+		<dependency>
+			<groupId>org.apache.lucene</groupId>
+			<artifactId>lucene-analyzers-common</artifactId>
+			<version>4.0.0-ALPHA</version>
+		</dependency>
+
+		<!-- https://mvnrepository.com/artifact/org.apache.lucene/lucene-queryparser -->
+		<dependency>
+			<groupId>org.apache.lucene</groupId>
+			<artifactId>lucene-queryparser</artifactId>
+			<version>4.0.0-BETA</version>
+		</dependency>
 
 
 		<dependency>

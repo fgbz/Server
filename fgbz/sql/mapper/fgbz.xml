@@ -151,7 +151,7 @@ WHERE
 
 
     <select id="getUptodateLawstandardList" parameterType="map" resultType="Lawstandard">
-        SELECT t.ID,t.`CODE`,t.CHINESENAME,t.APPROVESTATUS,dep.PUBDEPNAME,t.CLICKCOUNT,t.RELEASEDATE ,t.IMPDATE,ur.USERREALNAME as inputusername,t.INPUTDATE from
+        SELECT t.ID,t.`CODE`,t.CHINESENAME,t.APPROVESTATUS,dep.PUBDEPNAME,t.CLICKCOUNT,t.RELEASEDATE ,t.IMPDATE,ur.USERREALNAME as inputusername,t.INPUTDATE,t.MODIFYDATE from
 
         ( SELECT  *from m_bs_lawstandard m where 1=1
         <if test="TreeValue !=null and TreeValue!=''" >
@@ -170,7 +170,7 @@ WHERE
         left join (select temp.sid,max(temp.PUBDEPID) as PUBDEPID from `m_bs_lawstandard_pubdep` temp group by temp.sid) pub on t.id = pub.SID
         left join m_sa_publishdep dep on dep.ID = pub.PUBDEPID
         left join m_sa_user ur on ur.ID = t.INPUTUSERID
-
+        order by t.MODIFYDATE DESC
 
     </select>
 
@@ -1303,6 +1303,18 @@ LIMIT 0,1
     
     <select id="getDataChangeTypeid" resultType="String">
         SELECT t.id from m_bs_lawstandardtype t where t.TYPENAME='数据迁移'
+    </select>
+
+    <!--获取有审核权限的人-->
+    <select id="getCheckPeople" resultType="FG_User">
+      SELECT us.id,us.EMAIL from  m_sa_user us
+where '待办箱' in
+(select sm.MENUNAME from m_sa_menu sm
+inner join m_sa_role_menu rm on rm.MENUID = sm.id
+inner join m_sa_user_role ur on ur.ROLEID = rm.ROLEID
+where ur.USERID = us.id
+)
+and us.`STATUS`=0
     </select>
 
 </mapper>
