@@ -1298,7 +1298,7 @@ LIMIT 0,1
 
     <!--更新编号-->
     <update id="updateLawHistroyCode" parameterType="Lawstandard">
-        UPDATE m_bs_lawstandard t set t.CHECKCODE=#{checkcode},t.CODE = #{code} where t.id = #{id}
+        UPDATE m_bs_lawstandard t set t.CHECKCODE=#{checkcode},t.CODE = #{code},t.CHINESENAME = #{chinesename} where t.id = #{id}
     </update>
     
     <select id="getDataChangeTypeid" resultType="String">
@@ -1306,7 +1306,7 @@ LIMIT 0,1
     </select>
 
     <!--获取有审核权限的人-->
-    <select id="getCheckPeople" resultType="FG_User">
+    <select id="getCheckPeople" parameterType="String" resultType="FG_User">
       SELECT us.id,us.EMAIL from  m_sa_user us
 where '待办箱' in
 (select sm.MENUNAME from m_sa_menu sm
@@ -1314,7 +1314,105 @@ inner join m_sa_role_menu rm on rm.MENUID = sm.id
 inner join m_sa_user_role ur on ur.ROLEID = rm.ROLEID
 where ur.USERID = us.id
 )
-and us.`STATUS`=0
+and us.`STATUS`=0 and us.id <![CDATA[  != ]]> #{id}
+    </select>
+
+    <!--获取历史的需要更新编号和名称的法规-->
+    <select id="getHistroyLawToUpdateCodeAndName" resultType="Lawstandard">
+        SELECT * FROM `m_bs_lawcode`
+    </select>
+
+    <select id="getSolrById" parameterType="String" resultType="Slor">
+SELECT
+	`m`.`id` ,
+	concat(
+		`m`.`CODE`,
+		';',
+		`m`.`CHINESENAME`,
+		';',
+		`m`.`ENGLISHNAME`,
+		';',
+		`m`.`KEYWORDS`,
+		';',
+		`m`.`MEMO`,
+		';',
+		`m`.`SUMMARYINFO`,
+		';',
+		`m`.`STATUSNAME`,
+		';',
+		`m`.`PUBDEPNAME`,
+		';',
+		`m`.`TYPENAME`,
+		';',
+
+	IF (
+		isnull(`m`.`filecontent`),
+		'',
+		`m`.`filecontent`
+	)
+	) AS SOLRTEXT
+FROM
+	(
+		SELECT
+			`t`.`ID` AS `id`,
+			`t`.`CODE` AS `CODE`,
+			`t`.`CHINESENAME` AS `CHINESENAME`,
+
+		IF (
+			isnull(`t`.`ENGLISHNAME`),
+			'',
+			`t`.`ENGLISHNAME`
+		) AS `ENGLISHNAME`,
+
+	IF (
+		isnull(`t`.`KEYWORDS`),
+		'',
+		`t`.`KEYWORDS`
+	) AS `KEYWORDS`,
+
+IF (
+	isnull(`t`.`MEMO`),
+	'',
+	`t`.`MEMO`
+) AS `MEMO`,
+
+IF (
+	isnull(`t`.`SUMMARYINFO`),
+	'',
+	`t`.`SUMMARYINFO`
+) AS `SUMMARYINFO`,
+
+IF (
+	isnull(`sta`.`STATUSNAME`),
+	'',
+	`sta`.`STATUSNAME`
+) AS `STATUSNAME`,
+
+IF (
+	isnull(`dep`.`PUBDEPNAME`),
+	'',
+	`dep`.`PUBDEPNAME`
+) AS `PUBDEPNAME`,
+ `n`.`TYPENAME` AS `TYPENAME`,
+ (
+	SELECT
+		group_concat(
+			`file`.`CONTENT` SEPARATOR ','
+		)
+	FROM
+		`m_sa_fileinfo` `file`
+	WHERE
+		`file`.`REFID` = #{id}
+) AS `filecontent`
+FROM
+	`m_bs_lawstandard` `t`
+LEFT JOIN `m_sa_lawstandardstatus` `sta` ON `t`.`STATUS` = `sta`.`ID`
+LEFT JOIN (select temp.sid,max(temp.PUBDEPID) as PUBDEPID from `m_bs_lawstandard_pubdep` temp group by temp.sid) `pub` ON `t`.`ID` = `pub`.`SID`
+LEFT JOIN `m_sa_publishdep` `dep` ON `dep`.`ID` = `pub`.`PUBDEPID`
+LEFT JOIN m_bs_lawstandard_type `m` ON `m`.`SID` = `t`.`ID`
+LEFT JOIN m_bs_lawstandardtype `n` ON `n`.`ID` = `m`.`LAWSTYPEID`
+ 	 WHERE `t`.`ID` =#{id}
+	) `m`
     </select>
 
 </mapper>

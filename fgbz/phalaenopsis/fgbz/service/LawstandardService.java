@@ -12,6 +12,7 @@ import phalaenopsis.common.entity.*;
 import phalaenopsis.common.method.ExportExcel;
 import phalaenopsis.common.method.Tools.StrUtil;
 import phalaenopsis.fgbz.common.HssfHelper;
+import phalaenopsis.fgbz.common.IndexManager;
 import phalaenopsis.fgbz.dao.ILog;
 import phalaenopsis.fgbz.dao.LawstandardDao;
 import phalaenopsis.fgbz.dao.UserCenterDao;
@@ -1108,41 +1109,53 @@ public class LawstandardService {
     @Transactional
     public int hangldHistroyType(){
 
-        List<Lawstandard> list= lawstandardDao.handleHistoryLawList();
+//        List<Lawstandard> list= lawstandardDao.handleHistoryLawList();
+//
+//        String datahistroyid = lawstandardDao.getDataChangeTypeid();
+//
+//        if(list!=null&&list.size()>0){
+//            for (Lawstandard lawstandard:list
+//                 ) {
+//                HistroyLawType histroyLawType = lawstandardDao.selectHistroyLaw(lawstandard.getOldid());
+//
+//                if(histroyLawType!=null){
+//                    String checkcode = filter(histroyLawType.getCode());
+//                    lawstandard.setCode(histroyLawType.getCode());
+//                    lawstandard.setCheckcode(checkcode);
+//                    //保存编号
+//                    lawstandardDao.updateLawHistroyCode(lawstandard);
+//                    String selfType=histroyLawType.getType().replace(" ","");
+//                    String parentType=histroyLawType.getParenttype().replace(" ","");
+//
+//                    histroyLawType.setType(selfType);
+//                    histroyLawType.setParenttype(parentType);
+//                    //类别
+//                    String typeid=lawstandardDao.getHistroyLawType(histroyLawType);
+//
+//                    //保存类别
+//                    if(!StrUtil.isNullOrEmpty(typeid)){
+//                        lawstandard.setLawtype(typeid);
+//                        lawstandardDao.SaveOrUpdateLawAndType(lawstandard);
+//                        //原来的减一
+//                        changeLawstandardCount(getLawtypeList(datahistroyid),"delete");
+//                        //变化后的加一
+//                        changeLawstandardCount(getLawtypeList(typeid),"add");
+//                    }
+//
+//                }
+//            }
+//        }
 
-        String datahistroyid = lawstandardDao.getDataChangeTypeid();
 
-        if(list!=null&&list.size()>0){
-            for (Lawstandard lawstandard:list
-                 ) {
-                HistroyLawType histroyLawType = lawstandardDao.selectHistroyLaw(lawstandard.getOldid());
+        List<Lawstandard> list= lawstandardDao.getHistroyLawToUpdateCodeAndName();
 
-                if(histroyLawType!=null){
-                    String checkcode = filter(histroyLawType.getCode());
-                    lawstandard.setCode(histroyLawType.getCode());
-                    lawstandard.setCheckcode(checkcode);
-                    //保存编号
-                    lawstandardDao.updateLawHistroyCode(lawstandard);
-                    String selfType=histroyLawType.getType().replace(" ","");
-                    String parentType=histroyLawType.getParenttype().replace(" ","");
+        for (Lawstandard lawstandard:list) {
 
-                    histroyLawType.setType(selfType);
-                    histroyLawType.setParenttype(parentType);
-                    //类别
-                    String typeid=lawstandardDao.getHistroyLawType(histroyLawType);
-
-                    //保存类别
-                    if(!StrUtil.isNullOrEmpty(typeid)){
-                        lawstandard.setLawtype(typeid);
-                        lawstandardDao.SaveOrUpdateLawAndType(lawstandard);
-                        //原来的减一
-                        changeLawstandardCount(getLawtypeList(datahistroyid),"delete");
-                        //变化后的加一
-                        changeLawstandardCount(getLawtypeList(typeid),"add");
-                    }
-
-                }
-            }
+            String checkcode = filter(lawstandard.getCode());
+            lawstandard.setCode(lawstandard.getCode());
+            lawstandard.setCheckcode(checkcode);
+            //保存编号
+            lawstandardDao.updateLawHistroyCode(lawstandard);
         }
         return OpResult.Success;
     }
@@ -1176,5 +1189,14 @@ public class LawstandardService {
         return lawstandardType;
     }
 
+    //初始化索引
+    public int initSolr() throws IOException, org.apache.lucene.queryparser.classic.ParseException {
 
+//        IndexManager indexManager = new IndexManager();
+//        Slor slor =  lawstandardDao.getSolrById("c6d73c67-f84a-11e7-883a-28c63fc9a9f9");
+//        IndexManager.createIndex(slor.getId(),slor.getSolrtext());
+        IndexManager.searchIndex("核安全公约");
+
+        return OpResult.Success;
+    }
 }

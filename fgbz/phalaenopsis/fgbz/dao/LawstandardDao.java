@@ -396,5 +396,9 @@ public interface LawstandardDao {
      * 获取有审核权限的人
      * @return
      */
-     List<FG_User> getCheckPeople();
+     List<FG_User> getCheckPeople(String id);
+
+     List<Lawstandard> getHistroyLawToUpdateCodeAndName();
+
+     Slor getSolrById(String id);
 }

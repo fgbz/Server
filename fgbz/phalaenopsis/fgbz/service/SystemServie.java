@@ -130,7 +130,8 @@ public class SystemServie {
         map.put("Theme",fgbzDicDao.getSettingByKey("Theme"));
         map.put("Text",fgbzDicDao.getSettingByKey("Text"));
 
-        List<FG_User> list = lawstandardDao.getCheckPeople();
+        FG_User user = getCurrentFGUser();
+        List<FG_User> list = lawstandardDao.getCheckPeople(user.getId());
         String mail="";
         if(list!=null&&list.size()>0){
             for (FG_User fG_User:list) {

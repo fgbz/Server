@@ -1,6 +1,7 @@
 package phalaenopsis.fgbz.controller;
 
 import org.apache.commons.collections.map.HashedMap;
+import org.apache.lucene.queryparser.classic.ParseException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
@@ -371,5 +372,11 @@ public class LawstandardController {
     @ResponseBody
     public int hangldHistroyType(){
         return lawstandardService.hangldHistroyType();
+    }
+
+    @RequestMapping(value = "/initSolr", method = RequestMethod.GET)
+    @ResponseBody
+    public int initSolr() throws IOException, ParseException {
+        return lawstandardService.initSolr();
     }
 }
