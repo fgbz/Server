@@ -1193,9 +1193,10 @@ public class LawstandardService {
     public int initSolr() throws IOException, org.apache.lucene.queryparser.classic.ParseException {
 
 //        IndexManager indexManager = new IndexManager();
-//        Slor slor =  lawstandardDao.getSolrById("c6d73c67-f84a-11e7-883a-28c63fc9a9f9");
-//        IndexManager.createIndex(slor.getId(),slor.getSolrtext());
-        IndexManager.searchIndex("核安全公约");
+        Slor slor =  lawstandardDao.getSolrById("e9470dcb-f87c-11e7-a3ef-00163e126353");
+        IndexManager.deleteIndex(slor);
+        IndexManager.createIndex(slor);
+        IndexManager.searchIndex("关于核损害民事责任的1997");
 
         return OpResult.Success;
     }

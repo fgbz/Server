@@ -1350,7 +1350,14 @@ SELECT
 		'',
 		`m`.`filecontent`
 	)
-	) AS SOLRTEXT
+	) AS SOLRTEXT,
+	`m`.`CHINESENAME`,
+	`m`.`KEYWORDS`,
+	`m`.`SUMMARYINFO`,
+m.RELEASEDATE,
+m.clickcount,
+m.lawtype,
+m.modifydate
 FROM
 	(
 		SELECT
@@ -1403,7 +1410,11 @@ IF (
 		`m_sa_fileinfo` `file`
 	WHERE
 		`file`.`REFID` = #{id}
-) AS `filecontent`
+) AS `filecontent`,
+	t.RELEASEDATE,
+	t.clickcount,
+	n.id as lawtype,
+t.modifydate
 FROM
 	`m_bs_lawstandard` `t`
 LEFT JOIN `m_sa_lawstandardstatus` `sta` ON `t`.`STATUS` = `sta`.`ID`
