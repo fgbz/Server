@@ -119,7 +119,25 @@ public class SystemServie {
         map4.put("value",map.get("Text").toString());
         systemDao.SaveOrUpdateSettingValue(map4);
 
+        Map<String, String> map5 = new HashMap<>();
+        map5.put("key","NoPassTheme");
+        map5.put("value",map.get("NoPassTheme").toString());
+        systemDao.SaveOrUpdateSettingValue(map5);
 
+        Map<String, String> map6 = new HashMap<>();
+        map6.put("key","NoPassText");
+        map6.put("value",map.get("NoPassText").toString());
+        systemDao.SaveOrUpdateSettingValue(map6);
+
+        Map<String, String> map7 = new HashMap<>();
+        map7.put("key","PublishTheme");
+        map7.put("value",map.get("PublishTheme").toString());
+        systemDao.SaveOrUpdateSettingValue(map7);
+
+        Map<String, String> map8 = new HashMap<>();
+        map8.put("key","PublishText");
+        map8.put("value",map.get("PublishText").toString());
+        systemDao.SaveOrUpdateSettingValue(map8);
         return OpResult.Success;
     }
 
@@ -129,6 +147,10 @@ public class SystemServie {
         map.put("HairBoxAddress",fgbzDicDao.getSettingByKey("HairBoxAddress"));
         map.put("Theme",fgbzDicDao.getSettingByKey("Theme"));
         map.put("Text",fgbzDicDao.getSettingByKey("Text"));
+        map.put("NoPassTheme",fgbzDicDao.getSettingByKey("NoPassTheme"));
+        map.put("NoPassText",fgbzDicDao.getSettingByKey("NoPassText"));
+        map.put("PublishTheme",fgbzDicDao.getSettingByKey("PublishTheme"));
+        map.put("PublishText",fgbzDicDao.getSettingByKey("PublishText"));
 
         FG_User user = getCurrentFGUser();
         List<FG_User> list = lawstandardDao.getCheckPeople(user.getId());
@@ -145,6 +167,22 @@ public class SystemServie {
 
         }
         map.put("Email",mail);
+
+        List<FG_User> listAll = lawstandardDao.getAllPeopleEmail();
+        String allmail="";
+        if(listAll!=null&&listAll.size()>0){
+            for (FG_User fG_User1:listAll) {
+                if(!StrUtil.isNullOrEmpty(fG_User1.getEmail())){
+                    allmail+=fG_User1.getEmail()+",";
+                }
+            }
+            if(!StrUtil.isNullOrEmpty(allmail)){
+                allmail = allmail.substring(0,allmail.length() - 1);
+            }
+
+        }
+        map.put("AllEmail",allmail);
+
         return map;
     }
     //提取中文数字和字母
@@ -745,5 +783,16 @@ public class SystemServie {
         result.setCurrentList(list);
 
         return result;
+    }
+
+    /**
+     * 通过id获取邮件
+     * @param id
+     * @return
+     */
+    public Map<String,String> getUserMailById(String id){
+        Map<String,String> map =new HashMap<>();
+        map.put("mail",systemDao.getUserMailById(id));
+        return map;
     }
 }

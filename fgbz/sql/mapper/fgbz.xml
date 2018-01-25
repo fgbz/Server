@@ -676,6 +676,7 @@ ORDER BY t.MODIFYDATE desc
         dep.ID as organization,
         dep.PUBDEPNAME,
         n.TYPENAME,
+        t.INPUTUSERID,
         n.id as lawtype,
 				ur.USERREALNAME as inputusername,
 				org.ORGNAME as inputorgname,
@@ -1424,6 +1425,16 @@ LEFT JOIN m_bs_lawstandard_type `m` ON `m`.`SID` = `t`.`ID`
 LEFT JOIN m_bs_lawstandardtype `n` ON `n`.`ID` = `m`.`LAWSTYPEID`
  	 WHERE `t`.`ID` =#{id}
 	) `m`
+    </select>
+
+    <!--获取所有发布的法规-->
+    <select id="getAllPubLishLaw" resultType="Lawstandard">
+        SELECT t.id FROM `m_bs_lawstandard` t where t.APPROVESTATUS=3
+    </select>
+
+    <select id="getAllPeopleEmail" resultType="FG_User">
+          SELECT us.id,us.EMAIL from  m_sa_user us
+where  us.`STATUS`=0
     </select>
 
 </mapper>

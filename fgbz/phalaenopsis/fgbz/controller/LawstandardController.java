@@ -90,7 +90,7 @@ public class LawstandardController {
      */
     @RequestMapping(value = "/getSolrList", method = RequestMethod.POST)
     @ResponseBody
-    public PagingEntity<Lawstandard> getSolrList(@RequestBody Page page){
+    public PagingEntity<Lawstandard> getSolrList(@RequestBody Page page) throws IOException, ParseException {
         return  lawstandardService.getSolrList(page);
     }
 
@@ -171,7 +171,7 @@ public class LawstandardController {
      */
     @RequestMapping(value = "/DeleteLawstandardById", method = RequestMethod.POST)
     @ResponseBody
-    public int  DeleteLawstandardById(@RequestBody Lawstandard lawstandard){
+    public int  DeleteLawstandardById(@RequestBody Lawstandard lawstandard) throws IOException {
         return lawstandardService.DeleteLawstandardById(lawstandard.getId());
     }
 
@@ -181,7 +181,7 @@ public class LawstandardController {
      */
     @RequestMapping(value = "/DeleteAllSelectLawstandard", method = RequestMethod.POST)
     @ResponseBody
-    public int DeleteAllSelectLawstandard(@RequestBody List<String> list){
+    public int DeleteAllSelectLawstandard(@RequestBody List<String> list) throws IOException {
         return lawstandardService.DeleteAllSelectLawstandard(list);
     }
     /**

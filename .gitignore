@@ -67,3 +67,15 @@ Thumbs.db
 *.pdf
 *.docx
 *.txt
+*.fdt
+*.frq
+*.prx
+*.tim
+*.fdx
+*.cfs
+*.fnm
+*.si
+*.tip
+*.cfe
+*.gen
+luceneIndex/segments_s

@@ -242,4 +242,10 @@ public class SystemController {
     public PagingEntity<Fg_Log> getLogList(@RequestBody Page page){
         return systemServie.getLogList(page);
     }
+
+    @RequestMapping(value = "/getUserMailById", method = RequestMethod.GET)
+    @ResponseBody
+    public Map<String,String> getUserMailById(String id){
+        return systemServie.getUserMailById(id);
+    }
 }

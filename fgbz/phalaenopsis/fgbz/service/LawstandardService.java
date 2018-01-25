@@ -385,63 +385,16 @@ public class LawstandardService {
      * @param page
      * @return
      */
-    public PagingEntity<Lawstandard> getSolrList(@RequestBody Page page){
+    public PagingEntity<Lawstandard> getSolrList(Page page) throws IOException, org.apache.lucene.queryparser.classic.ParseException {
 
-        Map<String, Object> conditions = new HashMap<String, Object>();
 
-        if(page.getConditions()!=null) {
-            //查询条件
-            for (Condition condition : page.getConditions()) {
-                if (condition.getKey().equals("Number")) {
-                    conditions.put("Number", condition.getValue());
-                } else if (condition.getKey().equals("Title")) {
-                    conditions.put("Title", condition.getValue());
-                } else if (condition.getKey().equals("FiledTimeStart")) {
-                    conditions.put("FiledTimeStart", condition.getValue());
-                } else if (condition.getKey().equals("FiledTimeEnd")) {
-                    conditions.put("FiledTimeEnd", condition.getValue());
-                } else if (condition.getKey().equals("State")) {
-                    conditions.put("State", condition.getValue());
-                }   else if (condition.getKey().equals("TreeValue")) {
-                    ids =new ArrayList<>();
-                    LawstandardType lawSelf = new LawstandardType();
-                    lawSelf.setId(condition.getValue());
-                    ids.add(lawSelf);
-                    getLawsTree(condition.getValue());
-                    conditions.put("TreeValue",ids );
-                }else if (condition.getKey().equals("KeyWords")){
-                    conditions.put("KeyWords", condition.getValue());
-                }else if(condition.getKey().equals("ApproveStatus")){
-                    conditions.put("ApproveStatus", condition.getValue());
-                }else if(condition.getKey().equals("EnglishTitle")){
-                    conditions.put("EnglishTitle", condition.getValue());
-                }else if(condition.getKey().equals("KeyWordsSingle")){
-                    conditions.put("KeyWordsSingle", condition.getValue());
-                }else if(condition.getKey().equals("Summaryinfo")){
-                    conditions.put("Summaryinfo", condition.getValue());
-                }else if(condition.getKey().equals("Solr")){
-                    String[] solrList  = condition.getValue().split(" ");
-                    conditions.put("Solr", solrList);
-                }
-
-            }
-        }
-
+       Map<String,Object> map = IndexManager.searchIndex(page);
 
         // 1,根据条件一共查询到的数据条数
-        int count = lawstandardDao.getSolrListCount(conditions);
-
-
-            if(page.getPageNo()==1){
-                conditions.put("startRow", 0 );
-            }else{
-                conditions.put("startRow", page.getPageSize() * (page.getPageNo() - 1) );
-            }
-            conditions.put("endRow", page.getPageSize());
-
+        int count = (int)map.get("Total");
 
         // 2, 查询到当前页数的数据
-        List<Lawstandard> list = lawstandardDao.getSolrList(conditions);
+        List<Lawstandard> list = (List<Lawstandard>)map.get("data");;
 
         PagingEntity<Lawstandard> result = new PagingEntity<Lawstandard>();
         result.setPageCount(count);
@@ -646,15 +599,22 @@ public class LawstandardService {
      */
     @Transactional
     @ILog(description="删除法规标准")
-    public int  DeleteLawstandardById(String id){
+    public int  DeleteLawstandardById(String id) throws IOException {
+
+        //删除索引
+        try {
+            Slor slor =  lawstandardDao.getSolrById(id);
+            IndexManager.deleteIndex(slor);
+        }catch (Exception e){
+
+        }
 
         lawstandardDao.deleteLawstandardById(id);
         lawstandardDao.deleteRefenceAll(id);
         lawstandardDao.deleteReplaceAll(id);
         lawstandardDao.DeleteLawAndType(id);
 
-        //删除索引
-        lawstandardDao.DeleteSolrTextById(id);
+
 
         //删除法规收藏夹关联
         Map<String,Object> map1 =new HashMap<>();
@@ -671,7 +631,7 @@ public class LawstandardService {
      */
     @Transactional
     @ILog(description="批量删除法规")
-    public int DeleteAllSelectLawstandard(List<String> list){
+    public int DeleteAllSelectLawstandard(List<String> list) throws IOException {
         for (String str:list
              ) {
             DeleteLawstandardById(str);
@@ -1192,11 +1152,13 @@ public class LawstandardService {
     //初始化索引
     public int initSolr() throws IOException, org.apache.lucene.queryparser.classic.ParseException {
 
-//        IndexManager indexManager = new IndexManager();
-//        Slor slor =  lawstandardDao.getSolrById("c4bab88c-e96a-11e7-8677-1002b5a96707");
-//        IndexManager.deleteIndex(slor);
-//        IndexManager.createIndex(slor);
-        IndexManager.searchIndex("反应堆");
+        List<Lawstandard> list = lawstandardDao.getAllPubLishLaw();
+        for (Lawstandard lawstandard:list
+             ) {
+            Slor slor =  lawstandardDao.getSolrById(lawstandard.getId());
+//            IndexManager.deleteIndex(slor);
+            IndexManager.createIndex(slor);
+        }
 
         return OpResult.Success;
     }

@@ -401,4 +401,12 @@ public interface LawstandardDao {
      List<Lawstandard> getHistroyLawToUpdateCodeAndName();
 
      Slor getSolrById(String id);
+
+    /**
+     * 获取所有的法规
+     * @return
+     */
+    List<Lawstandard> getAllPubLishLaw();
+
+    List<FG_User> getAllPeopleEmail();
 }

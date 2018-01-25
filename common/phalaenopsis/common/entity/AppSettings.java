@@ -100,6 +100,8 @@ public class AppSettings {
 
 	private String openoffice;
 
+	private String solrpath;
+
 	public String getMinDistance() {
 		return MinDistance;
 	}
@@ -172,6 +174,14 @@ public class AppSettings {
 		this.openoffice = openoffice;
 	}
 
+	public String getSolrpath() {
+		return solrpath;
+	}
+
+	public void setSolrpath(String solrpath) {
+		this.solrpath = solrpath;
+	}
+
 	public AppSettings() {
 		super();
 
@@ -222,6 +232,7 @@ public class AppSettings {
 			this.PJMapSpotLocationService = properties.getProperty("PJMapSpotLocationService");
 			this.swfPath = properties.getProperty("swfPath");
 			this.openoffice = properties.getProperty("openoffice");
+			this.solrpath = properties.getProperty("solrpath");
 		}
 		catch(IOException e1) {
 			e1.printStackTrace();

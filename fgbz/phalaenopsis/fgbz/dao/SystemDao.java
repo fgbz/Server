@@ -211,4 +211,7 @@ public interface SystemDao {
 
     int SelectLogCount(Map<String, Object> map);
 
+
+    String getUserMailById(String id);
+
 }

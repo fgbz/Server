@@ -504,4 +504,9 @@ WHERE
         <include refid="queryLog"></include>
     </select>
 
+    <select id="getUserMailById" parameterType="String" resultType="String">
+          SELECT us.EMAIL from  m_sa_user us
+where us.id=#{id}
+    </select>
+
 </mapper>

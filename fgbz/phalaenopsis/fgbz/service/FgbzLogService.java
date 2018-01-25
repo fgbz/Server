@@ -7,11 +7,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import phalaenopsis.common.entity.OpResult;
 import phalaenopsis.common.method.Tools.StrUtil;
+import phalaenopsis.fgbz.common.IndexManager;
 import phalaenopsis.fgbz.dao.ILog;
 import phalaenopsis.fgbz.dao.LawstandardDao;
 import phalaenopsis.fgbz.dao.SystemDao;
 import phalaenopsis.fgbz.entity.*;
 
+import java.io.IOException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
@@ -154,8 +156,13 @@ public class FgbzLogService {
             lawstandardService.changeLawstandardCount(getLawtypeList(lawActual.getLawtype()),"add");
 
             //维护索引
-            lawstandardDao.DeleteSolrTextById(lawActual.getId());
-            lawstandardDao.SaveSolrTextById(lawActual.getId());
+            try {
+                Slor slor =  lawstandardDao.getSolrById(lawstandardApprove.getLawstandardID());
+                IndexManager.deleteIndex(slor);
+                IndexManager.createIndex(slor);
+            }catch (Exception e){
+
+            }
         }
     }
 
@@ -181,23 +188,26 @@ public class FgbzLogService {
 
     //保存法规时维护索引
     @AfterReturning(pointcut = "SaveLawSolr()", returning = "returnValue")
-    public void SaveLawSolr(JoinPoint point,Object returnValue){
+    public void SaveLawSolr(JoinPoint point,Object returnValue) throws IOException {
         int result = (int)returnValue;
 
         Object[] args=point.getArgs();
         Lawstandard lawstandard = (Lawstandard) args[0];
 
-        try{
+
             if(result==OpResult.Success){
                 //发布时维护索引
                 if(!StrUtil.isNullOrEmpty(lawstandard.getId())&&lawstandard.getApprovestatus()==3){
-                    lawstandardDao.DeleteSolrTextById(lawstandard.getId());
-                    lawstandardDao.SaveSolrTextById(lawstandard.getId());
+                    try {
+                            Slor slor =  lawstandardDao.getSolrById(lawstandard.getId());
+                            IndexManager.deleteIndex(slor);
+                            IndexManager.createIndex(slor);
+                    }catch (Exception e){
+
+                    }
+
                 }
             }
-        }catch(Exception e){
-
-        }
 
     }
 
@@ -254,11 +264,17 @@ public class FgbzLogService {
     //处理索引表
     public void HandleSolr( List<Lawstandard> list){
         if(list!=null&&list.size()>0){
-            for (Lawstandard lawstandard:list
-                    ) {
-                lawstandardDao.DeleteSolrTextById(lawstandard.getId());
-                lawstandardDao.SaveSolrTextById(lawstandard.getId());
+            try {
+                for (Lawstandard lawstandard:list
+                        ) {
+                    Slor slor =  lawstandardDao.getSolrById(lawstandard.getId());
+                    IndexManager.deleteIndex(slor);
+                    IndexManager.createIndex(slor);
+                }
+            }catch (Exception e){
+
             }
+
         }
     }
     /**
