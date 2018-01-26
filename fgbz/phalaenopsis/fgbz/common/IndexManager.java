@@ -10,7 +10,9 @@ import org.apache.lucene.queryparser.classic.QueryParser;
 import org.apache.lucene.search.*;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
+import org.apache.lucene.util.BytesRef;
 import org.apache.lucene.util.Version;
+import org.springframework.stereotype.Service;
 import phalaenopsis.common.entity.AppSettings;
 import phalaenopsis.common.entity.Condition;
 import phalaenopsis.common.entity.Page;
@@ -23,24 +25,25 @@ import java.io.File;
 import java.io.IOException;
 import java.util.*;
 
-import static com.mongodb.util.MyAsserts.assertEquals;
-
 /**
  * Created by 13260 on 2018/1/24.
  */
+@Service("indexManager")
 public class IndexManager {
-
-    private static IndexManager indexManager;
 
     private static String INDEX_DIR =new AppSettings().getSolrpath();
     private static File file=null;
+
+    //------lock 1
+    private static Object lock_wd=new Object();
 
     /**
      * 创建当前文件目录的索引
      * @return 是否成功
      */
-    public static boolean createIndex(Slor slor) throws IOException {
+    public  boolean createIndex(Slor slor) throws IOException {
 
+        synchronized(lock_wd){
             Analyzer analyzer = new StandardAnalyzer(Version.LUCENE_40);
             file = new File( INDEX_DIR);
             if (!file.exists())
@@ -86,13 +89,16 @@ public class IndexManager {
             }catch (Exception e){
                 iwriter.close();
             }
+        }
+
 
 
         return true;
     }
 
-    public static boolean deleteIndex(Slor slor) throws IOException{
+    public  boolean deleteIndex(Slor slor) throws IOException{
 
+        synchronized(lock_wd){
             Analyzer analyzer = new StandardAnalyzer(Version.LUCENE_40);
             file = new File( INDEX_DIR);
             if (!file.exists())
@@ -111,9 +117,7 @@ public class IndexManager {
             }catch (Exception e){
                 iwriter.close();
             }
-
-
-
+        }
         return true;
     }
 
@@ -122,7 +126,7 @@ public class IndexManager {
      * @param
      * @return 符合条件的文件List
      */
-    public static Map<String,Object> searchIndex(Page page) throws IOException, ParseException {
+    public  Map<String,Object> searchIndex(Page page) throws IOException, ParseException {
 
         Map<String ,Object> map =new HashMap<>();
 
@@ -156,6 +160,14 @@ public class IndexManager {
                          */
                             query.add(termQuery, BooleanClause.Occur.SHOULD);
                         }
+                    }else if(condition.getKey().equals("recordtime")){
+                        TermRangeQuery termRangeQuery = new TermRangeQuery("recordtime", new BytesRef(0), new BytesRef(condition.getKey()), true, true);
+                        TermRangeQuery termRangeQuery1 = new TermRangeQuery("recordtime", new BytesRef(condition.getKey()), new BytesRef("9999-12-31"), true, true);
+                        NumericRangeQuery.newLongRange("recordtime",
+                                null,
+                                new Date(condition.getKey()).getTime(),
+                                true,
+                                true);
                     }
 
                 }
@@ -203,7 +215,7 @@ public class IndexManager {
 
         return map;
     }
-    private static  ScoreDoc getLastScoreDoc(int pageIndex, int pageSize, Query query, IndexSearcher searcher) throws IOException {
+    private  ScoreDoc getLastScoreDoc(int pageIndex, int pageSize, Query query, IndexSearcher searcher) throws IOException {
         if (pageIndex <= 0) return null;//如果是第一页就返回空
         int num = pageSize * pageIndex;//获取上一页的最后数量
         if (num > 0)

@@ -33,6 +33,10 @@ public class FgbzLogService {
     @Autowired
     private SystemDao systemDao;
 
+    @Autowired
+    private IndexManager indexManager;
+
+
     public List<LawstandardType> upids =new ArrayList<>();
 
     //保存编辑法规
@@ -158,8 +162,8 @@ public class FgbzLogService {
             //维护索引
             try {
                 Slor slor =  lawstandardDao.getSolrById(lawstandardApprove.getLawstandardID());
-                IndexManager.deleteIndex(slor);
-                IndexManager.createIndex(slor);
+                indexManager.deleteIndex(slor);
+                indexManager.createIndex(slor);
             }catch (Exception e){
 
             }
@@ -200,8 +204,8 @@ public class FgbzLogService {
                 if(!StrUtil.isNullOrEmpty(lawstandard.getId())&&lawstandard.getApprovestatus()==3){
                     try {
                             Slor slor =  lawstandardDao.getSolrById(lawstandard.getId());
-                            IndexManager.deleteIndex(slor);
-                            IndexManager.createIndex(slor);
+                            indexManager.deleteIndex(slor);
+                            indexManager.createIndex(slor);
                     }catch (Exception e){
 
                     }
@@ -268,8 +272,8 @@ public class FgbzLogService {
                 for (Lawstandard lawstandard:list
                         ) {
                     Slor slor =  lawstandardDao.getSolrById(lawstandard.getId());
-                    IndexManager.deleteIndex(slor);
-                    IndexManager.createIndex(slor);
+                    indexManager.deleteIndex(slor);
+                    indexManager.createIndex(slor);
                 }
             }catch (Exception e){
 

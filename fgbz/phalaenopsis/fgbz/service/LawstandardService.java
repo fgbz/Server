@@ -39,6 +39,9 @@ public class LawstandardService {
     @Autowired
     private UserCenterDao userCenterDao;
 
+    @Autowired
+    private IndexManager indexManager;
+
     public List<LawstandardType> ids = new ArrayList<>();
 
     public List<LawstandardType> upids =new ArrayList<>();
@@ -388,7 +391,7 @@ public class LawstandardService {
     public PagingEntity<Lawstandard> getSolrList(Page page) throws IOException, org.apache.lucene.queryparser.classic.ParseException {
 
 
-       Map<String,Object> map = IndexManager.searchIndex(page);
+       Map<String,Object> map = indexManager.searchIndex(page);
 
         // 1,根据条件一共查询到的数据条数
         int count = (int)map.get("Total");
@@ -604,7 +607,7 @@ public class LawstandardService {
         //删除索引
         try {
             Slor slor =  lawstandardDao.getSolrById(id);
-            IndexManager.deleteIndex(slor);
+            indexManager.deleteIndex(slor);
         }catch (Exception e){
 
         }
