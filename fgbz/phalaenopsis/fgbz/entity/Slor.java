@@ -17,6 +17,10 @@ public class Slor {
     private String lawtype;
     private Date modifydate;
 
+    private String code;
+    private String englishname;
+    private String lawstatus;
+
     public String getChinesename() {
         return chinesename;
     }
@@ -88,5 +92,29 @@ public class Slor {
 
     public void setSolrtext(String solrtext) {
         this.solrtext = solrtext;
+    }
+
+    public String getCode() {
+        return code;
+    }
+
+    public void setCode(String code) {
+        this.code = code;
+    }
+
+    public String getEnglishname() {
+        return englishname;
+    }
+
+    public void setEnglishname(String englishname) {
+        this.englishname = englishname;
+    }
+
+    public String getLawstatus() {
+        return lawstatus;
+    }
+
+    public void setLawstatus(String lawstatus) {
+        this.lawstatus = lawstatus;
     }
 }

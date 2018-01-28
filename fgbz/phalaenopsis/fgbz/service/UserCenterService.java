@@ -3,16 +3,19 @@ package phalaenopsis.fgbz.service;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import phalaenopsis.common.entity.Attachment.Attachment;
 import phalaenopsis.common.entity.Condition;
 import phalaenopsis.common.entity.OpResult;
 import phalaenopsis.common.entity.Page;
 import phalaenopsis.common.entity.PagingEntity;
 import phalaenopsis.common.method.Tools.StrUtil;
+import phalaenopsis.common.service.AttachmentService;
 import phalaenopsis.fgbz.dao.ILog;
 import phalaenopsis.fgbz.dao.LawstandardDao;
 import phalaenopsis.fgbz.dao.UserCenterDao;
 import phalaenopsis.fgbz.entity.*;
 
+import javax.annotation.Resource;
 import java.util.*;
 
 import static phalaenopsis.common.method.Basis.getCurrentFGUser;
@@ -31,6 +34,13 @@ public class UserCenterService {
 
     @Autowired
     private SystemServie systemServie;
+
+    public AttachmentService service;
+
+    @Resource(name="attachmentService")
+    public void setService(AttachmentService service) {
+        this.service = service;
+    }
 
     @Autowired
     private LawstandardService lawstandardService;
@@ -75,6 +85,17 @@ public class UserCenterService {
      */
     @ILog(description="删除通知")
     public int DeleteAdviceByID(String id){
+
+        List<String> fileids =new ArrayList<>();
+        //删除附件
+        List<Attachment> list = service.getAttachments(id);
+        if(list!=null&&list.size()>0){
+            for (Attachment attachment:list
+                    ) {
+                fileids.add(attachment.getId());
+            }
+            service.delete(fileids);
+        }
         userCenterDao.DeleteAdviceByID(id);
         return OpResult.Success;
     }

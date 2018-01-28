@@ -12,6 +12,7 @@ import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
 import org.apache.lucene.util.BytesRef;
 import org.apache.lucene.util.Version;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import phalaenopsis.common.entity.AppSettings;
 import phalaenopsis.common.entity.Condition;
@@ -20,9 +21,13 @@ import phalaenopsis.common.method.Basis;
 import phalaenopsis.common.method.Tools.StrUtil;
 import phalaenopsis.fgbz.entity.LawstandardType;
 import phalaenopsis.fgbz.entity.Slor;
+import phalaenopsis.fgbz.service.LawstandardService;
 
 import java.io.File;
 import java.io.IOException;
+import java.text.DateFormat;
+import java.text.ParsePosition;
+import java.text.SimpleDateFormat;
 import java.util.*;
 
 /**
@@ -36,6 +41,26 @@ public class IndexManager {
 
     //------lock 1
     private static Object lock_wd=new Object();
+
+    public List<LawstandardType> ids = new ArrayList<>();
+
+    private DateFormat format = new SimpleDateFormat("yyyyMMdd");
+
+    @Autowired
+    private LawstandardService lawstandardService;
+
+    public  List<LawstandardType> getLawsTree(String id){
+
+        List<LawstandardType> list = lawstandardService.getChildNode(id);
+
+        while (list!=null&&list.size()>0){
+            ids.addAll(list);
+            for(LawstandardType lawstandardType:list){
+                list=getLawsTree(lawstandardType.getId());
+            }
+        }
+        return list;
+    }
 
     /**
      * 创建当前文件目录的索引
@@ -59,13 +84,13 @@ public class IndexManager {
                 doc.add(new StringField("id", slor.getId(),Field.Store.YES));
                 doc.add(new Field("solrText",slor.getSolrtext(),Field.Store.NO, Field.Index.NOT_ANALYZED));
                 if(slor.getReleasedate()==null){
-                    doc.add(new Field("recordtime",
-                            DateTools.dateToString(new Date(),  DateTools.Resolution.SECOND),
+                    doc.add(new Field("releasedate",
+                            "",
                             Field.Store.YES,
                             Field.Index.NOT_ANALYZED));
                 }else{
-                    doc.add(new Field("recordtime",
-                            DateTools.dateToString(slor.getReleasedate(),  DateTools.Resolution.SECOND),
+                    doc.add(new Field("releasedate",
+                            DateTools.dateToString(slor.getReleasedate(),  DateTools.Resolution.DAY),
                             Field.Store.YES,
                             Field.Index.NOT_ANALYZED));
                 }
@@ -82,6 +107,11 @@ public class IndexManager {
                 }
                 doc.add(new StringField("clickcount", slor.getClickcount(),Field.Store.YES));
                 doc.add(new StringField("lawtype", slor.getLawtype(), Field.Store.YES));
+
+                doc.add(new StringField("code", slor.getCode(), Field.Store.YES));
+                doc.add(new StringField("englishname", slor.getEnglishname(), Field.Store.YES));
+                doc.add(new StringField("status", slor.getLawstatus(), Field.Store.YES));
+
 
                 iwriter.addDocument(doc);
                 iwriter.commit();
@@ -148,26 +178,65 @@ public class IndexManager {
                 //查询条件
                 for (Condition condition : page.getConditions()) {
                     if (condition.getKey().equals("Solr")) {
+                        BooleanQuery querySolr = new BooleanQuery();
                         String[] solrList = condition.getValue().split(" ");
                         for (String str : solrList
                                 ) {
                             WildcardQuery termQuery = new WildcardQuery(new Term("solrText", "*" + str + "*"));
+                            querySolr.add(termQuery, BooleanClause.Occur.SHOULD);
                         /*
                          * BooleanQuery连接多值查询
                          * Occur.MUST表示必须出现
                          * Occur.SHOULD表示可以出现
                          * Occur.MUSE_NOT表示必须不能出现
                          */
-                            query.add(termQuery, BooleanClause.Occur.SHOULD);
                         }
-                    }else if(condition.getKey().equals("recordtime")){
-                        TermRangeQuery termRangeQuery = new TermRangeQuery("recordtime", new BytesRef(0), new BytesRef(condition.getKey()), true, true);
-                        TermRangeQuery termRangeQuery1 = new TermRangeQuery("recordtime", new BytesRef(condition.getKey()), new BytesRef("9999-12-31"), true, true);
-                        NumericRangeQuery.newLongRange("recordtime",
-                                null,
-                                new Date(condition.getKey()).getTime(),
-                                true,
-                                true);
+                        query.add(querySolr, BooleanClause.Occur.MUST);
+                    }else if(condition.getKey().equals("Number")){
+                        WildcardQuery termQuery = new WildcardQuery(new Term("code", "*" + condition.getValue() + "*"));
+                        query.add(termQuery, BooleanClause.Occur.MUST);
+                    }else if(condition.getKey().equals("Title")){
+                        WildcardQuery termQuery = new WildcardQuery(new Term("chinesename", "*" + condition.getValue() + "*"));
+                        query.add(termQuery, BooleanClause.Occur.MUST);
+                    }else if(condition.getKey().equals("EnglishTitle")){
+                        WildcardQuery termQuery = new WildcardQuery(new Term("englishname", "*" + condition.getValue() + "*"));
+                        query.add(termQuery, BooleanClause.Occur.MUST);
+                    }else if(condition.getKey().equals("Summaryinfo")){
+                        WildcardQuery termQuery = new WildcardQuery(new Term("summaryinfo", "*" + condition.getValue() + "*"));
+                        query.add(termQuery, BooleanClause.Occur.MUST);
+                    }else if(condition.getKey().equals("KeyWordsSingle")){
+                        WildcardQuery termQuery = new WildcardQuery(new Term("keywords", "*" + condition.getValue() + "*"));
+                        query.add(termQuery, BooleanClause.Occur.MUST);
+                    }else if(condition.getKey().equals("State")){
+                        TermQuery termQuery = new TermQuery(new Term("status", condition.getValue()));
+                        query.add(termQuery, BooleanClause.Occur.MUST);
+                    }else if(condition.getKey().equals("FiledTimeStart")){
+                        Term begin = new Term("releasedate", DateTools.dateToString(strToDate(condition.getValue()),  DateTools.Resolution.DAY));
+                        Term end = new Term("releasedate", "99991231");
+                        TermRangeQuery termRangeQuery = new TermRangeQuery("releasedate",
+                                begin.bytes(), end.bytes(), true, true);
+                        query.add(termRangeQuery, BooleanClause.Occur.MUST);
+                    }else if(condition.getKey().equals("FiledTimeEnd")){
+                        Term begin =new Term("releasedate", "10000101");
+                        Term end = new Term("releasedate", DateTools.dateToString(strToDate(condition.getValue()),  DateTools.Resolution.DAY));
+                        TermRangeQuery termRangeQuery = new TermRangeQuery("releasedate",
+                                begin.bytes(), end.bytes(), true, true);
+                        query.add(termRangeQuery, BooleanClause.Occur.MUST);
+                    }else if(condition.getKey().equals("TreeValue")){
+
+                        BooleanQuery queryLawType = new BooleanQuery();
+                        ids =new ArrayList<>();
+                        LawstandardType lawSelf = new LawstandardType();
+                        lawSelf.setId(condition.getValue());
+                        ids.add(lawSelf);
+                        getLawsTree(condition.getValue());
+                        for (LawstandardType lawstandardType:ids
+                             ) {
+                            TermQuery termQuery = new TermQuery(new Term("lawtype", lawstandardType.getId()));
+                            queryLawType.add(termQuery, BooleanClause.Occur.SHOULD);
+
+                        }
+                        query.add(queryLawType, BooleanClause.Occur.MUST);
                     }
 
                 }
@@ -175,9 +244,9 @@ public class IndexManager {
             TopDocs tds = null;
             Sort sort = new Sort(new SortField[]{new SortField("modifydate", SortField.Type.LONG, true)});
             //获取上一页的最后一个元素
-            ScoreDoc lastSd = getLastScoreDoc(page.getPageNo(), page.getPageSize(), query, isearcher);
+            ScoreDoc lastSd = getLastScoreDoc(page.getPageNo(), page.getPageSize(), query, isearcher,sort);
             //通过最后一个元素去搜索下一页的元素
-            tds = isearcher.searchAfter(lastSd, query,  page.getPageSize());
+            tds = isearcher.searchAfter(lastSd, query,  page.getPageSize(),sort);
 
             int TotalCount = tds.totalHits;
             map.put("Total",TotalCount);
@@ -189,13 +258,14 @@ public class IndexManager {
                 slor.setId(doc.get("id"));
                 slor.setChinesename(doc.get("chinesename"));
                 slor.setClickcount(doc.get("clickcount"));
-                if(!StrUtil.isNullOrEmpty(doc.get("recordtime"))){
+                if(!StrUtil.isNullOrEmpty(doc.get("releasedate"))){
                     try {
-                        slor.setReleasedate(DateTools.stringToDate(doc.get("recordtime")));
+                        slor.setReleasedate(DateTools.stringToDate(doc.get("releasedate")));
                     } catch (java.text.ParseException e) {
                         e.printStackTrace();
                     }
                 }
+                slor.setModifydate(DateTools.stringToDate(doc.get("modifydate")));
                 slor.setKeywords(doc.get("keywords"));
                 slor.setSummaryinfo(doc.get("summaryinfo"));
                 list.add(slor);
@@ -215,18 +285,37 @@ public class IndexManager {
 
         return map;
     }
-    private  ScoreDoc getLastScoreDoc(int pageIndex, int pageSize, Query query, IndexSearcher searcher) throws IOException {
+    private  ScoreDoc getLastScoreDoc(int pageIndex, int pageSize, Query query, IndexSearcher searcher, Sort sort) throws IOException {
         if (pageIndex <= 0) return null;//如果是第一页就返回空
         int num = pageSize * pageIndex;//获取上一页的最后数量
         if (num > 0)
         {
-            TopDocs tds = searcher.search(query, num);
+            TopDocs tds = searcher.search(query, num,sort);
             if (tds.scoreDocs.length >= num)
             {
                 return tds.scoreDocs[num-1];
             }
         }
         return null;
+    }
+
+    /**
+     * 将短时间格式字符串转换为时间 yyyy-MM-dd
+     *
+     * @return
+     */
+    public static Date strToDate(String strDate) {
+        SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
+        ParsePosition pos = new ParsePosition(0);
+        Date strtodate = formatter.parse(strDate, pos);
+
+        Calendar c = Calendar.getInstance();
+        c.setTime(strtodate);
+        c.add(Calendar.DAY_OF_MONTH, 1);// 今天+1天
+        Date tomorrow = c.getTime();;
+
+
+        return tomorrow;
     }
 
 

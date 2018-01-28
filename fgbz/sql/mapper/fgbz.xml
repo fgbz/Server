@@ -899,7 +899,7 @@ SELECT
 FROM
 	 m_sa_fileinfo file
 	LEFT JOIN m_sa_user us ON file.INPUTUSERID = us.ID
-	where us.USERREALNAME is not null
+	where us.USERREALNAME is not null and us.USERREALNAME <![CDATA[  != ]]>  'System'
 GROUP BY
 	file.INPUTUSERID
 	) t
@@ -922,7 +922,7 @@ FROM
 		LEFT JOIN m_sa_user us ON file.INPUTUSERID = us.ID
 		LEFT JOIN m_sa_organization org ON us.ORGID = org.ID
 		WHERE
-			 org.id IS NOT NULL
+			 org.id IS NOT NULL and us.USERREALNAME <![CDATA[  != ]]>  'System'
 		GROUP BY
 			org.id
 	) t
@@ -1358,7 +1358,10 @@ SELECT
 m.RELEASEDATE,
 m.clickcount,
 m.lawtype,
-m.modifydate
+m.modifydate,
+m.code,
+	`m`.`ENGLISHNAME`,
+m.lawstatus
 FROM
 	(
 		SELECT
@@ -1415,6 +1418,11 @@ IF (
 	t.RELEASEDATE,
 	t.clickcount,
 	n.id as lawtype,
+IF (
+	isnull(`t`.`STATUS`),
+	'',
+`t`.`STATUS`
+) AS lawstatus,
 t.modifydate
 FROM
 	`m_bs_lawstandard` `t`

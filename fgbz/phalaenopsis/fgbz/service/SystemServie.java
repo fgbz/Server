@@ -699,6 +699,20 @@ public class SystemServie {
    }
 
     /**
+     * 获取邮件设置
+     * @return
+     */
+   public int getSendMailSetting(){
+       String str =  fgbzDicDao.getSettingByKey("isSendMail");
+       if(str!=null){
+           return Integer.parseInt(str);
+       }
+       else{
+           return 1;
+       }
+   }
+
+    /**
      * 保存设置
      * @return
      */
@@ -731,6 +745,15 @@ public class SystemServie {
         result.put("count",num);
         result.put("Result",OpResult.Success);
         return result;
+    }
+
+    @ILog(description="修改邮件设置")
+    public int SaveOrUpdateMailSetting(int status){
+        Map<String,String> map = new HashMap<>();
+        map.put("key","isSendMail");
+        map.put("value",Integer.toString(status));
+        systemDao.SaveOrUpdateSettingValue(map);
+        return OpResult.Success;
     }
 
     /**

@@ -1,16 +1,16 @@
 package phalaenopsis.fgbz.service;
 
 import com.alibaba.fastjson.JSON;
-import jdk.internal.org.objectweb.asm.tree.analysis.Analyzer;
 import org.apache.poi.hssf.usermodel.*;
 import org.apache.poi.ss.util.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.bind.annotation.RequestBody;
 import phalaenopsis.common.entity.*;
+import phalaenopsis.common.entity.Attachment.Attachment;
 import phalaenopsis.common.method.ExportExcel;
 import phalaenopsis.common.method.Tools.StrUtil;
+import phalaenopsis.common.service.AttachmentService;
 import phalaenopsis.fgbz.common.HssfHelper;
 import phalaenopsis.fgbz.common.IndexManager;
 import phalaenopsis.fgbz.dao.ILog;
@@ -18,8 +18,10 @@ import phalaenopsis.fgbz.dao.LawstandardDao;
 import phalaenopsis.fgbz.dao.UserCenterDao;
 import phalaenopsis.fgbz.entity.*;
 
+import javax.annotation.Resource;
 import javax.servlet.http.HttpServletResponse;
 import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.URLEncoder;
@@ -45,6 +47,13 @@ public class LawstandardService {
     public List<LawstandardType> ids = new ArrayList<>();
 
     public List<LawstandardType> upids =new ArrayList<>();
+
+    public AttachmentService service;
+
+    @Resource(name="attachmentService")
+    public void setService(AttachmentService service) {
+        this.service = service;
+    }
 
 
     public int testCount(){
@@ -611,6 +620,16 @@ public class LawstandardService {
         }catch (Exception e){
 
         }
+        List<String> fileids =new ArrayList<>();
+        //删除附件
+        List<Attachment> list = service.getAttachments(id);
+        if(list!=null&&list.size()>0){
+            for (Attachment attachment:list
+                 ) {
+                fileids.add(attachment.getId());
+            }
+            service.delete(fileids);
+        }
 
         lawstandardDao.deleteLawstandardById(id);
         lawstandardDao.deleteRefenceAll(id);
@@ -1154,15 +1173,29 @@ public class LawstandardService {
 
     //初始化索引
     public int initSolr() throws IOException, org.apache.lucene.queryparser.classic.ParseException {
-
+        String path =new AppSettings().getSolrpath();
+        deleteAllFilesOfDir(new File(path));
         List<Lawstandard> list = lawstandardDao.getAllPubLishLaw();
         for (Lawstandard lawstandard:list
              ) {
             Slor slor =  lawstandardDao.getSolrById(lawstandard.getId());
-//            IndexManager.deleteIndex(slor);
-            IndexManager.createIndex(slor);
+            indexManager.createIndex(slor);
         }
 
         return OpResult.Success;
+    }
+
+    public static void deleteAllFilesOfDir(File path) {
+        if (!path.exists())
+            return;
+        if (path.isFile()) {
+            path.delete();
+            return;
+        }
+        File[] files = path.listFiles();
+        for (int i = 0; i < files.length; i++) {
+            deleteAllFilesOfDir(files[i]);
+        }
+        path.delete();
     }
 }

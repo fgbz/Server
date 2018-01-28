@@ -5,17 +5,20 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.RequestBody;
+import phalaenopsis.common.entity.Attachment.Attachment;
 import phalaenopsis.common.entity.Condition;
 import phalaenopsis.common.entity.OpResult;
 import phalaenopsis.common.entity.Page;
 import phalaenopsis.common.entity.PagingEntity;
 import phalaenopsis.common.method.ExportExcel;
 import phalaenopsis.common.method.Tools.StrUtil;
+import phalaenopsis.common.service.AttachmentService;
 import phalaenopsis.fgbz.dao.ILog;
 import phalaenopsis.fgbz.dao.TechnicalDao;
 import phalaenopsis.fgbz.dao.UserCenterDao;
 import phalaenopsis.fgbz.entity.*;
 
+import javax.annotation.Resource;
 import javax.servlet.http.HttpServletResponse;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -29,6 +32,13 @@ public class TechnicalService {
 
     @Autowired
     private UserCenterDao userCenterDao;
+
+    public AttachmentService service;
+
+    @Resource(name="attachmentService")
+    public void setService(AttachmentService service) {
+        this.service = service;
+    }
 
     private  List<TechnicalType> ids = new ArrayList<>();
 
@@ -415,6 +425,17 @@ public class TechnicalService {
     @Transactional
     @ILog(description="删除技术文档")
     public int  DeleteTechnicalById( String id){
+
+        List<String> fileids =new ArrayList<>();
+        //删除附件
+        List<Attachment> list = service.getAttachments(id);
+        if(list!=null&&list.size()>0){
+            for (Attachment attachment:list
+                    ) {
+                fileids.add(attachment.getId());
+            }
+            service.delete(fileids);
+        }
          technicalDao.DeleteTechnicalById(id);
          technicalDao.DeleteTecAndType(id);
 

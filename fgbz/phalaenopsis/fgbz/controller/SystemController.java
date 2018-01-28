@@ -205,6 +205,12 @@ public class SystemController {
         return systemServie.getApproveSetting();
     }
 
+    @RequestMapping(value = "/getSendMailSetting", method = RequestMethod.GET)
+    @ResponseBody
+    public int getSendMailSetting(){
+        return systemServie.getSendMailSetting();
+    }
+
     /**
      * 保存审核设置
      * @return
@@ -214,6 +220,12 @@ public class SystemController {
     public Map<String,Object> SaveOrUpdateApproveSetting(int status){
 
         return systemServie.SaveOrUpdateApproveSetting(status);
+    }
+
+    @RequestMapping(value = "/SaveOrUpdateMailSetting", method = RequestMethod.GET)
+    @ResponseBody
+    public int SaveOrUpdateMailSetting(int status){
+        return systemServie.SaveOrUpdateMailSetting(status);
     }
 
     /**
