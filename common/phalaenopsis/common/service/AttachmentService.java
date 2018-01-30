@@ -198,7 +198,7 @@ public class AttachmentService extends Basis {
 						technical.setCode(filter(technical.getCode()));
 						responseFileName =URLEncoder.encode(technical.getCode(), "utf-8").replace("+","%20")+"+"+URLEncoder.encode(technical.getChinesename(), "utf-8").replace("+","%20")+"."+attachment.getFileExt();
 					}else{
-						responseFileName =technical.getChinesename().replace("+","%20")+"."+attachment.getFileExt();
+						responseFileName =URLEncoder.encode(technical.getChinesename(),"utf-8").replace("+","%20")+"."+attachment.getFileExt();
 					}
 				}
 			}
