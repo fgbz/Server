@@ -1,5 +1,6 @@
 package phalaenopsis.fgbz.service;
 
+import com.mongodb.util.JSON;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.text.PDFTextStripper;
@@ -18,6 +19,7 @@ import phalaenopsis.common.method.Attachment.Multipart;
 import phalaenopsis.common.method.Tools.StrUtil;
 import phalaenopsis.common.method.cache.UserCache;
 import phalaenopsis.common.service.AttachmentService;
+import phalaenopsis.fgbz.common.LiceneEncrypt;
 import phalaenopsis.fgbz.common.office2PDF;
 import phalaenopsis.fgbz.dao.FgbzDicDao;
 import phalaenopsis.fgbz.dao.ILog;
@@ -26,7 +28,9 @@ import phalaenopsis.fgbz.dao.SystemDao;
 import phalaenopsis.fgbz.entity.*;
 
 import javax.annotation.Resource;
+import javax.servlet.http.HttpServletResponse;
 import java.io.*;
+import java.net.URLEncoder;
 import java.util.*;
 
 import static phalaenopsis.common.method.Basis.getCurrentFGUser;
@@ -817,5 +821,35 @@ public class SystemServie {
         Map<String,String> map =new HashMap<>();
         map.put("mail",systemDao.getUserMailById(id));
         return map;
+    }
+
+    /**
+     * 生成授权文件
+     * @param start
+     * @param end
+     * @param response
+     */
+    public void makeLicense(String start,String end ,HttpServletResponse response){
+
+      Map<String,String> map = new HashMap<String,String>();
+      map.put("Start",start);
+      map.put("End",end);
+
+      String str = JSON.serialize(map);
+
+        byte[] bytes =  LiceneEncrypt.getAESEncoded(str);
+
+        try {
+            response.setHeader("content-disposition", "attachment;filename=" + URLEncoder.encode("licene", "utf-8") + ".lic");
+
+        OutputStream out = response.getOutputStream();
+        ByteArrayOutputStream stream = new ByteArrayOutputStream();
+        out.write(bytes);
+        out.close();
+        } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 }

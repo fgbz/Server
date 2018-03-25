@@ -70,6 +70,10 @@
         select t.id,t.TYPENAME,t.PARENTID, t.LAWCOUNT from m_bs_lawstandardtype t where t.PARENTID=#{id}
     </select>
 
+    <select id="getHomeChildNode" parameterType="String" resultType="LawstandardType">
+        select t.id,t.TYPENAME,t.PARENTID, t.LAWCOUNT from m_bs_lawstandardtype t where t.PARENTID=#{id}
+    </select>
+
     <!--获取父级法规标准类别-->
     <select id="getParentLawstandardTypeById" parameterType="String" resultType="LawstandardType">
 SELECT
@@ -897,12 +901,20 @@ SELECT
 	MAX( us.USERREALNAME ) AS NAME,
 	count( 1 ) AS COUNT
 FROM
-	 m_sa_fileinfo file
-	LEFT JOIN m_sa_user us ON file.INPUTUSERID = us.ID
-	where us.USERREALNAME is not null and us.USERREALNAME <![CDATA[  != ]]>  'System'
-GROUP BY
-	file.INPUTUSERID
+	(
+SELECT
+	law.INPUTUSERID
+FROM
+	m_bs_lawstandard law
+WHERE
+	law.APPROVESTATUS = 3
 	) t
+	LEFT JOIN m_sa_user us ON t.INPUTUSERID = us.ID
+WHERE
+	us.USERREALNAME <![CDATA[  != ]]> 'System'
+GROUP BY
+	t.INPUTUSERID
+	) m
 ORDER BY
 	count DESC
 	LIMIT 0,
@@ -910,26 +922,33 @@ ORDER BY
     </select>
     <!--上传部门统计-->
     <select id="getUploadOrgname" resultType="ChartInfo">
-  SELECT
+SELECT
 	*
 FROM
 	(
-		SELECT
-			MAX(org.ORGNAME) AS NAME,
-			count(1) AS count
-		FROM
-			m_sa_fileinfo file
-		LEFT JOIN m_sa_user us ON file.INPUTUSERID = us.ID
-		LEFT JOIN m_sa_organization org ON us.ORGID = org.ID
-		WHERE
-			 org.id IS NOT NULL and us.USERREALNAME <![CDATA[  != ]]>  'System'
-		GROUP BY
-			org.id
+SELECT
+	MAX( org.ORGNAME ) AS NAME,
+	count( 1 ) AS COUNT
+FROM
+	(
+SELECT
+	law.INPUTUSERID
+FROM
+	m_bs_lawstandard law
+WHERE
+	law.APPROVESTATUS = 3
 	) t
+	LEFT JOIN m_sa_user us ON t.INPUTUSERID = us.ID
+	LEFT JOIN m_sa_organization org ON us.ORGID = org.ID
+WHERE
+	us.USERREALNAME <![CDATA[  != ]]> 'System'
+GROUP BY
+	org.ID
+	) m
 ORDER BY
-	t.count DESC
-LIMIT 0,
- 10
+	count DESC
+	LIMIT 0,
+	10
     </select>
     <!--上传分类统计-->
     <select id="getUploadType" resultType="ChartInfo">
@@ -941,11 +960,11 @@ FROM
 			ty.TYPENAME AS NAME,
 			count(1) as count
 		FROM
-			m_sa_fileinfo file
-		LEFT JOIN m_bs_lawstandard_type link ON file.REFID = link.SID
+		m_bs_lawstandard law
+		 left join m_bs_lawstandard_type link ON law.ID = link.SID
 		LEFT JOIN m_bs_lawstandardtype ty ON ty.ID = link.LAWSTYPEID
 		WHERE
-			link.SID IS NOT NULL
+			law.APPROVESTATUS = 3
 		GROUP BY
 			link.LAWSTYPEID
 	) t
@@ -1444,5 +1463,226 @@ LEFT JOIN m_bs_lawstandardtype `n` ON `n`.`ID` = `m`.`LAWSTYPEID`
           SELECT us.id,us.EMAIL from  m_sa_user us
 where  us.`STATUS`=0
     </select>
+
+    <!--按发布部门统计-->
+    <select id="getChartByPub" parameterType="map" resultType="ChartInfo">
+        SELECT
+        *
+        FROM
+        (
+        SELECT
+        MAX( org.ORGNAME ) AS NAME,
+        count( 1 ) AS COUNT
+        FROM
+        m_bs_lawstandard law
+
+        LEFT JOIN m_sa_user ur ON law.INPUTUSERID = ur.ID
+        LEFT JOIN m_sa_organization org ON ur.ORGID = org.ID
+        WHERE
+        law.APPROVESTATUS = 3 and ur.USERREALNAME <![CDATA[  != ]]> 'System'
+        <include refid="queryStatistic"></include>
+
+        GROUP BY
+        org.ID
+        ) m
+        ORDER BY
+        count DESC
+        LIMIT 0,
+        10
+    </select>
+
+    <select id="getChartByPeople" parameterType="map" resultType="ChartInfo">
+        SELECT
+	*
+FROM
+	(
+SELECT
+	MAX( ur.USERREALNAME ) AS NAME,
+	count( 1 ) AS COUNT
+FROM
+	m_bs_lawstandard law
+     left join  m_sa_user ur on law.INPUTUSERID = ur.ID
+WHERE
+	law.APPROVESTATUS = 3 and ur.USERREALNAME <![CDATA[  != ]]> 'System'
+
+        <include refid="queryStatistic"></include>
+ GROUP BY
+        law.INPUTUSERID
+	) m
+ORDER BY
+	count DESC
+	LIMIT 0,
+	10
+    </select>
+
+    <!--按类别统计-->
+    <select id="getChartByType" parameterType="map" resultType="ChartInfo">
+        SELECT
+	*
+FROM
+	(
+		SELECT
+			ty.TYPENAME AS NAME,
+			count(1) as count
+		FROM
+		m_bs_lawstandard law
+        left join  m_sa_user ur on law.INPUTUSERID = ur.ID
+		left join m_bs_lawstandard_type link ON law.ID = link.SID
+		LEFT JOIN m_bs_lawstandardtype ty ON ty.ID = link.LAWSTYPEID
+		WHERE
+			law.APPROVESTATUS = 3
+
+        <include refid="queryStatistic"></include>
+		GROUP BY
+			link.LAWSTYPEID
+	) t
+ORDER BY
+	t.count DESC
+LIMIT 0,
+ 10
+    </select>
+
+    <sql id="queryStatistic">
+        <if test="FiledTimeStart != null and FiledTimeStart != ''">
+            and Date(law.RELEASEDATE) <![CDATA[  >=  ]]> #{FiledTimeStart}
+        </if>
+        <if test="FiledTimeEnd != null and FiledTimeEnd != ''">
+            and Date(law.RELEASEDATE) <![CDATA[  <=  ]]> #{FiledTimeEnd}
+        </if>
+        <if test="Organization != null and Organization != ''">
+            and  ur.ORGID in
+            <foreach collection="Organization" item="item" open="(" close=")" separator=",">
+                #{item.id}
+            </foreach>
+        </if>
+        <if test="TreeValue !=null and TreeValue!=''" >
+            and law.id in (select lt.SID from m_bs_lawstandard_type lt where lt.LAWSTYPEID in
+            <foreach collection="TreeValue" item="item" open="(" close=")" separator=",">
+                #{item.id}
+            </foreach>
+            )
+        </if>
+        <if test="Userid != null and Userid != ''">
+            and law.INPUTUSERID in
+            <foreach collection="Userid" item="item" open="(" close=")" separator=",">
+                #{item}
+            </foreach>
+        </if>
+    </sql>
+
+    <!--技术文档统计-->
+    <select id="getChartByPubTec" parameterType="map" resultType="ChartInfo">
+SELECT
+	*
+FROM
+	(
+SELECT
+	MAX( org.ORGNAME ) AS NAME,
+	count( 1 ) AS COUNT
+FROM
+	m_bs_tech tec
+
+	LEFT JOIN m_sa_user us ON tec.INPUTUSERID = us.ID
+	LEFT JOIN m_sa_organization org ON us.ORGID = org.ID
+WHERE
+	tec.APPROVESTATUS = 2 and us.USERREALNAME <![CDATA[  != ]]> 'System'
+        <include refid="queryStatisticTec"></include>
+
+GROUP BY
+	org.ID
+	) m
+ORDER BY
+	count DESC
+	LIMIT 0,
+	10
+    </select>
+    
+    <select id="getChartByPeopleTec" parameterType="map" resultType="ChartInfo">
+        SELECT
+        *
+        FROM
+        (
+        SELECT
+        MAX( us.USERREALNAME ) AS NAME,
+        count( 1 ) AS COUNT
+        FROM
+        m_bs_tech tec
+        left join  m_sa_user us on tec.INPUTUSERID = us.ID
+        WHERE
+        tec.APPROVESTATUS = 2 and us.USERREALNAME <![CDATA[  != ]]> 'System'
+
+        <include refid="queryStatisticTec"></include>
+        GROUP BY
+        tec.INPUTUSERID
+        ) m
+        ORDER BY
+        count DESC
+        LIMIT 0,
+        10
+    </select>
+
+    <select id="getChartByTypeTec" parameterType="map" resultType="ChartInfo">
+        SELECT
+        *
+        FROM
+        (
+        SELECT
+        ty.TYPENAME AS NAME,
+        count(1) as count
+        FROM
+        m_bs_tech tec
+        left join  m_sa_user us on tec.INPUTUSERID = us.ID
+        left join m_bs_tech_type link ON tec.ID = link.SID
+        LEFT JOIN m_bs_techtype ty ON ty.ID = link.LAWSTYPEID
+        WHERE
+        tec.APPROVESTATUS = 2
+
+        <include refid="queryStatisticTec"></include>
+        GROUP BY
+        link.LAWSTYPEID
+        ) t
+        ORDER BY
+        t.count DESC
+        LIMIT 0,
+        10
+    </select>
+
+    <sql id="queryStatisticTec">
+        <if test="FiledTimeStart != null and FiledTimeStart != ''">
+            and Date(tec.RELEASEDATE) <![CDATA[  >=  ]]> #{FiledTimeStart}
+        </if>
+        <if test="FiledTimeEnd != null and FiledTimeEnd != ''">
+            and Date(tec.RELEASEDATE) <![CDATA[  <=  ]]> #{FiledTimeEnd}
+        </if>
+        <if test="Organization != null and Organization != ''">
+            and  us.ORGID in
+            <foreach collection="Organization" item="item" open="(" close=")" separator=",">
+                #{item.id}
+            </foreach>
+        </if>
+        <if test="TreeValue !=null and TreeValue!=''" >
+            and tec.id in (select lt.SID from m_bs_tech_type lt where lt.LAWSTYPEID in
+            <foreach collection="TreeValue" item="item" open="(" close=")" separator=",">
+                #{item.id}
+            </foreach>
+            )
+        </if>
+        <if test="Userid != null and Userid != ''">
+            and tec.INPUTUSERID IN
+            <foreach collection="Userid" item="item" open="(" close=")" separator=",">
+                #{item}
+            </foreach>
+        </if>
+    </sql>
+
+    <update id="setLawCounEmpty" >
+         UPDATE m_bs_lawstandardtype set LAWCOUNT =0;
+    </update>
+
+    <select id="allPublshLaw" resultType="Lawstandard">
+        SELECT link.LAWSTYPEID as lawtype from m_bs_lawstandard t
+LEFT join m_bs_lawstandard_type link on t.ID = link.SID where t.APPROVESTATUS=3
+    </select>
+
 
 </mapper>

@@ -2,6 +2,7 @@ package phalaenopsis.fgbz.common;
 
 import com.sun.star.util.SortFieldType;
 import org.apache.lucene.analysis.Analyzer;
+import org.apache.lucene.analysis.core.WhitespaceAnalyzer;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.document.*;
 import org.apache.lucene.index.*;
@@ -69,7 +70,8 @@ public class IndexManager {
     public  boolean createIndex(Slor slor) throws IOException {
 
         synchronized(lock_wd){
-            Analyzer analyzer = new StandardAnalyzer(Version.LUCENE_40);
+//            Analyzer analyzer = new StandardAnalyzer(Version.LUCENE_40);
+            Analyzer  analyzer= new WhitespaceAnalyzer(Version.LUCENE_40);
             file = new File( INDEX_DIR);
             if (!file.exists())
                 file.mkdir();
@@ -82,17 +84,19 @@ public class IndexManager {
             try {
                 Document doc = new Document();
                 doc.add(new StringField("id", slor.getId(),Field.Store.YES));
-                doc.add(new Field("solrText",slor.getSolrtext(),Field.Store.NO, Field.Index.NOT_ANALYZED));
+                doc.add(new Field("solrText",slor.getSolrtext(),Field.Store.NO, Field.Index.ANALYZED));
                 if(slor.getReleasedate()==null){
-                    doc.add(new Field("releasedate",
-                            "",
-                            Field.Store.YES,
-                            Field.Index.NOT_ANALYZED));
+//                    doc.add(new Field("releasedate",
+//                            "",
+//                            Field.Store.YES,
+//                            Field.Index.NOT_ANALYZED));
+                    doc.add(new IntField("releasedate", Integer.parseInt("10000101"),Field.Store.YES));
                 }else{
-                    doc.add(new Field("releasedate",
-                            DateTools.dateToString(slor.getReleasedate(),  DateTools.Resolution.DAY),
-                            Field.Store.YES,
-                            Field.Index.NOT_ANALYZED));
+//                    doc.add(new Field("releasedate",
+//                            DateTools.dateToString(slor.getReleasedate(),  DateTools.Resolution.DAY),
+//                            Field.Store.YES,
+//                            Field.Index.NOT_ANALYZED));
+                    doc.add(new IntField("releasedate", Integer.parseInt(DateTools.dateToString(slor.getReleasedate(),  DateTools.Resolution.DAY)),Field.Store.YES));
                 }
 
                 doc.add(new Field("modifydate",
@@ -129,7 +133,7 @@ public class IndexManager {
     public  boolean deleteIndex(Slor slor) throws IOException{
 
         synchronized(lock_wd){
-            Analyzer analyzer = new StandardAnalyzer(Version.LUCENE_40);
+            Analyzer  analyzer= new WhitespaceAnalyzer(Version.LUCENE_40);
             file = new File( INDEX_DIR);
             if (!file.exists())
                 return true;
@@ -211,16 +215,19 @@ public class IndexManager {
                         TermQuery termQuery = new TermQuery(new Term("status", condition.getValue()));
                         query.add(termQuery, BooleanClause.Occur.MUST);
                     }else if(condition.getKey().equals("FiledTimeStart")){
-                        Term begin = new Term("releasedate", DateTools.dateToString(strToDate(condition.getValue()),  DateTools.Resolution.DAY));
-                        Term end = new Term("releasedate", "99991231");
-                        TermRangeQuery termRangeQuery = new TermRangeQuery("releasedate",
-                                begin.bytes(), end.bytes(), true, true);
+//                        Term begin = new Term("releasedate", DateTools.dateToString(strToDate(condition.getValue()),  DateTools.Resolution.DAY));
+//                        Term end = new Term("releasedate", "99991231");
+//                        TermRangeQuery termRangeQuery = new TermRangeQuery("releasedate",
+//                                begin.bytes(), end.bytes(), true, true);
+                        Query termRangeQuery=NumericRangeQuery.newIntRange("releasedate", Integer.parseInt(DateTools.dateToString(strToDate(condition.getValue()),DateTools.Resolution.DAY)), Integer.parseInt("99991231"), true, true);
                         query.add(termRangeQuery, BooleanClause.Occur.MUST);
                     }else if(condition.getKey().equals("FiledTimeEnd")){
-                        Term begin =new Term("releasedate", "10000101");
-                        Term end = new Term("releasedate", DateTools.dateToString(strToDate(condition.getValue()),  DateTools.Resolution.DAY));
-                        TermRangeQuery termRangeQuery = new TermRangeQuery("releasedate",
-                                begin.bytes(), end.bytes(), true, true);
+//                        Term begin =new Term("releasedate", "10000101");
+//                        Term end = new Term("releasedate", DateTools.dateToString(strToDate(condition.getValue()),  DateTools.Resolution.DAY));
+//                        TermRangeQuery termRangeQuery = new TermRangeQuery("releasedate",
+//                                begin.bytes(), end.bytes(), true, true);
+
+                        Query termRangeQuery=NumericRangeQuery.newIntRange("releasedate",Integer.parseInt("10000101"), Integer.parseInt(DateTools.dateToString(strToDate(condition.getValue()),DateTools.Resolution.DAY)),true, true);
                         query.add(termRangeQuery, BooleanClause.Occur.MUST);
                     }else if(condition.getKey().equals("TreeValue")){
 
@@ -242,7 +249,7 @@ public class IndexManager {
                 }
             }
             TopDocs tds = null;
-            Sort sort = new Sort(new SortField[]{new SortField("modifydate", SortField.Type.LONG, true)});
+            Sort sort = new Sort(new SortField[]{new SortField("releasedate", SortField.Type.INT, true)});
             //获取上一页的最后一个元素
             ScoreDoc lastSd = getLastScoreDoc(page.getPageNo(), page.getPageSize(), query, isearcher,sort);
             //通过最后一个元素去搜索下一页的元素
@@ -286,7 +293,7 @@ public class IndexManager {
         return map;
     }
     private  ScoreDoc getLastScoreDoc(int pageIndex, int pageSize, Query query, IndexSearcher searcher, Sort sort) throws IOException {
-        if (pageIndex <= 0) return null;//如果是第一页就返回空
+        if (pageIndex <= 1) return null;//如果是第一页就返回空
         int num = pageSize * pageIndex;//获取上一页的最后数量
         if (num > 0)
         {

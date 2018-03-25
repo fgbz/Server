@@ -159,6 +159,13 @@ public interface LawstandardDao {
     List<LawstandardType> getChildNode(String id);
 
     /**
+     * 获取子节点
+     * @param id
+     * @return
+     */
+    List<LawstandardType> getHomeChildNode(String id);
+
+    /**
      * 点击次数加一
      * @param lawstandard
      */
@@ -409,4 +416,21 @@ public interface LawstandardDao {
     List<Lawstandard> getAllPubLishLaw();
 
     List<FG_User> getAllPeopleEmail();
+
+    /*****************统计*********************/
+    List<ChartInfo> getChartByPub(Map<String, Object>  map);
+
+    List<ChartInfo> getChartByPeople(Map<String, Object>  map);
+
+    List<ChartInfo> getChartByType(Map<String, Object>  map);
+
+    List<ChartInfo> getChartByPubTec(Map<String, Object>  map);
+
+    List<ChartInfo> getChartByPeopleTec(Map<String, Object>  map);
+
+    List<ChartInfo> getChartByTypeTec(Map<String, Object>  map);
+
+    int setLawCounEmpty();
+
+    List<Lawstandard> allPublshLaw();
 }

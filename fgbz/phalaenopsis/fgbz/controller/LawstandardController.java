@@ -330,6 +330,15 @@ public class LawstandardController {
         return  lawstandardService.getHomePageLawsType();
     }
 
+
+    @RequestMapping(value = "/getHomeLawsCount", method = RequestMethod.GET)
+    @ResponseBody
+    public List<LawstandardType> getHomeLawsCount(){
+
+
+        return  lawstandardService.getHomeLawsCount();
+    }
+
     @RequestMapping(value = "/UpdateAllLawstandardCode", method = RequestMethod.GET)
     @ResponseBody
     public int UpdateAllLawstandardCode(){
@@ -378,5 +387,47 @@ public class LawstandardController {
     @ResponseBody
     public int initSolr() throws IOException, ParseException {
         return lawstandardService.initSolr();
+    }
+
+    @RequestMapping(value = "/getChartStatistic", method = RequestMethod.POST)
+    @ResponseBody
+    public List<ChartInfo> getChartStatistic(@RequestBody Page page,String type,String clickvalue){
+        return lawstandardService.getChartStatistic(page,type,clickvalue);
+    }
+
+    @RequestMapping(value = "/downStatistic", method = RequestMethod.GET)
+    public  void downStatistic(
+            @RequestParam(value = "Organization", required = false) String Organization,
+            @RequestParam(value = "FiledTimeStart", required = false) String FiledTimeStart,
+            @RequestParam(value = "FiledTimeEnd", required = false) String FiledTimeEnd,
+            @RequestParam(value = "TreeValue", required = false) String TreeValue,
+            @RequestParam(value = "Userid", required = false) String Userid,
+            @RequestParam(value = "type", required = false) String type,
+            @RequestParam(value = "clickvalue", required = false) String clickvalue,
+            HttpServletResponse response
+    ) throws IOException {
+
+        List<Condition> list = new ArrayList<>();
+        if (Organization != null&&!Organization.equals("null")) {
+            list.add(new Condition("Organization", Organization));
+        }
+        if (FiledTimeStart != null&&!FiledTimeStart.equals("null")) {
+            list.add(new Condition("FiledTimeStart", FiledTimeStart));
+        }
+        if (FiledTimeEnd != null&&!FiledTimeEnd.equals("null")) {
+            list.add(new Condition("FiledTimeEnd", FiledTimeEnd));
+        }
+        if (TreeValue != null&&!TreeValue.equals("null")) {
+            list.add(new Condition("TreeValue", TreeValue));
+        }
+        if (Userid != null&&!Userid.equals("null")) {
+            list.add(new Condition("Userid", Userid));
+        }
+
+        Page page = new Page();
+        page.setConditions(list);
+
+        lawstandardService.downStatistic(response,page,type,clickvalue);
+
     }
 }

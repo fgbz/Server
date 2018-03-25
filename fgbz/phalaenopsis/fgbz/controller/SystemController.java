@@ -2,10 +2,7 @@ package phalaenopsis.fgbz.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.*;
 import phalaenopsis.common.entity.OpResult;
 import phalaenopsis.common.entity.Page;
 import phalaenopsis.common.entity.PagingEntity;
@@ -18,6 +15,7 @@ import phalaenopsis.fgbz.entity.FG_User;
 import phalaenopsis.fgbz.entity.Fg_Log;
 import phalaenopsis.fgbz.service.SystemServie;
 
+import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
@@ -259,5 +257,13 @@ public class SystemController {
     @ResponseBody
     public Map<String,String> getUserMailById(String id){
         return systemServie.getUserMailById(id);
+    }
+
+    @RequestMapping(value = "/makeLicense", method = RequestMethod.GET)
+    public void makeLicense( @RequestParam(value = "FiledTimeStartLicense", required = false) String FiledTimeStartLicense,
+                             @RequestParam(value = "FiledTimeEndLicense", required = false) String FiledTimeEndLicense,HttpServletResponse response){
+
+        systemServie.makeLicense(FiledTimeStartLicense,FiledTimeEndLicense,response);
+
     }
 }

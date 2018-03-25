@@ -15,6 +15,7 @@ import phalaenopsis.fgbz.common.HssfHelper;
 import phalaenopsis.fgbz.common.IndexManager;
 import phalaenopsis.fgbz.dao.ILog;
 import phalaenopsis.fgbz.dao.LawstandardDao;
+import phalaenopsis.fgbz.dao.TechnicalDao;
 import phalaenopsis.fgbz.dao.UserCenterDao;
 import phalaenopsis.fgbz.entity.*;
 
@@ -42,11 +43,20 @@ public class LawstandardService {
     private UserCenterDao userCenterDao;
 
     @Autowired
+    private TechnicalDao technicalDao;
+
+    @Autowired
     private IndexManager indexManager;
+
+    private static Object lock_count=new Object();
 
     public List<LawstandardType> ids = new ArrayList<>();
 
+    public List<LawstandardType> idfirstpage = new ArrayList<>();
+
     public List<LawstandardType> upids =new ArrayList<>();
+
+    private  List<TechnicalType> idtecs = new ArrayList<>();
 
     public AttachmentService service;
 
@@ -174,6 +184,10 @@ public class LawstandardService {
         return lawstandardDao.getChildNode(id);
     }
 
+    public List<LawstandardType> getHomeChildNode(String id){
+        return lawstandardDao.getHomeChildNode(id);
+    }
+
     /**
      * 获取父节点
      * @return
@@ -199,6 +213,37 @@ public class LawstandardService {
         }
         return list;
     }
+
+    public  List<LawstandardType> getFirstPageLawsTree(String id){
+
+        List<LawstandardType> list = getHomeChildNode(id);
+
+        while (list!=null&&list.size()>0){
+            idfirstpage.addAll(list);
+            for(LawstandardType lawstandardType:list){
+                list=getFirstPageLawsTree(lawstandardType.getId());
+            }
+        }
+        return list;
+    }
+
+    public List<TechnicalType> getChildNodeTec(String id){
+        return technicalDao.getChildNode(id);
+    }
+
+    public  List<TechnicalType> getTecsTree(String id){
+
+        List<TechnicalType> list = getChildNodeTec(id);
+
+        while (list!=null&&list.size()>0){
+            idtecs.addAll(list);
+            for(TechnicalType technicalType:list){
+                list=getTecsTree(technicalType.getId());
+            }
+        }
+        return list;
+    }
+
 
 
     /**
@@ -987,24 +1032,47 @@ public class LawstandardService {
         List<LawstandardType> result = new ArrayList<>();
         result = lawstandardDao.getHomePageLawsType();
         if(result.size()>0){
-            for (LawstandardType lawstandardType:result ) {
-
+            for (int j=0;j<result.size();j++ ) {
+                LawstandardType lawstandardType = result.get(j);
                 lawstandardType.setChildLists(getChildNode(lawstandardType.getId()));
             }
         }
         return  result;
     }
 
+    public List<LawstandardType> getHomeLawsCount(){
+
+        synchronized(lock_count){
+            List<LawstandardType> result = new ArrayList<>();
+            result = lawstandardDao.getHomePageLawsType();
+            if(result.size()>0){
+                for (int j=0;j<result.size();j++ ) {
+                    LawstandardType lawstandardType = result.get(j);
+                    lawstandardType.setChildLists(getHomeChildNode(lawstandardType.getId()));
+
+                    for(int i =0;i<lawstandardType.getChildLists().size();i++){
+                        LawstandardType child = lawstandardType.getChildLists().get(i);
+                        int count = getHomePageLawCount(child.getId());
+                        child.setLawcount(count);
+
+                    }
+                    lawstandardType.setLawcount(getHomePageLawCount(lawstandardType.getId()));
+                }
+            }
+            return  result;
+        }
+    }
+
     public int getHomePageLawCount(String id){
 
         Map<String, Object> conditions = new HashMap<String, Object>();
 
-        ids =new ArrayList<>();
+        idfirstpage =new ArrayList<>();
         LawstandardType lawSelf = new LawstandardType();
         lawSelf.setId(id);
-        ids.add(lawSelf);
-        getLawsTree(id);
-        conditions.put("TreeValue",ids );
+        idfirstpage.add(lawSelf);
+        getFirstPageLawsTree(id);
+        conditions.put("TreeValue",idfirstpage );
         return  lawstandardDao.getHomePageLawCount(conditions);
     }
 
@@ -1142,6 +1210,17 @@ public class LawstandardService {
         return OpResult.Success;
     }
 
+    @Transactional
+    public void handleLawCount(){
+        lawstandardDao.setLawCounEmpty();
+
+        List<Lawstandard> list = lawstandardDao.allPublshLaw();
+
+        for(int i=0;i<list.size();i++){
+            changeLawstandardCount(getLawtypeList(list.get(i).getLawtype()),"add");
+        }
+    }
+
     /**
      * 获取类别树
      * @return
@@ -1197,5 +1276,140 @@ public class LawstandardService {
             deleteAllFilesOfDir(files[i]);
         }
         path.delete();
+    }
+
+    /******************************统计分析****************************/
+
+    public List<ChartInfo> getChartStatistic(Page page,String type,String clickvalue){
+        List<ChartInfo> list = new ArrayList<>();
+        Map<String, Object> conditions = new HashMap<String, Object>();
+
+        if(page.getConditions()!= null){
+            //查询条件
+            for (Condition condition : page.getConditions()) {
+                if (condition.getKey().equals("Organization")) {
+                    idorgs =new ArrayList<>();
+                    FG_Organization orgSelf = new FG_Organization();
+                    orgSelf.setId(condition.getValue());
+                    idorgs.add(orgSelf);
+                    getOrgsTree(condition.getValue());
+                    conditions.put("Organization",idorgs );
+                }else if(condition.getKey().equals("FiledTimeStart")){
+                    conditions.put("FiledTimeStart", condition.getValue());
+                }else if(condition.getKey().equals("FiledTimeEnd")){
+                    conditions.put("FiledTimeEnd", condition.getValue());
+                }else if(condition.getKey().equals("TreeValue")){
+                    if("law".equals(clickvalue)){
+                        ids =new ArrayList<>();
+                        LawstandardType lawSelf = new LawstandardType();
+                        lawSelf.setId(condition.getValue());
+                        ids.add(lawSelf);
+                        getLawsTree(condition.getValue());
+                        conditions.put("TreeValue",ids );
+                    }else{
+                        idtecs =new ArrayList<>();
+                        TechnicalType tecSelf = new TechnicalType();
+                        tecSelf.setId(condition.getValue());
+                        idtecs.add(tecSelf);
+                        getTecsTree(condition.getValue());
+                        conditions.put("TreeValue",idtecs );
+                    }
+
+                }else if(condition.getKey().equals("Userid")){
+
+                    String[] userids = condition.getValue().split(",");
+                    conditions.put("Userid", userids);
+                }
+            }
+        }
+
+        if("law".equals(clickvalue)){
+            if("pub".equals(type)){
+                list = lawstandardDao.getChartByPub(conditions);
+            }else if("people".equals(type)){
+                list = lawstandardDao.getChartByPeople(conditions);
+            }else if("type".equals(type)){
+                list = lawstandardDao.getChartByType(conditions);
+            }
+        }else{
+            if("pub".equals(type)){
+                list = lawstandardDao.getChartByPubTec(conditions);
+            }else if("people".equals(type)){
+                list = lawstandardDao.getChartByPeopleTec(conditions);
+            }else if("type".equals(type)){
+                list = lawstandardDao.getChartByTypeTec(conditions);
+            }
+        }
+
+
+
+
+        return  list;
+    }
+
+    public void downStatistic(HttpServletResponse response,Page page,String type,String clickvalue) throws IOException {
+
+        List<ChartInfo>  list = new ArrayList<>();
+
+        String text ="";
+        String cloumn1="",cloumn2="";
+
+        if("pub".equals(type)) {
+            text = "按上传部门统计";
+            cloumn1 = "上传部门";
+        }else if("people".equals(type)){
+            text = "按发布人统计";
+            cloumn1 = "发布人";
+        }else if("type".equals(type)){
+            text = "按类别统计";
+            cloumn1 = "类别";
+        }
+
+        if("law".equals(clickvalue)){
+            cloumn2 = "数量";
+        }else{
+            cloumn2 = "数量";
+        }
+        list = getChartStatistic(page, type,clickvalue);
+
+
+        HSSFWorkbook wb = new HSSFWorkbook();
+        HSSFSheet sheet = wb.createSheet(text);
+        HSSFCellStyle style = HssfHelper.getHssfCellStyle(wb, 3);
+
+        String[] CloumnName = new String[]{cloumn1, cloumn2};
+        HSSFRow rowTitle = sheet.createRow(0);
+        HSSFCellStyle headstyle = HssfHelper.getHssfCellStyle(wb, 1);
+        HSSFCell cellTitle = rowTitle.createCell(1);
+        cellTitle.setCellValue(text);
+        cellTitle.setCellStyle(headstyle);
+        sheet.addMergedRegion(new CellRangeAddress(0, 0, 1, 2));
+        HSSFRow row = sheet.createRow(1);
+
+        int nI;
+        for (nI = 0; nI < CloumnName.length; nI++) {
+            HSSFCell cell = row.createCell(nI + 1);
+            cell.setCellValue(CloumnName[nI]);
+            cell.setCellStyle(style);
+        }
+
+        for (nI = 0; nI < list.size(); nI++) {
+            row = sheet.createRow(nI + 2);
+            ChartInfo item = list.get(nI);
+            row.createCell(1).setCellValue(item.getName());
+            row.createCell(2).setCellValue(item.getCount());
+            HssfHelper.setRowStyle(row, 1, 2, style);
+        }
+
+        sheet.setColumnWidth(1, 9000);
+        sheet.setColumnWidth(2, 9000);
+
+        response.setHeader("content-disposition", "attachment;filename=" + URLEncoder.encode(text, "utf-8") + ".xls");
+        OutputStream out = response.getOutputStream();
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        wb.write(baos);
+        byte[] xlsBytes = baos.toByteArray();
+        out.write(xlsBytes);
+        out.close();
     }
 }
