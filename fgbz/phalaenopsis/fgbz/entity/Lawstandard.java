@@ -156,7 +156,7 @@ public class Lawstandard {
 
     private String organization;
 
-    @ExcelTitle(value = "发布部门")
+    @ExcelTitle(value = "发布单位")
     private String pubdepname;
 
     private List<String> fileids;
@@ -197,6 +197,11 @@ public class Lawstandard {
      * 发布部门可以多选
      */
     private List<String> organizationList;
+
+    /**
+     * 父级法规类别
+     */
+    private String parenttypename;
 
     public List<String> getOrganizationList() {
         return organizationList;
@@ -596,5 +601,14 @@ public class Lawstandard {
 
     public void setCanDelete(boolean canDelete) {
         this.canDelete = canDelete;
+    }
+
+
+    public String getParenttypename() {
+        return parenttypename;
+    }
+
+    public void setParenttypename(String parenttypename) {
+        this.parenttypename = parenttypename;
     }
 }

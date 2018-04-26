@@ -462,6 +462,22 @@ WHERE
 
     </select>
 
+    <!--获取人员去掉admin，System-->
+    <select id="getUserListByOrgIdWithOutAdmin" parameterType="map" resultType="FG_User">
+        SELECT
+        t.id,
+        t.USERREALNAME
+        FROM
+        m_sa_user t
+        WHERE
+        t.USERREALNAME <![CDATA[  !=  ]]> 'admin' and  t.USERREALNAME <![CDATA[  !=  ]]> 'System' and
+        t.ORGID IN
+        <foreach collection="TreeValue" item="item" open="(" close=")" separator=",">
+            #{item.id}
+        </foreach>
+
+    </select>
+
     <!--保存日志-->
    <insert id="SaveFgLog" parameterType="Fg_Log">
         insert into m_bs_log (ID,OperationName,Userid,UserName,OperationTime,OrganizationName,OrganizationID)
@@ -508,5 +524,15 @@ WHERE
           SELECT us.EMAIL from  m_sa_user us
 where us.id=#{id}
     </select>
+
+    <!--获取一个月之前的日志-->
+    <select id="getLastMonthLog" resultType="Fg_Log">
+        SELECT t.* from m_bs_log t where (to_days(NOW())-to_days(t.OperationTime))>30 ORDER BY t.OperationTime desc
+    </select>
+
+    <!--删除一个月之前的日志-->
+    <delete id="deleteLastMonthLog">
+        DELETE  from m_bs_log where (to_days(NOW())-to_days(OperationTime))>30
+    </delete>
 
 </mapper>

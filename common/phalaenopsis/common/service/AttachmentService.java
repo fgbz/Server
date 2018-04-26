@@ -50,6 +50,7 @@ import phalaenopsis.common.method.Basis;
 import phalaenopsis.common.method.Attachment.Multipart;
 import phalaenopsis.common.method.Tools.StrUtil;
 import phalaenopsis.common.util.FileHelper;
+import phalaenopsis.fgbz.common.EmojiFilterUtils;
 import phalaenopsis.fgbz.common.FileConverter;
 import phalaenopsis.fgbz.common.ItextpdfUtil;
 import phalaenopsis.fgbz.common.office2PDF;
@@ -179,10 +180,9 @@ public class AttachmentService extends Basis {
 			if(module.equals("Law")){
 				Lawstandard lawstandard= lawstandardDao.getLawByFileId(fileID);
 
-				lawstandard.setCode(filter(lawstandard.getCode()));
-				lawstandard.setChinesename(filter(lawstandard.getChinesename()));
-
 				if(lawstandard!=null){
+					lawstandard.setCode(filter(lawstandard.getCode()));
+					lawstandard.setChinesename(filter(lawstandard.getChinesename()));
 					responseFileName=URLEncoder.encode(lawstandard.getCode(), "utf-8").replace("+","%20")+"+"+URLEncoder.encode(lawstandard.getChinesename(), "utf-8").replace("+","%20")+"."+attachment.getFileExt();
 				}
 
@@ -354,6 +354,8 @@ public class AttachmentService extends Basis {
 				stripper.setStartPage(1);
 				stripper.setEndPage(pages);
 				String content = stripper.getText(document);
+				//过滤掉四字节的表情，图标类容
+				content = EmojiFilterUtils.filterEmoji(content);
 				attachment.setContent(content);
 			}
 			if(isDocFile(ext)){

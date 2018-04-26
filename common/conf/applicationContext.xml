@@ -25,8 +25,6 @@
 	
 	<import resource="classpath:conf/applicationContext_dao.xml" />
 
-
-
 	<bean id="exceptionHandler" class="phalaenopsis.common.method.MyExceptionHandler" />
 
 	<!-- 加载配置属性文件 -->

@@ -45,6 +45,21 @@ public interface FgbzDicDao {
     int SaveOrUpdatePublishdep(Publishdep publishdep);
 
     /**
+     * 处理发布部门
+     * @return
+     */
+    int handPubLevel(Publishdep publishdep);
+
+    /**
+     * 获取单位
+     * @param id
+     * @return
+     */
+    Publishdep getPublishdepById(String id);
+
+    int getMaxPubNum();
+
+    /**
      * 验证发布部门名称是否重复
      * @return
      */

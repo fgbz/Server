@@ -2,10 +2,12 @@ package phalaenopsis.fgbz.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import phalaenopsis.common.entity.Condition;
 import phalaenopsis.common.entity.OpResult;
 import phalaenopsis.common.entity.Page;
 import phalaenopsis.common.entity.PagingEntity;
+import phalaenopsis.common.method.Tools.StrUtil;
 import phalaenopsis.fgbz.dao.FgbzDicDao;
 import phalaenopsis.fgbz.dao.ILog;
 import phalaenopsis.fgbz.entity.FG_Menu;
@@ -79,8 +81,9 @@ public class FgbzDicService {
         }else{
             conditions.put("startRow", page.getPageSize() * (page.getPageNo() - 1) );
         }
-        conditions.put("endRow", page.getPageSize());
+//        conditions.put("endRow", page.getPageSize());
 
+        conditions.put("endRow", Integer.MAX_VALUE);
         // 2, 查询到当前页数的数据
         List<Publishdep> list = fgbzDicDao.getPublishdepList(conditions);
 
@@ -103,7 +106,15 @@ public class FgbzDicService {
      * @return
      */
     @ILog(description="删除发布部门")
+    @Transactional
     public int DeletePublishdepByID(String id){
+
+
+        Publishdep publishdep = fgbzDicDao.getPublishdepById(id);
+        publishdep.setHandletype("delete");
+
+        fgbzDicDao.handPubLevel(publishdep);
+
         fgbzDicDao.DeletePublishdepByID(id);
         return OpResult.Success;
     }
@@ -124,12 +135,40 @@ public class FgbzDicService {
             OpResult opResult = new OpResult(isWorking);
             return opResult.Code;
         }
-        if(publishdep.getId()==null||publishdep.getId().equals("")){
+        if(publishdep.getId() == null||publishdep.getId().equals("")) {
+            int pubnum = fgbzDicDao.getMaxPubNum();
+            publishdep.setRanknum(pubnum+1);
+
             publishdep.setId(UUID.randomUUID().toString());
         }
 
         fgbzDicDao.SaveOrUpdatePublishdep(publishdep);
         return OpResult.Success;
+    }
+
+    //处理单位移动
+    @Transactional
+    public Publishdep HandlePublish(Publishdep publishdep){
+
+        //处理不同的类型
+        switch(publishdep.getHandletype()){
+
+            case "moveUp":
+
+                fgbzDicDao.handPubLevel(publishdep);
+                publishdep.setRanknum(publishdep.getRanknum()-1);
+
+                break;
+            case "moveDown":
+
+                fgbzDicDao.handPubLevel(publishdep);
+                publishdep.setRanknum(publishdep.getRanknum()+1);
+                break;
+        }
+
+        SaveOrUpdatePublishdep(publishdep);
+
+        return publishdep;
     }
 
     /********************************************状态******************************************/
@@ -164,6 +203,8 @@ public class FgbzDicService {
             conditions.put("startRow", page.getPageSize() * (page.getPageNo() - 1) );
         }
         conditions.put("endRow", page.getPageSize());
+
+
 
         // 2, 查询到当前页数的数据
         List<LawstandardStatus> list = fgbzDicDao.getLawstandardStatusList(conditions);

@@ -195,6 +195,8 @@ public class TechnicalService {
                     conditions.put("TecInputuserid", condition.getValue());
                 }else if(condition.getKey().equals("selectInputUser")){
                     conditions.put("selectInputUser", condition.getValue());
+                }else if(condition.getKey().equals("InputUserMySelf")){
+                    conditions.put("InputUserMySelf", condition.getValue());
                 }else if(condition.getKey().equals("Duty")){
                     conditions.put("Duty", condition.getValue());
                 }else if(condition.getKey().equals("OrgList")){
@@ -328,7 +330,7 @@ public class TechnicalService {
         int rownum =0;
         for (int i=0;i<list.size();i++ ) {
 
-            rownum=i+3;
+            rownum=i+4;
             TechnicalExcel excel = list.get(i);
             Technical technical = new Technical();
             //中文标题不能为空

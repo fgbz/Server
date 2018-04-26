@@ -63,6 +63,11 @@ public class Technical {
      * 录入人姓名
      */
     private  String inputusername;
+
+    /**
+     * 修改人名称
+     */
+    private String modifyusername;
     /**
      * 修改人ID
      */
@@ -304,5 +309,13 @@ public class Technical {
 
     public void setIscollect(boolean iscollect) {
         this.iscollect = iscollect;
+    }
+
+    public String getModifyusername() {
+        return modifyusername;
+    }
+
+    public void setModifyusername(String modifyusername) {
+        this.modifyusername = modifyusername;
     }
 }

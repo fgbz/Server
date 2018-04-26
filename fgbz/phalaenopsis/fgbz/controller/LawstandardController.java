@@ -1,7 +1,8 @@
 package phalaenopsis.fgbz.controller;
 
-import org.apache.commons.collections.map.HashedMap;
+import com.alibaba.fastjson.JSON;
 import org.apache.lucene.queryparser.classic.ParseException;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
@@ -12,6 +13,7 @@ import phalaenopsis.common.entity.*;
 import phalaenopsis.fgbz.common.ExcelHelper;
 import phalaenopsis.fgbz.entity.*;
 import phalaenopsis.fgbz.service.LawstandardService;
+import phalaenopsis.fgbz.service.SystemServie;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -20,7 +22,6 @@ import java.io.IOException;
 import java.util.*;
 
 import static phalaenopsis.common.method.Basis.getCurrentFGUser;
-import static phalaenopsis.common.method.Basis.getCurrentUser;
 
 
 @Controller
@@ -29,6 +30,9 @@ public class LawstandardController {
 
     @Autowired
     private LawstandardService lawstandardService;
+
+    @Autowired
+    private SystemServie systemServie;
 
     @RequestMapping(value = "/test", method = RequestMethod.GET)
     @ResponseBody
@@ -154,6 +158,59 @@ public class LawstandardController {
 
     }
 
+    @RequestMapping(value = "/ExportManager", method = RequestMethod.GET)
+    public void ExportManager(  @RequestParam(value = "KeyWords", required = false) String KeyWords,
+                                @RequestParam(value = "ApproveStatus", required = false) String ApproveStatus,
+                                @RequestParam(value = "IsBatch", required = false) String IsBatch,
+                                @RequestParam(value = "TreeValue", required = false) String TreeValue,
+                                @RequestParam(value = "Ordertype", required = false) String Ordertype,
+                                @RequestParam(value = "Duty", required = false) String Duty,
+                                @RequestParam(value = "LawInputuserid", required = false) String LawInputuserid,
+                                @RequestParam(value = "OrgList", required = false) String OrgList,
+                                @RequestParam(value = "InputUserMySelf", required = false) String InputUserMySelf,
+                                @RequestParam(value = "selectInputUser", required = false) String selectInputUser,
+                                HttpServletResponse response){
+
+        List<Condition> list = new ArrayList<>();
+        if (KeyWords != null&&!KeyWords.equals("null")) {
+            list.add(new Condition("KeyWords", KeyWords));
+        }
+        if (ApproveStatus != null&&!ApproveStatus.equals("null")) {
+            list.add(new Condition("ApproveStatus", ApproveStatus));
+        }
+        if (IsBatch != null&&!IsBatch.equals("null")) {
+            list.add(new Condition("IsBatch", IsBatch));
+        }
+        if (TreeValue != null&&!TreeValue.equals("null")) {
+            list.add(new Condition("TreeValue", TreeValue));
+        }
+        if (Ordertype != null&&!Ordertype.equals("null")) {
+            list.add(new Condition("Ordertype", Ordertype));
+        }
+        if (Duty != null&&!Duty.equals("null")) {
+            list.add(new Condition("Duty", Duty));
+        }
+        if (LawInputuserid != null&&!LawInputuserid.equals("null")) {
+            list.add(new Condition("LawInputuserid", LawInputuserid));
+        }
+        if (OrgList != null&&!OrgList.equals("null")) {
+            Map<String, Object> mapList  = systemServie.grtUserListByOrgId(OrgList);
+
+            FG_Organization org = new FG_Organization();
+            org.setChildsorg( (List<FG_Organization>) mapList.get("OrgList"));
+
+            list.add(new Condition("OrgList", JSON.toJSONString(org)));
+        }
+        if (InputUserMySelf != null&&!InputUserMySelf.equals("null")) {
+            list.add(new Condition("InputUserMySelf", InputUserMySelf));
+        }
+        if (selectInputUser != null&&!selectInputUser.equals("null")) {
+            list.add(new Condition("selectInputUser", selectInputUser));
+        }
+
+        lawstandardService.exportExcel(list, response);
+    }
+
     /**
      * 获取法规标准列表前十
      * @param page
@@ -272,7 +329,7 @@ public class LawstandardController {
                 String fileName = new String(file.getOriginalFilename().getBytes("ISO-8859-1"), "UTF-8");
                 inputStream = (FileInputStream) file.getInputStream();
                 //将导入的excel转化为实体
-                List<LawstandardExcel> list = ExcelHelper.convertToList(LawstandardExcel.class, fileName, inputStream, 2, 11);
+                List<LawstandardExcel> list = ExcelHelper.convertToList(LawstandardExcel.class, fileName, inputStream, 3, 11);
 
                 if(list.size()==0){
                     map.put("Result",OpResult.Failed);

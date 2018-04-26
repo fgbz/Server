@@ -119,6 +119,8 @@ public class FG_User {
      */
     private Integer duty;
 
+    private List<FG_User> userListWithOutAdmin;
+
 
     public String getId() {
         return id;
@@ -302,5 +304,13 @@ public class FG_User {
 
     public void setDuty(Integer duty) {
         this.duty = duty;
+    }
+
+    public List<FG_User> getUserListWithOutAdmin() {
+        return userListWithOutAdmin;
+    }
+
+    public void setUserListWithOutAdmin(List<FG_User> userListWithOutAdmin) {
+        this.userListWithOutAdmin = userListWithOutAdmin;
     }
 }

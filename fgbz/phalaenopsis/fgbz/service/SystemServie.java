@@ -84,6 +84,8 @@ public class SystemServie {
             Map<String, Object> mapList =  grtUserListByOrgId(user.getOrgid());
             user.setUserList((List<FG_User>)mapList.get("UserList"));
             user.setOrgList((List<FG_Organization>) mapList.get("OrgList"));
+
+            user.setUserListWithOutAdmin((List<FG_User>)mapList.get("UserListWithOutAdmin"));
             map.put("LoginState", "Success");
         }
         map.put("LoginResult", user);
@@ -664,18 +666,12 @@ public class SystemServie {
         conditions.put("TreeValue",ids );
 
         List<FG_User> list= systemDao.getUserListByOrgId(conditions);
-//        String str = "";
-//        for(int i=0;i<ids.size();i++){
-//            if(i<ids.size()-1){
-//                str += "'"+ ids.get(i).getId()+"'"+",";
-//            }else{
-//                str += "'"+ids.get(i).getId()+"'";
-//            }
-//        }
+        List<FG_User> listWithOutAdmin = systemDao.getUserListByOrgIdWithOutAdmin(conditions);
         //结果集
         Map<String, Object> result = new HashMap<String, Object>();
         result.put("OrgList",ids);
         result.put("UserList",list);
+        result.put("UserListWithOutAdmin",listWithOutAdmin);
         return result;
     }
 
@@ -851,5 +847,13 @@ public class SystemServie {
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    public List<Fg_Log> getLastMonthLog(){
+        return systemDao.getLastMonthLog();
+    }
+
+    public void deleteLastMonthLog(){
+        systemDao.deleteLastMonthLog();
     }
 }

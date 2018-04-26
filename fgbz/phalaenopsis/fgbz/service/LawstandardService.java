@@ -313,8 +313,9 @@ public class LawstandardService {
                     conditions.put("LawInputuserid", condition.getValue());
                 }else if(condition.getKey().equals("selectInputUser")){
                     conditions.put("selectInputUser", condition.getValue());
-                }else if(condition.getKey().equals("OrgList")){
-
+                }else if(condition.getKey().equals("InputUserMySelf")){
+                    conditions.put("InputUserMySelf", condition.getValue());
+                } else if(condition.getKey().equals("OrgList")){
                     FG_Organization org = JSON.parseObject(condition.getValue(),FG_Organization.class);
                     conditions.put("OrgList", org.getChildsorg());
                 }else if(condition.getKey().equals("Duty")){
@@ -488,15 +489,15 @@ public class LawstandardService {
                     lawstandard.setSummaryinfo(str);
                 }
 
-                List<String> str=lawstandardDao.GetPubOrgList(lawstandard.getId());
-                String puborg = "";
-
-                if(str!=null&&str.size()>0){
-                    Map<String,Object> map = new HashMap<>();
-                    map.put("ids",str);
-                    puborg=lawstandardDao.GetpubOrgListName(map);
-                }
-                lawstandard.setPubdepname(puborg);
+//                List<String> str=lawstandardDao.GetPubOrgList(lawstandard.getId());
+//                String puborg = "";
+//
+//                if(str!=null&&str.size()>0){
+//                    Map<String,Object> map = new HashMap<>();
+//                    map.put("ids",str);
+//                    puborg=lawstandardDao.GetpubOrgListName(map);
+//                }
+//                lawstandard.setPubdepname(puborg);
             }
         }
 
@@ -536,13 +537,13 @@ public class LawstandardService {
         int rownum =0;
         for (int i=0;i<list.size();i++ ) {
 
-            rownum=i+3;
+            rownum=i+4;
             LawstandardExcel excel = list.get(i);
             Lawstandard lawstandard = new Lawstandard();
             //中文标题不能为空
             if(StrUtil.isNullOrEmpty(excel.getChinesename())){
                 map.put("Result",OpResult.Failed);
-                map.put("Msg","第"+rownum+"行中文标题为空");
+                map.put("Msg","第"+rownum+"行中文名称为空");
                 return map;
             }else {
                 lawstandard.setChinesename(excel.getChinesename());
@@ -579,7 +580,7 @@ public class LawstandardService {
                     String pubid= lawstandardDao.getPubOrgnameByName(lawpub[j]);
                     if(StrUtil.isNullOrEmpty(pubid)){
                         map.put("Result",OpResult.Failed);
-                        map.put("Msg","第"+rownum+"行发布部门不存在");
+                        map.put("Msg","第"+rownum+"行发布单位不存在");
                         return map;
                     }else{
                         publist.add(pubid);
@@ -888,12 +889,15 @@ public class LawstandardService {
 
     public  void AddLawstandardCount(Lawstandard lawstandard){
 
-        if(lawstandard.getClickcount()==null||lawstandard.getClickcount().equals("")){
+        String num = lawstandardDao.getLawStandardClickCount(lawstandard);
+
+        if(StrUtil.isNullOrEmpty(num)){
             lawstandard.setClickcount(1);
         }else{
-            int num = lawstandard.getClickcount()+1;
-            lawstandard.setClickcount(num);
+            int numCurrent = Integer.parseInt(num)+1;
+            lawstandard.setClickcount(numCurrent);
         }
+
         lawstandardDao.AddLawstandardCount(lawstandard);
 
     }
@@ -939,11 +943,11 @@ public class LawstandardService {
         HSSFSheet sheet = wb.createSheet("数据统计");
         HSSFCellStyle style = HssfHelper.getHssfCellStyle(wb, 3);
 
-        String[] CloumnName = new String[]{"用户姓名", "个数"};
+        String[] CloumnName = new String[]{"上传人", "数量"};
         HSSFRow rowTitle = sheet.createRow(0);
         HSSFCellStyle headstyle = HssfHelper.getHssfCellStyle(wb, 1);
         HSSFCell cellTitle = rowTitle.createCell(1);
-        cellTitle.setCellValue("上传前十统计");
+        cellTitle.setCellValue("按上传人统计");
         cellTitle.setCellStyle(headstyle);
         sheet.addMergedRegion(new CellRangeAddress(0, 0, 1, 2));
         HSSFRow row = sheet.createRow(1);
@@ -965,47 +969,47 @@ public class LawstandardService {
 
         /***************************上传部门***************************/
         int rowOrgname = listdPeople.size() + 3;
-        String[] CloumnNameOrgname = new String[]{"组织名称", "个数"};
+        String[] CloumnNameOrgname = new String[]{"上传部门", "数量"};
         rowTitle = sheet.createRow(rowOrgname);
         headstyle = HssfHelper.getHssfCellStyle(wb, 1);
         cellTitle = rowTitle.createCell(1);
-        cellTitle.setCellValue("上传部门统计");
+        cellTitle.setCellValue("按上传部门统计");
         cellTitle.setCellStyle(headstyle);
         sheet.addMergedRegion(new CellRangeAddress(rowOrgname, rowOrgname, 1, 2));
-        row = sheet.createRow(1);
+        row = sheet.createRow(rowOrgname+1);
 
         for (nI = 0; nI < CloumnNameOrgname.length; nI++) {
-            HSSFCell cell = row.createCell(nI + 1);
-            cell.setCellValue(CloumnName[nI]);
+            HSSFCell cell = row.createCell(nI +1);
+            cell.setCellValue(CloumnNameOrgname[nI]);
             cell.setCellStyle(style);
         }
 
         for (nI = 0; nI < listOrgname.size(); nI++) {
-            row = sheet.createRow(rowOrgname+nI+ 1);
+            row = sheet.createRow(rowOrgname+nI+ 2);
             ChartInfo item = listOrgname.get(nI);
             row.createCell(1).setCellValue(item.getName());
             row.createCell(2).setCellValue(item.getCount());
             HssfHelper.setRowStyle(row, 1, 2, style);
         }
         /***************************上传分类***************************/
-        int rowType = rowOrgname + listOrgname.size() + 2;
-        String[] CloumnNameType = new String[]{"类型名称", "个数"};
+        int rowType = rowOrgname + listOrgname.size() + 3;
+        String[] CloumnNameType = new String[]{"类别", "数量"};
         rowTitle = sheet.createRow(rowType);
         headstyle = HssfHelper.getHssfCellStyle(wb, 1);
         cellTitle = rowTitle.createCell(1);
-        cellTitle.setCellValue("上传分类统计");
+        cellTitle.setCellValue("按上传分类统计");
         cellTitle.setCellStyle(headstyle);
         sheet.addMergedRegion(new CellRangeAddress(rowType, rowType, 1, 2));
-        row = sheet.createRow(1);
+        row = sheet.createRow(rowType+1);
 
         for (nI = 0; nI < CloumnNameType.length; nI++) {
-            HSSFCell cell = row.createCell(nI + 1);
-            cell.setCellValue(CloumnName[nI]);
+            HSSFCell cell = row.createCell(nI +1);
+            cell.setCellValue(CloumnNameType[nI]);
             cell.setCellStyle(style);
         }
 
         for (nI = 0; nI < listType.size();nI++) {
-            row = sheet.createRow(rowType+nI+1);
+            row = sheet.createRow(rowType+nI+2);
             ChartInfo item = listType.get(nI);
             row.createCell(1).setCellValue(item.getName());
             row.createCell(2).setCellValue(item.getCount());
@@ -1284,6 +1288,7 @@ public class LawstandardService {
         List<ChartInfo> list = new ArrayList<>();
         Map<String, Object> conditions = new HashMap<String, Object>();
 
+        boolean flag =false;
         if(page.getConditions()!= null){
             //查询条件
             for (Condition condition : page.getConditions()) {
@@ -1319,6 +1324,7 @@ public class LawstandardService {
 
                     String[] userids = condition.getValue().split(",");
                     conditions.put("Userid", userids);
+                    flag = true;
                 }
             }
         }
@@ -1327,7 +1333,12 @@ public class LawstandardService {
             if("pub".equals(type)){
                 list = lawstandardDao.getChartByPub(conditions);
             }else if("people".equals(type)){
-                list = lawstandardDao.getChartByPeople(conditions);
+                if(flag){
+                    list = lawstandardDao.getChartByPeople(conditions);
+                }else{
+                    list = lawstandardDao.getChartByPeopleNormal(conditions);
+                }
+
             }else if("type".equals(type)){
                 list = lawstandardDao.getChartByType(conditions);
             }
@@ -1358,10 +1369,10 @@ public class LawstandardService {
             text = "按上传部门统计";
             cloumn1 = "上传部门";
         }else if("people".equals(type)){
-            text = "按发布人统计";
-            cloumn1 = "发布人";
+            text = "按上传人统计";
+            cloumn1 = "上传人";
         }else if("type".equals(type)){
-            text = "按类别统计";
+            text = "按上传分类统计";
             cloumn1 = "类别";
         }
 
@@ -1412,4 +1423,10 @@ public class LawstandardService {
         out.write(xlsBytes);
         out.close();
     }
+
+    public String getReleasedateByLawId(String id){
+        return  lawstandardDao.getReleasedateByLawId(id);
+    }
+
+
 }

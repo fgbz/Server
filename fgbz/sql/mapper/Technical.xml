@@ -82,7 +82,8 @@
         t.MEMO,
         t.approvestatus,
         t.IsBatch,
-        t.INPUTDATE
+        t.INPUTDATE,
+        t.MODIFYDATE
         FROM
         m_bs_tech t
         LEFT JOIN m_bs_tech_type m ON m.SID = t.id
@@ -158,6 +159,11 @@
         <if test="selectInputUser != null and selectInputUser !='' ">
             and t.INPUTUSERID = #{selectInputUser} and t.APPROVESTATUS =2
         </if>
+
+        <if test="InputUserMySelf != null and InputUserMySelf !='' ">
+            and t.INPUTUSERID = #{InputUserMySelf}
+        </if>
+
 
         <if test="Duty != null and Duty !='' ">
             and t.INPUTUSERID = #{Duty}
@@ -347,6 +353,7 @@
         ur.USERREALNAME as inputusername,
 				org.ORGNAME as inputorgname,
 				t.INPUTDATE,
+				urmo.USERREALNAME as modifyusername,t.MODIFYDATE,
 				case when (select count(1) from m_bs_lawstandard_favorite fav where fav.sid = t.id)>0
 			then 1 ELSE 0 END  as iscollect
         FROM
@@ -354,6 +361,7 @@
         LEFT JOIN m_bs_tech_type m ON m.SID = t.id
         LEFT JOIN m_bs_techtype n ON n.id = m.LAWSTYPEID
         left join m_sa_user ur on ur.ID = t.INPUTUSERID
+        left join m_sa_user urmo on urmo.ID = t.MODIFYUSERID
 		left join m_sa_organization org on org.ID = ur.ORGID
         where t.id =#{id}
 

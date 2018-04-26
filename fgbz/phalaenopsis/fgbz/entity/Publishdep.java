@@ -57,6 +57,13 @@ public class Publishdep {
 
     private boolean candelete;
 
+    private int ranknum;
+
+    /**
+     *  处理类型  新增同级 ‘addEqual’ 新增下级 'addDown' '上移' 'moveUp' '下移' 'moveDown'
+     */
+    private String handletype;
+
     public int getCount() {
         return count;
     }
@@ -143,5 +150,21 @@ public class Publishdep {
 
     public void setCandelete(boolean candelete) {
         this.candelete = candelete;
+    }
+
+    public int getRanknum() {
+        return ranknum;
+    }
+
+    public void setRanknum(int ranknum) {
+        this.ranknum = ranknum;
+    }
+
+    public String getHandletype() {
+        return handletype;
+    }
+
+    public void setHandletype(String handletype) {
+        this.handletype = handletype;
     }
 }

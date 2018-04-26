@@ -2,6 +2,7 @@ package phalaenopsis.fgbz.dao;
 
 import phalaenopsis.fgbz.entity.*;
 
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
@@ -170,6 +171,8 @@ public interface LawstandardDao {
      * @param lawstandard
      */
     void AddLawstandardCount(Lawstandard lawstandard);
+
+    String getLawStandardClickCount(Lawstandard lawstandard);
 
     void LawstandardIsTop(Lawstandard lawstandard);
 
@@ -422,6 +425,8 @@ public interface LawstandardDao {
 
     List<ChartInfo> getChartByPeople(Map<String, Object>  map);
 
+    List<ChartInfo> getChartByPeopleNormal(Map<String, Object>  map);
+
     List<ChartInfo> getChartByType(Map<String, Object>  map);
 
     List<ChartInfo> getChartByPubTec(Map<String, Object>  map);
@@ -433,4 +438,6 @@ public interface LawstandardDao {
     int setLawCounEmpty();
 
     List<Lawstandard> allPublshLaw();
+
+    String getReleasedateByLawId(String id);
 }

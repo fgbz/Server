@@ -115,6 +115,13 @@ public interface SystemDao {
     List<FG_User> getUserListByOrgId(Map<String, Object> map);
 
     /**
+     * 通过组织机构获取其下人员(排除admin等)
+     * @param map
+     * @return
+     */
+    List<FG_User> getUserListByOrgIdWithOutAdmin(Map<String, Object> map);
+
+    /**
      * 获取用户个数
      * @param map
      * @return
@@ -214,4 +221,7 @@ public interface SystemDao {
 
     String getUserMailById(String id);
 
+    List<Fg_Log> getLastMonthLog();
+
+    int deleteLastMonthLog();
 }

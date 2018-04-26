@@ -126,8 +126,8 @@ WHERE
     <!--查询法律标准列表-->
     <select id="getLawstandardList" parameterType="map" resultType="Lawstandard">
         select t.ID,t.`CODE`,t.CHINESENAME,t.APPROVESTATUS,sta.STATUSNAME,t.RELEASEDATE ,t.IMPDATE,n.TYPENAME,t.CLICKCOUNT , t.MEMO,
-        t.SUMMARYINFO,t.ENGLISHNAME, t.KEYWORDS,t.IsBatch,t.INPUTDATE,
-        t.USERREALNAME as inputusername, dep.PUBDEPNAME,
+        t.SUMMARYINFO,t.ENGLISHNAME, t.KEYWORDS,t.IsBatch,t.INPUTDATE,t.MODIFYDATE,
+        t.USERREALNAME as inputusername, mp.PUBDEPNAME,par.TYPENAME as parenttypename,
         case when (select count(1) from m_bs_lawstandard_approve app where app.LawstandardID = t.id)>0 then 1 else 0 end as isapprove
         from
         ( SELECT t1.*,ur.USERREALNAME from m_bs_lawstandard t1
@@ -138,10 +138,13 @@ WHERE
         LIMIT #{startRow},#{endRow})
         t
         left join m_sa_lawstandardstatus sta on t.`STATUS` = sta.ID
-        left join (select temp.sid,max(temp.PUBDEPID) as PUBDEPID from `m_bs_lawstandard_pubdep` temp group by temp.sid) pub on t.id = pub.SID
-        left join m_sa_publishdep dep on dep.ID = pub.PUBDEPID
+        left join (select pub.SID , GROUP_CONCAT(dep.PUBDEPNAME) as PUBDEPNAME  from m_bs_lawstandard_pubdep pub
+        left join m_sa_publishdep dep on pub.PUBDEPID = dep.ID
+        GROUP BY pub.SID) mp on t.id = mp.SID
+
         left join m_bs_lawstandard_type m on m.SID = t.id
         left join m_bs_lawstandardtype n on n.id = m.LAWSTYPEID
+        left join m_bs_lawstandardtype par on n.PARENTID = par.ID
         order by  ${Ordertype}
     </select>
 
@@ -155,7 +158,7 @@ WHERE
 
 
     <select id="getUptodateLawstandardList" parameterType="map" resultType="Lawstandard">
-        SELECT t.ID,t.`CODE`,t.CHINESENAME,t.APPROVESTATUS,dep.PUBDEPNAME,t.CLICKCOUNT,t.RELEASEDATE ,t.IMPDATE,ur.USERREALNAME as inputusername,t.INPUTDATE,t.MODIFYDATE from
+        SELECT t.ID,t.`CODE`,t.CHINESENAME,t.APPROVESTATUS,  mp.PUBDEPNAME,t.CLICKCOUNT,t.RELEASEDATE ,t.IMPDATE,ur.USERREALNAME as inputusername,t.INPUTDATE,t.MODIFYDATE from
 
         ( SELECT  *from m_bs_lawstandard m where 1=1
         <if test="TreeValue !=null and TreeValue!=''" >
@@ -168,11 +171,13 @@ WHERE
         <if test="ApproveStatus != null and ApproveStatus != ''">
             and m.APPROVESTATUS = #{ApproveStatus}
         </if>
-        order by m.MODIFYDATE DESC
+        order by m.INPUTDATE DESC
         LIMIT #{startRow},#{endRow}
         )t
         left join (select temp.sid,max(temp.PUBDEPID) as PUBDEPID from `m_bs_lawstandard_pubdep` temp group by temp.sid) pub on t.id = pub.SID
-        left join m_sa_publishdep dep on dep.ID = pub.PUBDEPID
+        left join (select pub.SID , GROUP_CONCAT(dep.PUBDEPNAME) as PUBDEPNAME  from m_bs_lawstandard_pubdep pub
+        left join m_sa_publishdep dep on pub.PUBDEPID = dep.ID
+        GROUP BY pub.SID) mp on t.id = mp.SID
         left join m_sa_user ur on ur.ID = t.INPUTUSERID
         order by t.MODIFYDATE DESC
 
@@ -335,10 +340,10 @@ ORDER BY t.MODIFYDATE desc
             and instr(t1.CHINESENAME,#{Title})> 0
         </if>
         <if test="FiledTimeStart != null and FiledTimeStart != ''">
-            and Date(t1.RELEASEDATE) <![CDATA[  >=  ]]> #{FiledTimeStart}
+            and Date(t1.INPUTDATE) <![CDATA[  >=  ]]> #{FiledTimeStart}
         </if>
         <if test="FiledTimeEnd != null and FiledTimeEnd != ''">
-            and Date(t1.RELEASEDATE) <![CDATA[  <=  ]]> #{FiledTimeEnd}
+            and Date(t1.INPUTDATE) <![CDATA[  <=  ]]> #{FiledTimeEnd}
         </if>
         <if test="State != null and State != ''">
             and t1.`STATUS` = #{State}
@@ -415,6 +420,11 @@ ORDER BY t.MODIFYDATE desc
         </if>
         <if test="selectInputUser != null and selectInputUser !='' ">
             and t1.INPUTUSERID = #{selectInputUser} and t1.APPROVESTATUS =3
+        </if>
+
+        <!--只看自己的-->
+        <if test="InputUserMySelf != null and InputUserMySelf !='' ">
+            and t1.INPUTUSERID = #{InputUserMySelf}
         </if>
 
         <if test="Duty != null and Duty !='' ">
@@ -682,6 +692,7 @@ ORDER BY t.MODIFYDATE desc
         n.TYPENAME,
         t.INPUTUSERID,
         n.id as lawtype,
+        par.TYPENAME as parenttypename,
 				ur.USERREALNAME as inputusername,
 				org.ORGNAME as inputorgname,
 				t.INPUTDATE,urmo.USERREALNAME as modifyusername,t.MODIFYDATE,
@@ -694,6 +705,7 @@ ORDER BY t.MODIFYDATE desc
         left join m_sa_publishdep dep on dep.ID = pub.PUBDEPID
         left join m_bs_lawstandard_type m on m.SID = t.id
         left join m_bs_lawstandardtype n on n.id = m.LAWSTYPEID
+        left join m_bs_lawstandardtype par on n.PARENTID = par.ID
 				left join m_sa_user ur on ur.ID = t.INPUTUSERID
 				left join m_sa_user urmo on urmo.ID = t.MODIFYUSERID
 				left join m_sa_organization org on org.ID = ur.ORGID
@@ -875,6 +887,11 @@ ORDER BY t.MODIFYDATE desc
         where t.id = #{id}
     </update>
 
+    <!--获取点击次数-->
+    <select id="getLawStandardClickCount" parameterType="Lawstandard" resultType="String">
+        SELECT t.CLICKCOUNT FROM m_bs_lawstandard t WHERE t.id = #{id}
+    </select>
+
     <!--置顶-->
     <update id="LawstandardIsTop" parameterType="Lawstandard">
         update m_bs_lawstandard t set t.istop = #{istop}
@@ -963,8 +980,9 @@ FROM
 		m_bs_lawstandard law
 		 left join m_bs_lawstandard_type link ON law.ID = link.SID
 		LEFT JOIN m_bs_lawstandardtype ty ON ty.ID = link.LAWSTYPEID
+			LEFT JOIN m_sa_user us ON law.INPUTUSERID = us.ID
 		WHERE
-			law.APPROVESTATUS = 3
+			law.APPROVESTATUS = 3 and us.USERREALNAME <![CDATA[  != ]]> 'System'
 		GROUP BY
 			link.LAWSTYPEID
 	) t
@@ -1474,12 +1492,12 @@ where  us.`STATUS`=0
         MAX( org.ORGNAME ) AS NAME,
         count( 1 ) AS COUNT
         FROM
-        m_bs_lawstandard law
+        m_sa_user ur
 
-        LEFT JOIN m_sa_user ur ON law.INPUTUSERID = ur.ID
+        LEFT JOIN  m_bs_lawstandard law ON law.INPUTUSERID = ur.ID
         LEFT JOIN m_sa_organization org ON ur.ORGID = org.ID
         WHERE
-        law.APPROVESTATUS = 3 and ur.USERREALNAME <![CDATA[  != ]]> 'System'
+          ur.USERREALNAME <![CDATA[  != ]]> 'System' and law.APPROVESTATUS = 3
         <include refid="queryStatistic"></include>
 
         GROUP BY
@@ -1491,7 +1509,7 @@ where  us.`STATUS`=0
         10
     </select>
 
-    <select id="getChartByPeople" parameterType="map" resultType="ChartInfo">
+    <select id="getChartByPeopleNormal" parameterType="map" resultType="ChartInfo">
         SELECT
 	*
 FROM
@@ -1515,6 +1533,30 @@ ORDER BY
 	10
     </select>
 
+    <select id="getChartByPeople" parameterType="map" resultType="ChartInfo">
+        SELECT
+        *
+        FROM
+        (
+        SELECT
+        MAX( ur.USERREALNAME ) AS NAME,
+        count(law.id) AS COUNT
+        FROM
+        m_sa_user ur
+        left join
+        m_bs_lawstandard law on law.INPUTUSERID = ur.ID and law.APPROVESTATUS = 3
+        WHERE
+         ur.USERREALNAME <![CDATA[  != ]]> 'System'
+        <include refid="queryStatistic1"></include>
+        GROUP BY
+        ur.id
+        ) m
+        ORDER BY
+        count DESC
+        LIMIT 0,
+        10
+    </select>
+
     <!--按类别统计-->
     <select id="getChartByType" parameterType="map" resultType="ChartInfo">
         SELECT
@@ -1525,13 +1567,12 @@ FROM
 			ty.TYPENAME AS NAME,
 			count(1) as count
 		FROM
-		m_bs_lawstandard law
+        m_bs_lawstandardtype ty
+		left join m_bs_lawstandard_type link ON  ty.ID = link.LAWSTYPEID
+		LEFT JOIN  m_bs_lawstandard law ON law.ID = link.SID and law.APPROVESTATUS = 3
         left join  m_sa_user ur on law.INPUTUSERID = ur.ID
-		left join m_bs_lawstandard_type link ON law.ID = link.SID
-		LEFT JOIN m_bs_lawstandardtype ty ON ty.ID = link.LAWSTYPEID
 		WHERE
-			law.APPROVESTATUS = 3
-
+        ur.USERREALNAME <![CDATA[  != ]]> 'System'
         <include refid="queryStatistic"></include>
 		GROUP BY
 			link.LAWSTYPEID
@@ -1544,10 +1585,10 @@ LIMIT 0,
 
     <sql id="queryStatistic">
         <if test="FiledTimeStart != null and FiledTimeStart != ''">
-            and Date(law.RELEASEDATE) <![CDATA[  >=  ]]> #{FiledTimeStart}
+            and Date(law.INPUTDATE) <![CDATA[  >=  ]]> #{FiledTimeStart}
         </if>
         <if test="FiledTimeEnd != null and FiledTimeEnd != ''">
-            and Date(law.RELEASEDATE) <![CDATA[  <=  ]]> #{FiledTimeEnd}
+            and Date(law.INPUTDATE) <![CDATA[  <=  ]]> #{FiledTimeEnd}
         </if>
         <if test="Organization != null and Organization != ''">
             and  ur.ORGID in
@@ -1564,6 +1605,34 @@ LIMIT 0,
         </if>
         <if test="Userid != null and Userid != ''">
             and law.INPUTUSERID in
+            <foreach collection="Userid" item="item" open="(" close=")" separator=",">
+                #{item}
+            </foreach>
+        </if>
+    </sql>
+
+    <sql id="queryStatistic1">
+        <if test="FiledTimeStart != null and FiledTimeStart != ''">
+            and Date(law.INPUTDATE) <![CDATA[  >=  ]]> #{FiledTimeStart}
+        </if>
+        <if test="FiledTimeEnd != null and FiledTimeEnd != ''">
+            and Date(law.INPUTDATE) <![CDATA[  <=  ]]> #{FiledTimeEnd}
+        </if>
+        <if test="Organization != null and Organization != ''">
+            and  ur.ORGID in
+            <foreach collection="Organization" item="item" open="(" close=")" separator=",">
+                #{item.id}
+            </foreach>
+        </if>
+        <if test="TreeValue !=null and TreeValue!=''" >
+            and law.id in (select lt.SID from m_bs_lawstandard_type lt where lt.LAWSTYPEID in
+            <foreach collection="TreeValue" item="item" open="(" close=")" separator=",">
+                #{item.id}
+            </foreach>
+            )
+        </if>
+        <if test="Userid != null and Userid != ''">
+            and ur.id in
             <foreach collection="Userid" item="item" open="(" close=")" separator=",">
                 #{item}
             </foreach>
@@ -1649,10 +1718,10 @@ ORDER BY
 
     <sql id="queryStatisticTec">
         <if test="FiledTimeStart != null and FiledTimeStart != ''">
-            and Date(tec.RELEASEDATE) <![CDATA[  >=  ]]> #{FiledTimeStart}
+            and Date(tec.INPUTDATE) <![CDATA[  >=  ]]> #{FiledTimeStart}
         </if>
         <if test="FiledTimeEnd != null and FiledTimeEnd != ''">
-            and Date(tec.RELEASEDATE) <![CDATA[  <=  ]]> #{FiledTimeEnd}
+            and Date(tec.INPUTDATE) <![CDATA[  <=  ]]> #{FiledTimeEnd}
         </if>
         <if test="Organization != null and Organization != ''">
             and  us.ORGID in
@@ -1684,5 +1753,8 @@ ORDER BY
 LEFT join m_bs_lawstandard_type link on t.ID = link.SID where t.APPROVESTATUS=3
     </select>
 
+    <select id="getReleasedateByLawId" resultType="String" parameterType="String">
+        SELECT  t.RELEASEDATE from m_bs_lawstandard t where t.id = #{id}
+    </select>
 
 </mapper>

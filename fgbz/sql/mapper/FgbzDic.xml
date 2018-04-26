@@ -4,7 +4,7 @@
 
     <!--获取发布部门-->
     <select id="getPublishDep" resultType="FgbzDictory">
-        SELECT t.ID,t.PUBDEPNAME as name  from m_sa_publishdep t
+        SELECT t.ID,t.PUBDEPNAME as name  from m_sa_publishdep t order by t.ranknum
     </select>
 
     <!--获取法规状态-->
@@ -17,6 +17,7 @@
       SELECT
 	t.ID,
 	t.PUBDEPNAME,
+        t.ranknum,
 CASE
 
 	WHEN (
@@ -33,7 +34,7 @@ WHERE
 FROM
 m_sa_publishdep t where 1=1
         <include refid="queryPublishdep"></include>
-        order by t.MODIFYDATE desc
+        order by t.ranknum
         LIMIT #{startRow},#{endRow}
     </select>
 
@@ -57,6 +58,28 @@ m_sa_publishdep t where 1=1
         DELETE from m_sa_publishdep where id = #{id}
     </delete>
 
+
+    <!--处理上移和下移-->
+    <update id="handPubLevel" parameterType="Publishdep">
+        <if test="handletype == 'moveUp'.toString()">
+            update m_sa_publishdep t set t.ranknum = (t.ranknum+1) where  t.ranknum=(#{ranknum}-1)
+        </if>
+        <if test="handletype == 'moveDown'.toString()">
+            update m_sa_publishdep t set t.ranknum = (t.ranknum-1) where  t.ranknum=(#{ranknum}+1)
+        </if>
+        <if test="handletype == 'delete'.toString()">
+            update m_sa_publishdep t set t.ranknum = (t.ranknum-1) where  t.ranknum>#{ranknum}
+        </if>
+    </update>
+
+    <select id="getPublishdepById" parameterType="String" resultType="Publishdep">
+        SELECT t.ranknum from m_sa_publishdep t where t.id = #{id}
+    </select>
+
+    <select id="getMaxPubNum" resultType="int">
+        SELECT MAX(t.ranknum) from m_sa_publishdep t
+    </select>
+
     <!--新增或编辑发布部门-->
     <insert id="SaveOrUpdatePublishdep" parameterType="Publishdep">
 
@@ -78,6 +101,7 @@ m_sa_publishdep t where 1=1
                 </if>
                 INPUTDATE,
                 MODIFYDATE,
+                ranknum,
             </trim>
             <trim prefix="values (" suffix=")" suffixOverrides=",">
                 <if test="id != null">
@@ -91,6 +115,7 @@ m_sa_publishdep t where 1=1
                 </if>
                 now(),
                 now(),
+                #{ranknum,jdbcType=INTEGER},
             </trim>
 
         </if>
@@ -107,6 +132,7 @@ m_sa_publishdep t where 1=1
 
 
                 MODIFYDATE= now(),
+                ranknum =#{ranknum,jdbcType=INTEGER},
             </trim>
             where ID=#{id}
 

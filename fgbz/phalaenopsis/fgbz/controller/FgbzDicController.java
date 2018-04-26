@@ -52,6 +52,12 @@ public class FgbzDicController {
         return fgbzDicService.getPublishdepList(page);
     }
 
+    @RequestMapping(value = "/HandlePublish", method = RequestMethod.POST)
+    @ResponseBody
+    public Publishdep HandlePublish(@RequestBody Publishdep publishdep){
+        return fgbzDicService.HandlePublish(publishdep);
+    }
+
     /**
      * 删除发布部门
      * @param id
