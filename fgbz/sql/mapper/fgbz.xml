@@ -169,7 +169,7 @@ WHERE
             )
         </if>
         <if test="ApproveStatus != null and ApproveStatus != ''">
-            and m.APPROVESTATUS = #{ApproveStatus}
+            and m.APPROVESTATUS = 3
         </if>
         order by m.INPUTDATE DESC
         LIMIT #{startRow},#{endRow}
@@ -739,11 +739,12 @@ ORDER BY t.MODIFYDATE desc
         t.MEMO,
         t.SUMMARYINFO,
         t.`STATUS`,
-        t.APPROVESTATUS
-
+        t.APPROVESTATUS,
+        sta.STATUSNAME
         FROM
         m_bs_lsrelatedrelation re
         left join m_bs_lawstandard t on re.RelatedID = t.ID
+        left join m_sa_lawstandardstatus sta on sta.id= t.`STATUS`
         where re.SID =#{id}
         ORDER BY t.RELEASEDATE desc
     </select>
