@@ -67,11 +67,11 @@
     </insert>
 
     <select id="getChildNode" parameterType="String" resultType="LawstandardType">
-        select t.id,t.TYPENAME,t.PARENTID, t.LAWCOUNT from m_bs_lawstandardtype t where t.PARENTID=#{id}
+        select t.id,t.TYPENAME,t.PARENTID, t.LAWCOUNT from m_bs_lawstandardtype t where t.PARENTID=#{id} order by t.ITEMLEVELCODE
     </select>
 
     <select id="getHomeChildNode" parameterType="String" resultType="LawstandardType">
-        select t.id,t.TYPENAME,t.PARENTID, t.LAWCOUNT from m_bs_lawstandardtype t where t.PARENTID=#{id}
+        select t.id,t.TYPENAME,t.PARENTID, t.LAWCOUNT from m_bs_lawstandardtype t where t.PARENTID=#{id} order by t.ITEMLEVELCODE
     </select>
 
     <!--获取父级法规标准类别-->
@@ -1005,6 +1005,7 @@ FROM
 	`m_bs_lawstandardtype` t
 WHERE
 	t.PARENTID = ( SELECT m.ID FROM m_bs_lawstandardtype m WHERE m.PARENTID IS NULL )
+	order by t.ITEMLEVELCODE
     </select>
 
     <!--通过名字获取法规类别-->

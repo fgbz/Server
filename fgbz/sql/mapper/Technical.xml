@@ -64,7 +64,7 @@
 
     <!--获取子节点-->
     <select id="getChildNode" parameterType="String" resultType="TechnicalType">
-        select t.id,t.TYPENAME from m_bs_techtype t where t.PARENTID=#{id}
+        select t.id,t.TYPENAME from m_bs_techtype t where t.PARENTID=#{id} ORDER BY t.ITEMLEVELCODE
     </select>
 
     <!--查询技术文件列表-->
@@ -401,7 +401,7 @@
         FROM
         `m_bs_techtype` t
         WHERE
-        t.PARENTID = ( SELECT m.ID FROM m_bs_techtype m WHERE m.PARENTID IS NULL )
+        t.PARENTID = ( SELECT m.ID FROM m_bs_techtype m WHERE m.PARENTID IS NULL ) ORDER BY t.ITEMLEVELCODE
     </select>
 
     <!--通过附件id获取技术文档-->
