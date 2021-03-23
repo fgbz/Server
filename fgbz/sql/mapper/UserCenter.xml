@@ -1,161 +1,16 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
-<mapper namespace="phalaenopsis.fgbz.dao.UserCenterDao" >
+<mapper namespace="phalaenopsis.fgbz.dao.UserCenterDao">
 
     <!--新增或编辑新闻通知-->
     <insert id="SaveOrUpdateAdvice" parameterType="Adviceinfo">
 
         <selectKey keyProperty="count" resultType="int" order="BEFORE">
-            select count(1) from m_bs_adviceinfo t where t.ID=#{id}
+            select count(1) from fgbz.m_bs_adviceinfo t where t.ID=#{id}
         </selectKey>
 
         <if test="count == 0">
-            insert into m_bs_adviceinfo
-            <trim prefix="(" suffix=")" suffixOverrides=",">
-                <if test="id != null">
-                    ID,
-                </if>
-                <if test="title != null">
-                    TITLE,
-                </if>
-                <if test="details != null">
-                    DETAILS,
-                </if>
-                <if test="inputuserid != null">
-                    INPUTUSERID,
-                </if>
-                    INPUTDATE,
-                    MODIFYDATE,
-            </trim>
-            <trim prefix="values (" suffix=")" suffixOverrides=",">
-                <if test="id != null">
-                    #{id,jdbcType=VARCHAR},
-                </if>
-                <if test="title != null">
-                    #{title,jdbcType=VARCHAR},
-                </if>
-                <if test="details != null">
-                    #{details,jdbcType=VARCHAR},
-                </if>
-                <if test="inputuserid != null">
-                    #{inputuserid,jdbcType=VARCHAR},
-                </if>
-                now(),
-                now(),
-            </trim>
-
-        </if>
-        <if test="count>0">
-            update  m_bs_adviceinfo set
-            <trim prefix="" suffix="" suffixOverrides=",">
-
-                <if test="title != null">
-                    TITLE = #{title,jdbcType=VARCHAR},
-                </if>
-                <if test="details != null">
-                    DETAILS = #{details,jdbcType=VARCHAR},
-                </if>
-                <if test="modifyuserid != null">
-                    MODIFYUSERID = #{modifyuserid,jdbcType=VARCHAR},
-                </if>
-
-
-                MODIFYDATE= now(),
-            </trim>
-            where ID=#{id}
-
-
-        </if>
-    </insert>
-
-    <!--删除通知-->
-    <delete id="DeleteAdviceByID" parameterType="String">
-        DELETE from m_bs_adviceinfo where id = #{id}
-    </delete>
-
-    <!--获取通知详情-->
-    <select id="GetAdviceByID" parameterType="String" resultType="Adviceinfo">
-        SELECT
-	t.ID,
-	t.TITLE,
-	t.DETAILS,
-	us.USERREALNAME as inputusername,
-	org.ORGNAME,
-	t.INPUTDATE
-FROM
-	m_bs_adviceinfo t
-	LEFT JOIN m_sa_user us ON us.ID = t.INPUTUSERID
-	LEFT JOIN m_sa_organization org ON us.ORGID = org.ID
-	where t.ID = #{id}
-    </select>
-
-    <!--获取通知列表-->
-    <select id="getAdviceList" parameterType="map" resultType="Adviceinfo">
-             SELECT
-	t.ID,
-	t.TITLE,
-	t.DETAILS,
-     org.ORGNAME,
-    t.INPUTDATE,
-    t.INPUTUSERID
-FROM
-	m_bs_adviceinfo t
-        LEFT JOIN m_sa_user us ON us.ID = t.INPUTUSERID
-        LEFT JOIN m_sa_organization org ON us.ORGID = org.ID
-        WHERE 1=1
-        <include refid="queryAdviceinfo"></include>
-        ORDER by t.MODIFYDATE DESC
-        LIMIT #{startRow},#{endRow}
-    </select>
-
-    <sql id="queryAdviceinfo">
-        <if test="keyWords != null and keyWords != ''">
-            and ( instr(t.TITLE,#{keyWords})> 0 or instr(t.DETAILS,#{keyWords})> 0)
-        </if>
-        <if test="Title != null and Title != ''">
-            and instr(t.TITLE,#{Title})> 0
-        </if>
-        <if test="FiledTimeStart != null and FiledTimeStart != ''">
-            and Date(t.INPUTDATE) <![CDATA[  >=  ]]> #{FiledTimeStart}
-        </if>
-        <if test="FiledTimeEnd != null and FiledTimeEnd != ''">
-            and Date(t.INPUTDATE) <![CDATA[  <=  ]]> #{FiledTimeEnd}
-        </if>
-        <if test="TreeValue != null and TreeValue != ''">
-            and  us.ORGID in
-            <foreach collection="TreeValue" item="item" open="(" close=")" separator=",">
-                #{item.id}
-            </foreach>
-        </if>
-    </sql>
-
-    <!--获取通知列表总数-->
-    <select id="getAdviceListCount" parameterType="map" resultType="int">
-        SELECT
-      count(1)
-        FROM
-        m_bs_adviceinfo t
-        LEFT JOIN m_sa_user us ON us.ID = t.INPUTUSERID
-        WHERE 1=1
-        <include refid="queryAdviceinfo"></include>
-    </select>
-
-    <!--更新附件与通知的关系-->
-    <update id="SaveAdviceinfoFileLink" parameterType="Adviceinfo">
-        update m_sa_fileinfo t set t.REFID = #{id} where t.id IN
-        <foreach collection="fileids" item="item" open="(" close=")" separator=",">
-            #{item}
-        </foreach>
-    </update>
-
-    <!--保存留言-->
-    <insert id="SaveOrUpdateSuggestion" parameterType="Suggestion">
-        <selectKey keyProperty="count" resultType="int" order="BEFORE">
-            select count(1) from m_bs_suggestion t where t.ID=#{id}
-        </selectKey>
-
-        <if test="count == 0">
-            insert into m_bs_suggestion
+            insert into fgbz.m_bs_adviceinfo
             <trim prefix="(" suffix=")" suffixOverrides=",">
                 <if test="id != null">
                     ID,
@@ -191,7 +46,152 @@ FROM
 
         </if>
         <if test="count>0">
-            update  m_bs_suggestion set
+            update fgbz.m_bs_adviceinfo set
+            <trim prefix="" suffix="" suffixOverrides=",">
+
+                <if test="title != null">
+                    TITLE = #{title,jdbcType=VARCHAR},
+                </if>
+                <if test="details != null">
+                    DETAILS = #{details,jdbcType=VARCHAR},
+                </if>
+                <if test="modifyuserid != null">
+                    MODIFYUSERID = #{modifyuserid,jdbcType=VARCHAR},
+                </if>
+
+
+                MODIFYDATE= now(),
+            </trim>
+            where ID=#{id}
+
+
+        </if>
+    </insert>
+
+    <!--删除通知-->
+    <delete id="DeleteAdviceByID" parameterType="String">
+        DELETE from fgbz.m_bs_adviceinfo where id = #{id}
+    </delete>
+
+    <!--获取通知详情-->
+    <select id="GetAdviceByID" parameterType="String" resultType="Adviceinfo">
+        SELECT
+	t.ID,
+	t.TITLE,
+	t.DETAILS,
+	us.USERREALNAME as inputusername,
+	org.ORGNAME,
+	t.INPUTDATE
+FROM
+	fgbz.m_bs_adviceinfo t
+	LEFT JOIN fgbz.m_sa_user us ON us.ID = t.INPUTUSERID
+	LEFT JOIN fgbz.m_sa_organization org ON us.ORGID = org.ID
+	where t.ID = #{id}
+    </select>
+
+    <!--获取通知列表-->
+    <select id="getAdviceList" parameterType="map" resultType="Adviceinfo">
+        SELECT
+        t.ID,
+        t.TITLE,
+        t.DETAILS,
+        org.ORGNAME,
+        t.INPUTDATE,
+        t.INPUTUSERID
+        FROM
+        fgbz.m_bs_adviceinfo t
+        LEFT JOIN fgbz.m_sa_user us ON us.ID = t.INPUTUSERID
+        LEFT JOIN fgbz.m_sa_organization org ON us.ORGID = org.ID
+        WHERE 1=1
+        <include refid="queryAdviceinfo"></include>
+        ORDER by t.MODIFYDATE DESC
+        LIMIT #{startRow},#{endRow}
+    </select>
+
+    <sql id="queryAdviceinfo">
+        <if test="keyWords != null and keyWords != ''">
+            and ( instr(t.TITLE,#{keyWords})> 0 or instr(t.DETAILS,#{keyWords})> 0)
+        </if>
+        <if test="Title != null and Title != ''">
+            and instr(t.TITLE,#{Title})> 0
+        </if>
+        <if test="FiledTimeStart != null and FiledTimeStart != ''">
+            and cast(t.INPUTDATE as Date) <![CDATA[  >=  ]]> #{FiledTimeStart}
+        </if>
+        <if test="FiledTimeEnd != null and FiledTimeEnd != ''">
+            and cast(t.INPUTDATE as Date) <![CDATA[  <=  ]]> #{FiledTimeEnd}
+        </if>
+        <if test="TreeValue != null and TreeValue != ''">
+            and us.ORGID in
+            <foreach collection="TreeValue" item="item" open="(" close=")" separator=",">
+                #{item.id}
+            </foreach>
+        </if>
+    </sql>
+
+    <!--获取通知列表总数-->
+    <select id="getAdviceListCount" parameterType="map" resultType="int">
+        SELECT
+        count(1)
+        FROM
+        fgbz.m_bs_adviceinfo t
+        LEFT JOIN fgbz.m_sa_user us ON us.ID = t.INPUTUSERID
+        WHERE 1=1
+        <include refid="queryAdviceinfo"></include>
+    </select>
+
+    <!--更新附件与通知的关系-->
+    <update id="SaveAdviceinfoFileLink" parameterType="Adviceinfo">
+        update fgbz.m_sa_fileinfo t set t.REFID = #{id} where t.id IN
+        <foreach collection="fileids" item="item" open="(" close=")" separator=",">
+            #{item}
+        </foreach>
+    </update>
+
+    <!--保存留言-->
+    <insert id="SaveOrUpdateSuggestion" parameterType="Suggestion">
+        <selectKey keyProperty="count" resultType="int" order="BEFORE">
+            select count(1) from fgbz.m_bs_suggestion t where t.ID=#{id}
+        </selectKey>
+
+        <if test="count == 0">
+            insert into fgbz.m_bs_suggestion
+            <trim prefix="(" suffix=")" suffixOverrides=",">
+                <if test="id != null">
+                    ID,
+                </if>
+                <if test="title != null">
+                    TITLE,
+                </if>
+                <if test="details != null">
+                    DETAILS,
+                </if>
+                <if test="inputuserid != null">
+                    INPUTUSERID,
+                </if>
+                INPUTDATE,
+                MODIFYDATE,
+            </trim>
+            <trim prefix="values (" suffix=")" suffixOverrides=",">
+                <if test="id != null">
+                    #{id,jdbcType=VARCHAR},
+                </if>
+                <if test="title != null">
+                    #{title,jdbcType=VARCHAR},
+                </if>
+                <if test="details != null">
+                    #{details,jdbcType=VARCHAR},
+                </if>
+                <if test="inputuserid != null">
+                    #{inputuserid,jdbcType=VARCHAR},
+                </if>
+                now(),
+                now(),
+            </trim>
+
+        </if>
+        <if test="count>0">
+            update fgbz.m_bs_suggestion set
             <trim prefix="" suffix="" suffixOverrides=",">
 
                 <if test="title != null">
@@ -215,7 +215,7 @@ FROM
 
     <!--删除留言-->
     <delete id="DeleteSuggestionByID" parameterType="String">
-         DELETE from m_bs_suggestion where id = #{id}
+         DELETE from fgbz.m_bs_suggestion where id = #{id}
     </delete>
 
     <!--获取留言列表-->
@@ -229,9 +229,9 @@ FROM
         us.USERREALNAME as inputname,
         us.id as inputuserid
         FROM
-        m_bs_suggestion t
-        LEFT JOIN m_sa_user us ON us.ID = t.INPUTUSERID
-        LEFT JOIN m_sa_organization org ON us.ORGID = org.ID
+        fgbz.m_bs_suggestion t
+        LEFT JOIN fgbz.m_sa_user us ON us.ID = t.INPUTUSERID
+        LEFT JOIN fgbz.m_sa_organization org ON us.ORGID = org.ID
         WHERE 1=1
         <include refid="querySuggestion"></include>
         ORDER by t.MODIFYDATE DESC
@@ -240,13 +240,14 @@ FROM
 
     <sql id="querySuggestion">
         <if test="KeyWords != null and KeyWords != ''">
-            and ( instr(t.TITLE,#{KeyWords})> 0 or instr(t.DETAILS,#{KeyWords})> 0 or  instr(us.USERREALNAME,#{KeyWords})>0 )
+            and ( instr(t.TITLE,#{KeyWords})> 0 or instr(t.DETAILS,#{KeyWords})> 0 or
+            instr(us.USERREALNAME,#{KeyWords})>0 )
         </if>
         <if test="FiledTimeStart != null and FiledTimeStart != ''">
-            and Date(t.INPUTDATE) <![CDATA[  >=  ]]> #{FiledTimeStart}
+            and cast(t.INPUTDATE as Date) <![CDATA[  >=  ]]> #{FiledTimeStart}
         </if>
         <if test="FiledTimeEnd != null and FiledTimeEnd != ''">
-            and Date(t.INPUTDATE) <![CDATA[  <=  ]]> #{FiledTimeEnd}
+            and cast(t.INPUTDATE as Date) <![CDATA[  <=  ]]> #{FiledTimeEnd}
         </if>
     </sql>
 
@@ -255,15 +256,15 @@ FROM
         SELECT
         count(1)
         FROM
-        m_bs_suggestion t
-        LEFT JOIN m_sa_user us ON us.ID = t.INPUTUSERID
+        fgbz.m_bs_suggestion t
+        LEFT JOIN fgbz.m_sa_user us ON us.ID = t.INPUTUSERID
         WHERE 1=1
         <include refid="querySuggestion"></include>
     </select>
 
     <!--保存留言-->
     <insert id="SaveSuggestionFeedBack" parameterType="SuggestionFeedBack">
-        insert into m_bs_suggestionfeedback
+        insert into fgbz.m_bs_suggestionfeedback
         <trim prefix="(" suffix=")" suffixOverrides=",">
             <if test="id != null">
                 ID,
@@ -304,20 +305,20 @@ FROM
     </insert>
 
     <!--删除反馈-->
-    <delete id="DeleteSuggestionFeedBack" parameterType="String" >
-        delete from  m_bs_suggestionfeedback where sid = #{id}
+    <delete id="DeleteSuggestionFeedBack" parameterType="String">
+        delete from fgbz.m_bs_suggestionfeedback where sid = #{id}
     </delete>
 
     <!--获取反馈信息-->
     <select id="getFeedBackList" parameterType="String" resultType="SuggestionFeedBack">
-        SELECT t.ID,t.sid,t.title,t.fdetails,t.feedbackid,t.FEEDBACKDATE ,us.USERREALNAME as feedbackusername from m_bs_suggestionfeedback t
-        left join m_sa_user us on us.id = t.feedbackid where t.sid=#{id}
+        SELECT t.ID,t.sid,t.title,t.fdetails,t.feedbackid,t.FEEDBACKDATE ,us.USERREALNAME as feedbackusername from fgbz.m_bs_suggestionfeedback t
+        left join fgbz.m_sa_user us on us.id = t.feedbackid where t.sid=#{id}
         order by t.FEEDBACKDATE desc
     </select>
 
     <!--保存审核信息-->
     <insert id="SaveApprove" parameterType="LawstandardApprove">
-        insert into m_bs_lawstandard_approve
+        insert into fgbz.m_bs_lawstandard_approve
         <trim prefix="(" suffix=")" suffixOverrides=",">
             <if test="id != null">
                 ID,
@@ -366,34 +367,34 @@ SELECT
 	t.ApproveUserID,
 	t.ApproveDate,
 	us.USERREALNAME as username,
-	t.`Status`
+	t.Status
 FROM
-	m_bs_lawstandard_approve t
-LEFT JOIN m_sa_user us ON t.ApproveUserID = us.ID
+	fgbz.m_bs_lawstandard_approve t
+LEFT JOIN fgbz.m_sa_user us ON t.ApproveUserID = us.ID
 where t.LawstandardID = #{id}
 ORDER BY t.ApproveDate desc
     </select>
 
     <!--通过父节点id获取所有子记录-->
     <select id="getFavoriteListByID" parameterType="String" resultType="Favorite">
-        SELECT t.id,t.`NAME` ,t.PARENTID,  t.itemlevel,
-        t.itemlevelcode from m_bs_favorite t where t.ID=#{id} order by t.itemlevel,t.itemlevelcode
+        SELECT t.id,t.NAME ,t.PARENTID,  t.itemlevel,
+        t.itemlevelcode from fgbz.m_bs_favorite t where t.ID=#{id} order by t.itemlevel,t.itemlevelcode
     </select>
 
     <!--通过父节点id获取所有子记录-->
     <select id="getFavoriteListByParentID" parameterType="String" resultType="Favorite">
-        SELECT t.id,t.`NAME` ,t.PARENTID,  t.itemlevel,
-        t.itemlevelcode from m_bs_favorite t where t.PARENTID=#{id} order by t.itemlevel,t.itemlevelcode
+        SELECT t.id,t.NAME ,t.PARENTID,  t.itemlevel,
+        t.itemlevelcode from fgbz.m_bs_favorite t where t.PARENTID=#{id} order by t.itemlevel,t.itemlevelcode
     </select>
 
     <!--删除收藏夹-->
-    <delete id="DeleteFavoriteByID" parameterType="String" >
-        DELETE FROM  m_bs_favorite where id= #{id}
+    <delete id="DeleteFavoriteByID" parameterType="String">
+        DELETE FROM fgbz.m_bs_favorite where id= #{id}
     </delete>
 
     <!--删除收藏夹与法规的关联关系-->
     <delete id="DeleteFavoriteLawsLink" parameterType="map">
-        DELETE FROM  m_bs_lawstandard_favorite where
+        DELETE FROM fgbz.m_bs_lawstandard_favorite where
         <if test="type == 'fav'.toString()">
             FAVORITEID= #{id}
         </if>
@@ -408,8 +409,8 @@ ORDER BY t.ApproveDate desc
 
     <!--建立法规与收藏夹关联-->
     <insert id="SaveFavoriteLawsLink" parameterType="map">
-          INSERT into m_bs_lawstandard_favorite (id,FAVORITEID,SID,type)
-          VALUES
+        INSERT into fgbz.m_bs_lawstandard_favorite (id,FAVORITEID,SID,type)
+        VALUES
         <foreach collection="fevlists" item="item" open="" close="" separator=",">
             (#{item.tableid},#{item.id},#{sid},#{type})
         </foreach>
@@ -417,7 +418,7 @@ ORDER BY t.ApproveDate desc
 
     <!--删除所有的收藏夹-->
     <delete id="DeleteAllFavorite" parameterType="list">
-        DELETE from  m_bs_favorite where id in
+        DELETE from fgbz.m_bs_favorite where id in
         <foreach collection="list" item="item" open="(" close=")" separator=",">
             #{item.id}
         </foreach>
@@ -425,7 +426,7 @@ ORDER BY t.ApproveDate desc
 
     <!--删除所有的收藏与法规关联关系-->
     <delete id="DeleteAllFavoriteLawsLink" parameterType="list">
-        DELETE from  m_bs_lawstandard_favorite where FAVORITEID in
+        DELETE from fgbz.m_bs_lawstandard_favorite where FAVORITEID in
         <foreach collection="list" item="item" open="(" close=")" separator=",">
             #{item.id}
         </foreach>
@@ -435,11 +436,11 @@ ORDER BY t.ApproveDate desc
     <insert id="SaveOrUpdateFavorite" parameterType="Favorite">
 
         <selectKey keyProperty="count" resultType="int" order="BEFORE">
-            select count(1) from m_bs_favorite t where t.ID=#{id}
+            select count(1) from fgbz.m_bs_favorite t where t.ID=#{id}
         </selectKey>
 
         <if test="count == 0">
-            insert into m_bs_favorite
+            insert into fgbz.m_bs_favorite
             <trim prefix="(" suffix=")" suffixOverrides=",">
                 <if test="id != null">
                     ID,
@@ -476,7 +477,7 @@ ORDER BY t.ApproveDate desc
 
         </if>
         <if test="count>0">
-            update  m_bs_favorite set
+            update fgbz.m_bs_favorite set
             <trim prefix="" suffix="" suffixOverrides=",">
 
                 <if test="name != null">
@@ -496,22 +497,24 @@ ORDER BY t.ApproveDate desc
     </insert>
 
 
-
     <!--获取最新的结构层级-->
     <select id="getLastItemLevelcode" parameterType="String" resultType="int">
-        select IF(ISNULL(max(t.ITEMLEVELCODE)),0,max(t.ITEMLEVELCODE)+1) from m_bs_favorite t where t.PARENTID= #{id}
+        select IF(ISNULL(max(t.ITEMLEVELCODE)),0,max(t.ITEMLEVELCODE)+1) from fgbz.m_bs_favorite t where t.PARENTID= #{id}
     </select>
 
     <!--处理上移和下移-->
     <update id="handTreeLevel" parameterType="Favorite">
         <if test="handletype == 'moveUp'.toString()">
-            update m_bs_favorite t set t.ITEMLEVELCODE = (t.ITEMLEVELCODE+1) where t.PARENTID =#{parentid}  and t.ITEMLEVELCODE=(#{itemlevelcode}-1)
+            update fgbz.m_bs_favorite t set t.ITEMLEVELCODE = (t.ITEMLEVELCODE+1) where t.PARENTID =#{parentid} and
+            t.ITEMLEVELCODE=(#{itemlevelcode}-1)
         </if>
         <if test="handletype == 'moveDown'.toString()">
-            update m_bs_favorite t set t.ITEMLEVELCODE = (t.ITEMLEVELCODE-1) where t.PARENTID =#{parentid}  and t.ITEMLEVELCODE=(#{itemlevelcode}+1)
+            update fgbz.m_bs_favorite t set t.ITEMLEVELCODE = (t.ITEMLEVELCODE-1) where t.PARENTID =#{parentid} and
+            t.ITEMLEVELCODE=(#{itemlevelcode}+1)
         </if>
         <if test="handletype == 'delete'.toString()">
-            update m_bs_favorite t set t.ITEMLEVELCODE = (t.ITEMLEVELCODE-1) where t.PARENTID =#{parentid}  and t.ITEMLEVELCODE>#{itemlevelcode}
+            update fgbz.m_bs_favorite t set t.ITEMLEVELCODE = (t.ITEMLEVELCODE-1) where t.PARENTID =#{parentid} and
+            t.ITEMLEVELCODE>#{itemlevelcode}
         </if>
     </update>
 
@@ -536,14 +539,14 @@ ORDER BY t.ApproveDate desc
         END AS title,
         law.clickcount
         FROM
-        m_bs_favorite fav
-        INNER JOIN m_bs_lawstandard_favorite link ON link.FAVORITEID = fav.ID
-        LEFT JOIN m_bs_lawstandard law ON link.SID = law.id
+        fgbz.m_bs_favorite fav
+        INNER JOIN fgbz.m_bs_lawstandard_favorite link ON link.FAVORITEID = fav.ID
+        LEFT JOIN fgbz.m_bs_lawstandard law ON link.SID = law.id
         AND link.TYPE = 0
-        LEFT JOIN m_bs_tech tec ON link.SID = tec.id
+        LEFT JOIN fgbz.m_bs_tech tec ON link.SID = tec.id
         AND link.TYPE = 1
-WHERE
-	fav.id IN
+        WHERE
+        fav.id IN
         <foreach collection="TreeValue" item="item" open="(" close=")" separator=",">
             #{item.id}
         </foreach>
@@ -556,11 +559,11 @@ WHERE
         SELECT
         count(1)
         FROM
-        m_bs_favorite fav
-        INNER JOIN m_bs_lawstandard_favorite link ON link.FAVORITEID = fav.ID
-        LEFT JOIN m_bs_lawstandard law ON link.SID = law.id
+        fgbz.m_bs_favorite fav
+        INNER JOIN fgbz.m_bs_lawstandard_favorite link ON link.FAVORITEID = fav.ID
+        LEFT JOIN fgbz.m_bs_lawstandard law ON link.SID = law.id
         AND link.TYPE = 0
-        LEFT JOIN m_bs_tech tec ON link.SID = tec.id
+        LEFT JOIN fgbz.m_bs_tech tec ON link.SID = tec.id
         AND link.TYPE = 1
         WHERE
         fav.id IN
@@ -574,29 +577,26 @@ WHERE
         SELECT
 	t.ID
 FROM
-	m_bs_favorite t
-LEFT JOIN m_bs_lawstandard_favorite link ON t.ID = link.FAVORITEID
+	fgbz.m_bs_favorite t
+LEFT JOIN fgbz.m_bs_lawstandard_favorite link ON t.ID = link.FAVORITEID
 
 where link.sid=#{id}
     </select>
 
     <!--取消收藏-->
-    <delete id="DismissFavorite" parameterType="map" >
-        delete from m_bs_lawstandard_favorite where FAVORITEID =#{favid} and SID =#{sid}
+    <delete id="DismissFavorite" parameterType="map">
+        delete from fgbz.m_bs_lawstandard_favorite where FAVORITEID =#{favid} and SID =#{sid}
     </delete>
-
-
-
 
 
     <!--通过密码和用户id查看用户-->
     <select id="getUserByPasswordAndId" parameterType="map" resultType="int">
-        SELECT count(1) from m_sa_user t where t.id=#{id} and t.PASSWORD = #{oldpassword}
+        SELECT count(1) from fgbz.m_sa_user t where t.id=#{id} and t.PASSWORD = #{oldpassword}
     </select>
 
     <!--更新用户密码-->
     <update id="updateUserPassword" parameterType="map">
-        update m_sa_user set PASSWORD=#{newpassword} where id=#{id}
+        update fgbz.m_sa_user set PASSWORD=#{newpassword} where id=#{id}
     </update>
 
 </mapper>

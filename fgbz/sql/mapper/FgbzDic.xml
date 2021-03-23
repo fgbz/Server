@@ -1,38 +1,37 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
-<mapper namespace="phalaenopsis.fgbz.dao.FgbzDicDao" >
+<mapper namespace="phalaenopsis.fgbz.dao.FgbzDicDao">
 
     <!--获取发布部门-->
     <select id="getPublishDep" resultType="FgbzDictory">
-        SELECT t.ID,t.PUBDEPNAME as name  from m_sa_publishdep t order by t.ranknum
+        SELECT t.ID,t.PUBDEPNAME as name  from fgbz.m_sa_publishdep t order by t.ranknum
     </select>
 
     <!--获取法规状态-->
     <select id="getLawstandardState" resultType="FgbzDictory">
-        SELECT t.id,t.STATUSNAME as name  from m_sa_lawstandardstatus t
+        SELECT t.id,t.STATUSNAME as name  from fgbz.m_sa_lawstandardstatus t
     </select>
 
     <!--获取通知列表-->
     <select id="getPublishdepList" parameterType="map" resultType="Publishdep">
-      SELECT
-	t.ID,
-	t.PUBDEPNAME,
+        SELECT
+        t.ID,
+        t.PUBDEPNAME,
         t.ranknum,
-CASE
-
-	WHEN (
-SELECT
-count( 1 )
-FROM
-	m_bs_lawstandard law
-	LEFT JOIN m_bs_lawstandard_pubdep pub ON law.ID = pub.SID
-WHERE
-	pub.PUBDEPID = t.id
-	) > 0 THEN
-		0 ELSE 1
-	END as candelete
-FROM
-m_sa_publishdep t where 1=1
+        CASE
+        WHEN (
+        SELECT
+        count(1)
+        FROM
+        fgbz.m_bs_lawstandard law
+        LEFT JOIN fgbz.m_bs_lawstandard_pubdep pub ON law.ID = pub.SID
+        WHERE
+        pub.PUBDEPID = t.id
+        ) > 0 THEN
+        0 ELSE 1
+        END as candelete
+        FROM
+        fgbz.m_sa_publishdep t where 1=1
         <include refid="queryPublishdep"></include>
         order by t.ranknum
         LIMIT #{startRow},#{endRow}
@@ -49,46 +48,46 @@ m_sa_publishdep t where 1=1
         SELECT
         count(1)
         FROM
-        m_sa_publishdep t WHERE 1=1
+        fgbz.m_sa_publishdep t WHERE 1=1
         <include refid="queryPublishdep"></include>
     </select>
 
     <!--删除通知-->
     <delete id="DeletePublishdepByID" parameterType="String">
-        DELETE from m_sa_publishdep where id = #{id}
+        DELETE from fgbz.m_sa_publishdep where id = #{id}
     </delete>
 
 
     <!--处理上移和下移-->
     <update id="handPubLevel" parameterType="Publishdep">
         <if test="handletype == 'moveUp'.toString()">
-            update m_sa_publishdep t set t.ranknum = (t.ranknum+1) where  t.ranknum=(#{ranknum}-1)
+            update fgbz.m_sa_publishdep t set t.ranknum = (t.ranknum+1) where t.ranknum=(#{ranknum}-1)
         </if>
         <if test="handletype == 'moveDown'.toString()">
-            update m_sa_publishdep t set t.ranknum = (t.ranknum-1) where  t.ranknum=(#{ranknum}+1)
+            update fgbz.m_sa_publishdep t set t.ranknum = (t.ranknum-1) where t.ranknum=(#{ranknum}+1)
         </if>
         <if test="handletype == 'delete'.toString()">
-            update m_sa_publishdep t set t.ranknum = (t.ranknum-1) where  t.ranknum>#{ranknum}
+            update fgbz.m_sa_publishdep t set t.ranknum = (t.ranknum-1) where t.ranknum>#{ranknum}
         </if>
     </update>
 
     <select id="getPublishdepById" parameterType="String" resultType="Publishdep">
-        SELECT t.ranknum from m_sa_publishdep t where t.id = #{id}
+        SELECT t.ranknum from fgbz.m_sa_publishdep t where t.id = #{id}
     </select>
 
     <select id="getMaxPubNum" resultType="int">
-        SELECT MAX(t.ranknum) from m_sa_publishdep t
+        SELECT MAX(t.ranknum) from fgbz.m_sa_publishdep t
     </select>
 
     <!--新增或编辑发布部门-->
     <insert id="SaveOrUpdatePublishdep" parameterType="Publishdep">
 
         <selectKey keyProperty="count" resultType="int" order="BEFORE">
-            select count(1) from m_sa_publishdep t where t.ID=#{id}
+            select count(1) from fgbz.m_sa_publishdep t where t.ID=#{id}
         </selectKey>
 
         <if test="count == 0">
-            insert into m_sa_publishdep
+            insert into fgbz.m_sa_publishdep
             <trim prefix="(" suffix=")" suffixOverrides=",">
                 <if test="id != null">
                     ID,
@@ -120,7 +119,7 @@ m_sa_publishdep t where 1=1
 
         </if>
         <if test="count>0">
-            update  m_sa_publishdep set
+            update fgbz.m_sa_publishdep set
             <trim prefix="" suffix="" suffixOverrides=",">
 
                 <if test="pubdepname != null">
@@ -129,20 +128,16 @@ m_sa_publishdep t where 1=1
                 <if test="modifyuserid != null">
                     MODIFYUSERID = #{modifyuserid,jdbcType=VARCHAR},
                 </if>
-
-
                 MODIFYDATE= now(),
                 ranknum =#{ranknum,jdbcType=INTEGER},
             </trim>
             where ID=#{id}
-
-
         </if>
     </insert>
 
     <!--验证发布部门是否重复-->
     <select id="checkPublichName" parameterType="Publishdep" resultType="int">
-        SELECT  count(1) from  m_sa_publishdep t where t.pubdepname = #{pubdepname}
+        SELECT count(1) from fgbz.m_sa_publishdep t where t.pubdepname = #{pubdepname}
         <if test="id !=null and id !=''">
             and t.id <![CDATA[  != ]]> #{id}
         </if>
@@ -155,19 +150,18 @@ m_sa_publishdep t where 1=1
         t.ID,
         t.STATUSNAME,
         CASE
-
         WHEN (
         SELECT
         count( 1 )
         FROM
-        m_bs_lawstandard law
+        fgbz.m_bs_lawstandard law
         WHERE
         law.STATUS = t.id
         ) > 0 THEN
         0 ELSE 1
         END as candelete
         FROM
-        m_sa_lawstandardstatus t where 1=1
+        fgbz.m_sa_lawstandardstatus t where 1=1
         <include refid="queryLawstandardStatus"></include>
         order by t.MODIFYDATE desc
         LIMIT #{startRow},#{endRow}
@@ -184,24 +178,24 @@ m_sa_publishdep t where 1=1
         SELECT
         count(1)
         FROM
-        m_sa_lawstandardstatus t WHERE 1=1
+        fgbz.m_sa_lawstandardstatus t WHERE 1=1
         <include refid="queryLawstandardStatus"></include>
     </select>
 
     <!--删除状态-->
     <delete id="DeleteLawstandardStatusByID" parameterType="String">
-        DELETE from m_sa_lawstandardstatus where id = #{id}
+        DELETE from fgbz.m_sa_lawstandardstatus where id = #{id}
     </delete>
 
     <!--新增或编辑状态-->
     <insert id="SaveOrUpdateLawstandardStatus" parameterType="LawstandardStatus">
 
         <selectKey keyProperty="count" resultType="int" order="BEFORE">
-            select count(1) from m_sa_lawstandardstatus t where t.ID=#{id}
+            select count(1) from fgbz.m_sa_lawstandardstatus t where t.ID=#{id}
         </selectKey>
 
         <if test="count == 0">
-            insert into m_sa_lawstandardstatus
+            insert into fgbz.m_sa_lawstandardstatus
             <trim prefix="(" suffix=")" suffixOverrides=",">
                 <if test="id != null">
                     ID,
@@ -231,7 +225,7 @@ m_sa_publishdep t where 1=1
 
         </if>
         <if test="count>0">
-            update  m_sa_lawstandardstatus set
+            update fgbz.m_sa_lawstandardstatus set
             <trim prefix="" suffix="" suffixOverrides=",">
 
                 <if test="statusname != null">
@@ -252,7 +246,7 @@ m_sa_publishdep t where 1=1
 
     <!--验证状态是否重复-->
     <select id="checkLawstandardStatusName" parameterType="LawstandardStatus" resultType="int">
-        SELECT  count(1) from  m_sa_lawstandardstatus t where t.statusname = #{statusname}
+        SELECT count(1) from fgbz.m_sa_lawstandardstatus t where t.statusname = #{statusname}
         <if test="id !=null and id !=''">
             and t.id <![CDATA[  != ]]> #{id}
         </if>
@@ -260,9 +254,6 @@ m_sa_publishdep t where 1=1
 
     <!--获取配置-->
     <select id="getSettingByKey" parameterType="String" resultType="String">
-          SELECT t.`VALUE` FROM `m_sa_setting` t where t.`KEY`=#{key}
+          SELECT t.VALUE FROM fgbz.m_sa_setting t where t.KEY=#{key}
     </select>
-
-
-
 </mapper>

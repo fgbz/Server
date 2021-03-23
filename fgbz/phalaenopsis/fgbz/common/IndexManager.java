@@ -37,11 +37,11 @@ import java.util.*;
 @Service("indexManager")
 public class IndexManager {
 
-    private static String INDEX_DIR =new AppSettings().getSolrpath();
-    private static File file=null;
+    private static String INDEX_DIR = new AppSettings().getSolrpath();
+    private static File file = null;
 
     //------lock 1
-    private static Object lock_wd=new Object();
+    private static Object lock_wd = new Object();
 
     public List<LawstandardType> ids = new ArrayList<>();
 
@@ -50,14 +50,14 @@ public class IndexManager {
     @Autowired
     private LawstandardService lawstandardService;
 
-    public  List<LawstandardType> getLawsTree(String id){
+    public List<LawstandardType> getLawsTree(String id) {
 
         List<LawstandardType> list = lawstandardService.getChildNode(id);
 
-        while (list!=null&&list.size()>0){
+        while (list != null && list.size() > 0) {
             ids.addAll(list);
-            for(LawstandardType lawstandardType:list){
-                list=getLawsTree(lawstandardType.getId());
+            for (LawstandardType lawstandardType : list) {
+                list = getLawsTree(lawstandardType.getId());
             }
         }
         return list;
@@ -65,14 +65,15 @@ public class IndexManager {
 
     /**
      * 创建当前文件目录的索引
+     *
      * @return 是否成功
      */
-    public  boolean createIndex(Slor slor) throws IOException {
+    public boolean createIndex(Slor slor) throws IOException {
 
-        synchronized(lock_wd){
+        synchronized (lock_wd) {
 //            Analyzer analyzer = new StandardAnalyzer(Version.LUCENE_40);
-            Analyzer  analyzer= new WhitespaceAnalyzer(Version.LUCENE_40);
-            file = new File( INDEX_DIR);
+            Analyzer analyzer = new WhitespaceAnalyzer(Version.LUCENE_40);
+            file = new File(INDEX_DIR);
             if (!file.exists())
                 file.mkdir();
             Directory directory = FSDirectory.open(file);
@@ -83,27 +84,27 @@ public class IndexManager {
 
             try {
                 Document doc = new Document();
-                doc.add(new StringField("id", slor.getId(),Field.Store.YES));
-                doc.add(new Field("solrText",slor.getSolrtext(),Field.Store.NO, Field.Index.ANALYZED));
-                if(slor.getReleasedate()==null){
+                doc.add(new StringField("id", slor.getId(), Field.Store.YES));
+                doc.add(new Field("solrText", slor.getSolrtext(), Field.Store.NO, Field.Index.ANALYZED));
+                if (slor.getReleasedate() == null) {
 
-                    doc.add(new IntField("releasedate", Integer.parseInt("10000101"),Field.Store.YES));
-                }else{
+                    doc.add(new IntField("releasedate", Integer.parseInt("10000101"), Field.Store.YES));
+                } else {
 
-                    doc.add(new IntField("releasedate", Integer.parseInt(DateTools.dateToString(slor.getReleasedate(),  DateTools.Resolution.DAY)),Field.Store.YES));
+                    doc.add(new IntField("releasedate", Integer.parseInt(DateTools.dateToString(slor.getReleasedate(), DateTools.Resolution.DAY)), Field.Store.YES));
                 }
 
                 doc.add(new Field("modifydate",
-                        DateTools.dateToString(slor.getModifydate(),  DateTools.Resolution.SECOND),
+                        DateTools.dateToString(slor.getModifydate(), DateTools.Resolution.SECOND),
                         Field.Store.YES, Field.Index.NOT_ANALYZED
                 ));
                 doc.add(new StringField("chinesename", slor.getChinesename(), Field.Store.YES));
                 doc.add(new StringField("keywords", slor.getKeywords(), Field.Store.YES));
                 doc.add(new StringField("summaryinfo", slor.getSummaryinfo(), Field.Store.YES));
-                if(StrUtil.isNullOrEmpty(slor.getClickcount())){
+                if (StrUtil.isNullOrEmpty(slor.getClickcount())) {
                     slor.setClickcount("0");
                 }
-                doc.add(new StringField("clickcount", slor.getClickcount(),Field.Store.YES));
+                doc.add(new StringField("clickcount", slor.getClickcount(), Field.Store.YES));
                 doc.add(new StringField("lawtype", slor.getLawtype(), Field.Store.YES));
 
                 doc.add(new StringField("code", slor.getCode(), Field.Store.YES));
@@ -114,21 +115,20 @@ public class IndexManager {
                 iwriter.addDocument(doc);
                 iwriter.commit();
                 iwriter.close();
-            }catch (Exception e){
+            } catch (Exception e) {
                 iwriter.close();
             }
         }
 
 
-
         return true;
     }
 
-    public  boolean deleteIndex(Slor slor) throws IOException{
+    public boolean deleteIndex(Slor slor) throws IOException {
 
-        synchronized(lock_wd){
-            Analyzer  analyzer= new WhitespaceAnalyzer(Version.LUCENE_40);
-            file = new File( INDEX_DIR);
+        synchronized (lock_wd) {
+            Analyzer analyzer = new WhitespaceAnalyzer(Version.LUCENE_40);
+            file = new File(INDEX_DIR);
             if (!file.exists())
                 return true;
             Directory directory = FSDirectory.open(file);
@@ -142,7 +142,7 @@ public class IndexManager {
                 //索引删除后无法恢复
                 iwriter.commit();
                 iwriter.close();
-            }catch (Exception e){
+            } catch (Exception e) {
                 iwriter.close();
             }
         }
@@ -151,14 +151,15 @@ public class IndexManager {
 
     /**
      * 查找索引，返回符合条件的文件
+     *
      * @param
      * @return 符合条件的文件List
      */
-    public  Map<String,Object> searchIndex(Page page) throws IOException, ParseException {
+    public Map<String, Object> searchIndex(Page page) throws IOException, ParseException {
 
-        Map<String ,Object> map =new HashMap<>();
+        Map<String, Object> map = new HashMap<>();
 
-        file = new File( INDEX_DIR);
+        file = new File(INDEX_DIR);
         if (!file.exists())
             file.mkdir();
         Directory directory = FSDirectory.open(file);
@@ -172,7 +173,7 @@ public class IndexManager {
 
             BooleanQuery query = new BooleanQuery();
 
-            if(page.getConditions()!=null) {
+            if (page.getConditions() != null) {
                 //查询条件
                 for (Condition condition : page.getConditions()) {
                     if (condition.getKey().equals("Solr")) {
@@ -180,18 +181,18 @@ public class IndexManager {
                         String[] solrList = condition.getValue().split(";|；");
                         //分号代表多个条件
                         for (String str : solrList
-                                ) {
+                        ) {
 
-                            if(StrUtil.isNullOrEmpty(str)){
+                            if (StrUtil.isNullOrEmpty(str)) {
                                 continue;
                             }
 
                             BooleanQuery queryWhitePlace = new BooleanQuery();
                             String[] solrWhitePlaceList = str.split(" ");
 
-                            for(String strWhitePlace :solrWhitePlaceList){
+                            for (String strWhitePlace : solrWhitePlaceList) {
 
-                                if(StrUtil.isNullOrEmpty(strWhitePlace)){
+                                if (StrUtil.isNullOrEmpty(strWhitePlace)) {
                                     continue;
                                 }
 
@@ -200,50 +201,50 @@ public class IndexManager {
                             }
 
                             querySolr.add(queryWhitePlace, BooleanClause.Occur.SHOULD);
-                        /*
-                         * BooleanQuery连接多值查询s
-                         * Occur.MUST表示必须出现
-                         * Occur.SHOULD表示可以出现
-                         * Occur.MUSE_NOT表示必须不能出现
-                         */
+                            /*
+                             * BooleanQuery连接多值查询s
+                             * Occur.MUST表示必须出现
+                             * Occur.SHOULD表示可以出现
+                             * Occur.MUSE_NOT表示必须不能出现
+                             */
                         }
                         query.add(querySolr, BooleanClause.Occur.MUST);
-                    }else if(condition.getKey().equals("Number")){
+                    } else if (condition.getKey().equals("Number")) {
                         WildcardQuery termQuery = new WildcardQuery(new Term("code", "*" + condition.getValue() + "*"));
                         query.add(termQuery, BooleanClause.Occur.MUST);
-                    }else if(condition.getKey().equals("Title")){
+                    } else if (condition.getKey().equals("Title")) {
                         WildcardQuery termQuery = new WildcardQuery(new Term("chinesename", "*" + condition.getValue() + "*"));
                         query.add(termQuery, BooleanClause.Occur.MUST);
-                    }else if(condition.getKey().equals("EnglishTitle")){
+                    } else if (condition.getKey().equals("EnglishTitle")) {
                         WildcardQuery termQuery = new WildcardQuery(new Term("englishname", "*" + condition.getValue() + "*"));
                         query.add(termQuery, BooleanClause.Occur.MUST);
-                    }else if(condition.getKey().equals("Summaryinfo")){
+                    } else if (condition.getKey().equals("Summaryinfo")) {
                         WildcardQuery termQuery = new WildcardQuery(new Term("summaryinfo", "*" + condition.getValue() + "*"));
                         query.add(termQuery, BooleanClause.Occur.MUST);
-                    }else if(condition.getKey().equals("KeyWordsSingle")){
+                    } else if (condition.getKey().equals("KeyWordsSingle")) {
                         WildcardQuery termQuery = new WildcardQuery(new Term("keywords", "*" + condition.getValue() + "*"));
                         query.add(termQuery, BooleanClause.Occur.MUST);
-                    }else if(condition.getKey().equals("State")){
+                    } else if (condition.getKey().equals("State")) {
                         TermQuery termQuery = new TermQuery(new Term("status", condition.getValue()));
                         query.add(termQuery, BooleanClause.Occur.MUST);
-                    }else if(condition.getKey().equals("FiledTimeStart")){
+                    } else if (condition.getKey().equals("FiledTimeStart")) {
 
-                        Query termRangeQuery=NumericRangeQuery.newIntRange("releasedate", Integer.parseInt(DateTools.dateToString(strToDate(condition.getValue()),DateTools.Resolution.DAY)), Integer.parseInt("99991231"), true, true);
+                        Query termRangeQuery = NumericRangeQuery.newIntRange("releasedate", Integer.parseInt(DateTools.dateToString(strToDate(condition.getValue()), DateTools.Resolution.DAY)), Integer.parseInt("99991231"), true, true);
                         query.add(termRangeQuery, BooleanClause.Occur.MUST);
-                    }else if(condition.getKey().equals("FiledTimeEnd")){
+                    } else if (condition.getKey().equals("FiledTimeEnd")) {
 
-                        Query termRangeQuery=NumericRangeQuery.newIntRange("releasedate",Integer.parseInt("10000101"), Integer.parseInt(DateTools.dateToString(strToDate(condition.getValue()),DateTools.Resolution.DAY)),true, true);
+                        Query termRangeQuery = NumericRangeQuery.newIntRange("releasedate", Integer.parseInt("10000101"), Integer.parseInt(DateTools.dateToString(strToDate(condition.getValue()), DateTools.Resolution.DAY)), true, true);
                         query.add(termRangeQuery, BooleanClause.Occur.MUST);
-                    }else if(condition.getKey().equals("TreeValue")){
+                    } else if (condition.getKey().equals("TreeValue")) {
 
                         BooleanQuery queryLawType = new BooleanQuery();
-                        ids =new ArrayList<>();
+                        ids = new ArrayList<>();
                         LawstandardType lawSelf = new LawstandardType();
                         lawSelf.setId(condition.getValue());
                         ids.add(lawSelf);
                         getLawsTree(condition.getValue());
-                        for (LawstandardType lawstandardType:ids
-                             ) {
+                        for (LawstandardType lawstandardType : ids
+                        ) {
                             TermQuery termQuery = new TermQuery(new Term("lawtype", lawstandardType.getId()));
                             queryLawType.add(termQuery, BooleanClause.Occur.SHOULD);
 
@@ -257,15 +258,14 @@ public class IndexManager {
             Sort sort = new Sort(new SortField[]{new SortField("releasedate", SortField.Type.INT, true)});
 
             //获取上一页的最后一个元素
-            ScoreDoc lastSd = getLastScoreDoc(page.getPageNo(), page.getPageSize(), query, isearcher,sort);
+            ScoreDoc lastSd = getLastScoreDoc(page.getPageNo(), page.getPageSize(), query, isearcher, sort);
             //通过最后一个元素去搜索下一页的元素
-            tds = isearcher.searchAfter(lastSd, query,  page.getPageSize(),sort);
+            tds = isearcher.searchAfter(lastSd, query, page.getPageSize(), sort);
 
             int TotalCount = tds.totalHits;
-            map.put("Total",TotalCount);
+            map.put("Total", TotalCount);
 
-            for (ScoreDoc sd : tds.scoreDocs)
-            {
+            for (ScoreDoc sd : tds.scoreDocs) {
                 Slor slor = new Slor();
                 Document doc = isearcher.doc(sd.doc);
                 slor.setId(doc.get("id"));
@@ -280,9 +280,9 @@ public class IndexManager {
 //                }
                 SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
                 String time = lawstandardService.getReleasedateByLawId(slor.getId());
-                if(!StrUtil.isNullOrEmpty(time)){
-                    slor.setReleasedate( formatter.parse(time));
-                }else{
+                if (!StrUtil.isNullOrEmpty(time)) {
+                    slor.setReleasedate(formatter.parse(time));
+                } else {
                     slor.setReleasedate(DateTools.stringToDate("10000101"));
                 }
 
@@ -293,29 +293,23 @@ public class IndexManager {
                 list.add(slor);
 
             }
-            map.put("data",list);
+            map.put("data", list);
             ireader.close();
             directory.close();
-        }catch (Exception e){
+        } catch (Exception e) {
             ireader.close();
             directory.close();
         }
-
-
-
-
-
         return map;
     }
-    private  ScoreDoc getLastScoreDoc(int pageIndex, int pageSize, Query query, IndexSearcher searcher, Sort sort) throws IOException {
+
+    private ScoreDoc getLastScoreDoc(int pageIndex, int pageSize, Query query, IndexSearcher searcher, Sort sort) throws IOException {
         if (pageIndex <= 1) return null;//如果是第一页就返回空
-        int num = pageSize * (pageIndex-1);//获取上一页的最后数量
-        if (num > 0)
-        {
-            TopDocs tds = searcher.search(query, num,sort);
-            if (tds.scoreDocs.length >= num)
-            {
-                return tds.scoreDocs[num-1];
+        int num = pageSize * (pageIndex - 1);//获取上一页的最后数量
+        if (num > 0) {
+            TopDocs tds = searcher.search(query, num, sort);
+            if (tds.scoreDocs.length >= num) {
+                return tds.scoreDocs[num - 1];
             }
         }
         return null;
@@ -339,9 +333,4 @@ public class IndexManager {
 
         return tomorrow;
     }
-
-
-
-
-
 }

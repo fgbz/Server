@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
-<mapper namespace="phalaenopsis.fgbz.dao.TechnicalDao" >
+<mapper namespace="phalaenopsis.fgbz.dao.TechnicalDao">
 
     <!--查询技术标准类别 -->
     <select id="SelectTechnicalType" resultType="TechnicalType">
@@ -15,63 +15,69 @@
         SELECT
         count(1)
         FROM
-        m_bs_tech_type link
+        fgbz.m_bs_tech_type link
         WHERE
         link.LAWSTYPEID = t.id) = 0 then 1 else 0 end as candelete
         FROM
-        m_bs_techtype t
+        fgbz.m_bs_techtype t
         ORDER  by t.itemlevel,t.itemlevelcode
     </select>
 
     <!--删除技术标准类别-->
     <delete id="DeleteTechnicalType" parameterType="TechnicalType">
-        DELETE from m_bs_techtype where id = #{id}
+        DELETE from fgbz.m_bs_techtype where id = #{id}
     </delete>
 
     <!--新增或修改法规标准类别-->
     <insert id="AddOrUpdateTechnicalType" parameterType="TechnicalType">
         <selectKey keyProperty="count" resultType="int" order="BEFORE">
-            select count(1) from m_bs_techtype t where t.ID=#{id}
+            select count(1) from fgbz.m_bs_techtype t where t.ID=#{id}
         </selectKey>
 
         <if test="count==0">
-            INSERT into m_bs_techtype  (ID,TYPENAME, PARENTID,INPUTUSERID,INPUTDATE,MODIFYDATE,itemlevel,itemlevelcode )
-            VALUES (#{id},#{typename},#{parentid},#{inputuserid,jdbcType=VARCHAR},now(),now(),#{itemlevel,jdbcType=INTEGER},#{itemlevelcode,jdbcType=INTEGER});
+            INSERT into fgbz.m_bs_techtype (ID,TYPENAME,
+            PARENTID,INPUTUSERID,INPUTDATE,MODIFYDATE,itemlevel,itemlevelcode )
+            VALUES
+            (#{id},#{typename},#{parentid},#{inputuserid,jdbcType=VARCHAR},now(),now(),#{itemlevel,jdbcType=INTEGER},#{itemlevelcode,jdbcType=INTEGER});
         </if>
         <if test="count==1">
-            UPDATE  m_bs_techtype t  SET t.TYPENAME = #{typename,jdbcType=VARCHAR},
-            t.MODIFYUSERID=#{modifyuserid,jdbcType=VARCHAR},t.MODIFYDATE = now(),t.itemlevelcode = #{itemlevelcode,jdbcType=INTEGER} where t.ID = #{id}
+            UPDATE fgbz.m_bs_techtype t SET t.TYPENAME = #{typename,jdbcType=VARCHAR},
+            t.MODIFYUSERID=#{modifyuserid,jdbcType=VARCHAR},t.MODIFYDATE = now(),t.itemlevelcode =
+            #{itemlevelcode,jdbcType=INTEGER} where t.ID = #{id}
         </if>
     </insert>
 
     <!--获取最新的结构层级-->
     <select id="getLastItemLevelcode" parameterType="String" resultType="int">
-       select IF(ISNULL(max(t.ITEMLEVELCODE)),0,max(t.ITEMLEVELCODE)+1) from m_bs_techtype t where t.PARENTID= #{id}
+       select IF(ISNULL(max(t.ITEMLEVELCODE)),0,max(t.ITEMLEVELCODE)+1) from fgbz.m_bs_techtype t where t.PARENTID= #{id}
     </select>
 
     <!--处理上移和下移-->
     <update id="handTreeLevel" parameterType="TechnicalType">
         <if test="handletype == 'moveUp'.toString()">
-            update m_bs_techtype t set t.ITEMLEVELCODE = (t.ITEMLEVELCODE+1) where t.PARENTID =#{parentid}  and t.ITEMLEVELCODE=(#{itemlevelcode}-1)
+            update fgbz.m_bs_techtype t set t.ITEMLEVELCODE = (t.ITEMLEVELCODE+1) where t.PARENTID =#{parentid} and
+            t.ITEMLEVELCODE=(#{itemlevelcode}-1)
         </if>
         <if test="handletype == 'moveDown'.toString()">
-            update m_bs_techtype t set t.ITEMLEVELCODE = (t.ITEMLEVELCODE-1) where t.PARENTID =#{parentid}  and t.ITEMLEVELCODE=(#{itemlevelcode}+1)
+            update fgbz.m_bs_techtype t set t.ITEMLEVELCODE = (t.ITEMLEVELCODE-1) where t.PARENTID =#{parentid} and
+            t.ITEMLEVELCODE=(#{itemlevelcode}+1)
         </if>
         <if test="handletype == 'delete'.toString()">
-            update m_bs_techtype t set t.ITEMLEVELCODE = (t.ITEMLEVELCODE-1) where t.PARENTID =#{parentid}  and t.ITEMLEVELCODE>#{itemlevelcode}
+            update fgbz.m_bs_techtype t set t.ITEMLEVELCODE = (t.ITEMLEVELCODE-1) where t.PARENTID =#{parentid} and
+            t.ITEMLEVELCODE>#{itemlevelcode}
         </if>
     </update>
 
     <!--获取子节点-->
     <select id="getChildNode" parameterType="String" resultType="TechnicalType">
-        select t.id,t.TYPENAME from m_bs_techtype t where t.PARENTID=#{id} ORDER BY t.ITEMLEVELCODE
+        select t.id,t.TYPENAME from fgbz.m_bs_techtype t where t.PARENTID=#{id} ORDER BY t.ITEMLEVELCODE
     </select>
 
     <!--查询技术文件列表-->
     <select id="getTechnicalList" parameterType="map" resultType="Technical">
         SELECT
         t.ID,
-        t.`CODE`,
+        t.CODE,
         t.CHINESENAME,
         t.ENGLISHNAME,
         t.RELEASEDATE,
@@ -85,20 +91,20 @@
         t.INPUTDATE,
         t.MODIFYDATE
         FROM
-        m_bs_tech t
-        LEFT JOIN m_bs_tech_type m ON m.SID = t.id
-        LEFT JOIN m_bs_techtype n ON n.id = m.LAWSTYPEID
-        left join m_sa_user ur on ur.ID = t.INPUTUSERID
+        fgbz.m_bs_tech t
+        LEFT JOIN fgbz.m_bs_tech_type m ON m.SID = t.id
+        LEFT JOIN fgbz.m_bs_techtype n ON n.id = m.LAWSTYPEID
+        left join fgbz.m_sa_user ur on ur.ID = t.INPUTUSERID
         where 1=1
         <include refid="queryTechnical"></include>
-        ORDER BY  ${Ordertype}
-         LIMIT #{startRow},#{endRow}
+        ORDER BY ${Ordertype}
+        LIMIT #{startRow},#{endRow}
     </select>
 
     <!-- 查询列表的总数 -->
     <select id="getTechnicalListCount" resultType="int">
-        select count(1) from m_bs_tech t
-        left join m_sa_user ur on ur.ID = t.INPUTUSERID
+        select count(1) from fgbz.m_bs_tech t
+        left join fgbz.m_sa_user ur on ur.ID = t.INPUTUSERID
         where 1=1
         <include refid="queryTechnical"></include>
     </select>
@@ -112,28 +118,29 @@
             and instr(t.CHINESENAME,#{Title})> 0
         </if>
         <if test="FiledTimeStart != null and FiledTimeStart != ''">
-            and Date(t.RELEASEDATE) <![CDATA[  >=  ]]> #{FiledTimeStart}
+            and cast(t.RELEASEDATE as Date) <![CDATA[  >=  ]]> #{FiledTimeStart}
         </if>
         <if test="FiledTimeEnd != null and FiledTimeEnd != ''">
-            and Date(t.RELEASEDATE) <![CDATA[  <=  ]]> #{FiledTimeEnd}
+            and cast(t.RELEASEDATE as Date) <![CDATA[  <=  ]]> #{FiledTimeEnd}
         </if>
         <if test="ApproveStatus != null and ApproveStatus != ''">
             and t.approvestatus = #{ApproveStatus}
         </if>
 
-        <if test="TreeValue !=null and TreeValue!=''" >
-            and t.id in (select lt.SID from m_bs_tech_type lt where lt.LAWSTYPEID in
+        <if test="TreeValue !=null and TreeValue!=''">
+            and t.id in (select lt.SID from fgbz.m_bs_tech_type lt where lt.LAWSTYPEID in
             <foreach collection="TreeValue" item="item" open="(" close=")" separator=",">
                 #{item.id}
             </foreach>
             )
         </if>
         <if test="KeyWords != null and KeyWords != ''">
-            and (instr(t.CODE,#{KeyWords})> 0 or instr(t.CHINESENAME,#{KeyWords})> 0 or instr(t.ENGLISHNAME,#{KeyWords})> 0
+            and (instr(t.CODE,#{KeyWords})> 0 or instr(t.CHINESENAME,#{KeyWords})> 0 or
+            instr(t.ENGLISHNAME,#{KeyWords})> 0
             or instr(t.KEYWORDS,#{KeyWords})> 0 or instr(t.MEMO,#{KeyWords})> 0 or instr(t.SUMMARYINFO,#{KeyWords})> 0 )
         </if>
         <if test="KeyWordsSingle != null and KeyWordsSingle != ''">
-            and  instr(t.KEYWORDS,#{KeyWordsSingle})> 0
+            and instr(t.KEYWORDS,#{KeyWordsSingle})> 0
         </if>
 
         <!--是否批量导入-->
@@ -145,12 +152,12 @@
         </if>
         <!--草稿和审核状态只能自己看见-->
         <if test="TecInputuserid != null and TecInputuserid !='' ">
-            and (t.INPUTUSERID = #{TecInputuserid}  or t.APPROVESTATUS =2)
+            and (t.INPUTUSERID = #{TecInputuserid} or t.APPROVESTATUS =2)
         </if>
 
         <!--草稿和审核状态只能自己看见-->
         <if test="TecInputuserid != null and TecInputuserid !='' ">
-            and (t.INPUTUSERID = #{TecInputuserid}  or (t.APPROVESTATUS =2 and ur.ORGID in
+            and (t.INPUTUSERID = #{TecInputuserid} or (t.APPROVESTATUS =2 and ur.ORGID in
             <foreach collection="OrgList" item="item" open="(" close=")" separator=",">
                 #{item.id}
             </foreach>
@@ -175,11 +182,11 @@
     <insert id="SaveOrUpdateTechnical" parameterType="Technical">
 
         <selectKey keyProperty="count" resultType="int" order="BEFORE">
-            select count(1) from m_bs_tech t where t.ID=#{id}
+            select count(1) from fgbz.m_bs_tech t where t.ID=#{id}
         </selectKey>
 
         <if test="count == 0">
-            insert into m_bs_tech
+            insert into fgbz.m_bs_tech
             <trim prefix="(" suffix=")" suffixOverrides=",">
                 <if test="id != null">
                     ID,
@@ -206,8 +213,8 @@
                     INPUTUSERID,
                 </if>
 
-                    INPUTDATE,
-                    MODIFYDATE,
+                INPUTDATE,
+                MODIFYDATE,
 
                 <if test="memo != null">
                     MEMO,
@@ -260,7 +267,7 @@
 
         </if>
         <if test="count>0">
-            update  m_bs_tech set
+            update fgbz.m_bs_tech set
             <trim prefix="" suffix="" suffixOverrides=",">
 
                 <if test="code != null">
@@ -279,7 +286,7 @@
                     KEYWORDS=#{keywords,jdbcType=VARCHAR},
                 </if>
                 <if test="isbatch != null">
-                    ISBATCH=   #{isbatch,jdbcType=INTEGER},
+                    ISBATCH= #{isbatch,jdbcType=INTEGER},
                 </if>
 
 
@@ -287,7 +294,7 @@
                     MODIFYUSERID= #{modifyuserid,jdbcType=VARCHAR},
                 </if>
 
-                    MODIFYDATE= now(),
+                MODIFYDATE= now(),
 
 
                 <if test="memo != null">
@@ -311,21 +318,21 @@
 
     <!--删除技术文件-->
     <delete id="DeleteTechnicalById" parameterType="String">
-        DELETE from m_bs_tech WHERE  ID = #{id}
+        DELETE from fgbz.m_bs_tech WHERE  ID = #{id}
     </delete>
 
     <!--建立类别与技术文件关联-->
     <insert id="SaveOrUpdateTecAndType" parameterType="Technical">
         <selectKey keyProperty="count" resultType="int" order="BEFORE">
-            select count(1) from m_bs_tech_type t where t.SID=#{id}
+            select count(1) from fgbz.m_bs_tech_type t where t.SID=#{id}
         </selectKey>
 
         <if test="count == 0">
-            insert into m_bs_tech_type  (ID,SID,LAWSTYPEID) VALUES
-            (uuid(),#{id},#{tectype,jdbcType=VARCHAR})
+            insert into fgbz.m_bs_tech_type (ID,SID,LAWSTYPEID) VALUES
+            (guid(),#{id},#{tectype,jdbcType=VARCHAR})
         </if>
-        <if test="count>0" >
-            UPDATE m_bs_tech_type t set t.LAWSTYPEID = #{tectype,jdbcType=VARCHAR}
+        <if test="count>0">
+            UPDATE fgbz.m_bs_tech_type t set t.LAWSTYPEID = #{tectype,jdbcType=VARCHAR}
             where t.sid = #{id}
         </if>
 
@@ -333,14 +340,14 @@
 
     <!--删除类别与法规文件关联-->
     <delete id="DeleteTecAndType" parameterType="String">
-        delete from m_bs_tech_type  where SID= #{id}
+        delete from fgbz.m_bs_tech_type  where SID= #{id}
     </delete>
 
     <!--获取技术文件-->
     <select id="getTechnicalById" parameterType="String" resultType="Technical">
         SELECT
         t.ID,
-        t.`CODE`,
+        t.CODE,
         t.CHINESENAME,
         t.ENGLISHNAME,
         t.RELEASEDATE,
@@ -354,22 +361,22 @@
 				org.ORGNAME as inputorgname,
 				t.INPUTDATE,
 				urmo.USERREALNAME as modifyusername,t.MODIFYDATE,
-				case when (select count(1) from m_bs_lawstandard_favorite fav where fav.sid = t.id)>0
+				case when (select count(1) from fgbz.m_bs_lawstandard_favorite fav where fav.sid = t.id)>0
 			then 1 ELSE 0 END  as iscollect
         FROM
-        `m_bs_tech` t
-        LEFT JOIN m_bs_tech_type m ON m.SID = t.id
-        LEFT JOIN m_bs_techtype n ON n.id = m.LAWSTYPEID
-        left join m_sa_user ur on ur.ID = t.INPUTUSERID
-        left join m_sa_user urmo on urmo.ID = t.MODIFYUSERID
-		left join m_sa_organization org on org.ID = ur.ORGID
+        fgbz.m_bs_tech t
+        LEFT JOIN fgbz.m_bs_tech_type m ON m.SID = t.id
+        LEFT JOIN fgbz.m_bs_techtype n ON n.id = m.LAWSTYPEID
+        left join fgbz.m_sa_user ur on ur.ID = t.INPUTUSERID
+        left join fgbz.m_sa_user urmo on urmo.ID = t.MODIFYUSERID
+		left join fgbz.m_sa_organization org on org.ID = ur.ORGID
         where t.id =#{id}
 
     </select>
 
     <!--更新附件与技术文件关系-->
     <update id="SaveFileLink" parameterType="Technical">
-        update m_sa_fileinfo t set t.REFID = #{id} where t.id IN
+        update fgbz.m_sa_fileinfo t set t.REFID = #{id} where t.id IN
         <foreach collection="fileids" item="item" open="(" close=")" separator=",">
             #{item}
         </foreach>
@@ -377,19 +384,19 @@
 
     <!--判断技术文档编号是否重复-->
     <select id="checkTecCode" parameterType="Technical" resultType="int">
-         select count(1) from m_bs_tech t where REPLACE(REPLACE(REPLACE(t.`CODE`,'/',''),'-',''),' ','') = REPLACE(REPLACE(REPLACE(#{code},'/',''),'-',''),' ','')
+         select count(1) from fgbz.m_bs_tech t where REPLACE(REPLACE(REPLACE(t.CODE,'/',''),'-',''),' ','') = REPLACE(REPLACE(REPLACE(#{code},'/',''),'-',''),' ','')
         and t.id <![CDATA[  != ]]> #{id}
     </select>
 
     <!--判断技术文档名称是否重复-->
     <select id="checkTecName" parameterType="Technical" resultType="int">
-   select count(1) from m_bs_tech t where t.CHINESENAME =#{chinesename}
+   select count(1) from fgbz.m_bs_tech t where t.CHINESENAME =#{chinesename}
         and t.id <![CDATA[  != ]]> #{id}
     </select>
 
 
     <select id="getLawTypeByName" parameterType="String" resultType="String">
-        select t.id from m_bs_techtype t where  t.TYPENAME = #{name} LIMIT 0,1
+        select t.id from fgbz.m_bs_techtype t where  t.TYPENAME = #{name} LIMIT 0,1
     </select>
 
     <!--获取首页类别导航-->
@@ -399,19 +406,19 @@
         t.TYPENAME,
         t.PARENTID
         FROM
-        `m_bs_techtype` t
+        fgbz.m_bs_techtype t
         WHERE
-        t.PARENTID = ( SELECT m.ID FROM m_bs_techtype m WHERE m.PARENTID IS NULL ) ORDER BY t.ITEMLEVELCODE
+        t.PARENTID = ( SELECT m.ID FROM fgbz.m_bs_techtype m WHERE m.PARENTID IS NULL ) ORDER BY t.ITEMLEVELCODE
     </select>
 
     <!--通过附件id获取技术文档-->
     <select id="getTecByFileId" parameterType="String" resultType="Technical">
      SELECT
-	t.`CODE`,
+	t.CODE,
 	t.CHINESENAME
 FROM
-	m_bs_tech t
-LEFT JOIN m_sa_fileinfo files ON t.ID = files.REFID
+	fgbz.m_bs_tech t
+LEFT JOIN fgbz.m_sa_fileinfo files ON t.ID = files.REFID
 WHERE
         files.ID =#{id}
     </select>

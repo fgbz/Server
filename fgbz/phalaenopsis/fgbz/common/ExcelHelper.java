@@ -3,14 +3,13 @@ package phalaenopsis.fgbz.common;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 
 /**
  * Created by 13260 on 2017/12/21.
@@ -19,11 +18,9 @@ public class ExcelHelper {
     /**
      * 将excel文件流转换成指定的对象集合
      *
-     * @param t 类
-     * @param fileName
-     *            文件全名
-     * @param stream
-     *            excel文件流
+     * @param t        类
+     * @param fileName 文件全名
+     * @param stream   excel文件流
      * @return 指定对象集合
      */
     public static <T> List<T> convertToList(Class<T> t, String fileName, FileInputStream stream, int rowsnum,
@@ -52,7 +49,7 @@ public class ExcelHelper {
      * 读取Excel文件到二维字符串数组
      *
      * @param fileName 文件名
-     * @param stream 文件流
+     * @param stream   文件流
      * @return 二维字符串数组
      * @throws IOException
      */
@@ -126,9 +123,9 @@ public class ExcelHelper {
     /**
      * 读取指定行、列的excel数据到二维字符串数组
      *
-     * @param wb excel对象
+     * @param wb      excel对象
      * @param rowsnum 行
-     * @param colnum 列
+     * @param colnum  列
      * @return 二维字符串数组
      * @throws IOException
      */
@@ -163,9 +160,15 @@ public class ExcelHelper {
                         break;
                     //数值
                     case Cell.CELL_TYPE_NUMERIC:
-                        if (DateUtil.isCellDateFormatted(cell)) {
+                        if (DateUtil.isCellDateFormatted(cell) || cell.getCellStyle().getDataFormat() == 31) {
                             Date theDate = cell.getDateCellValue();
                             SimpleDateFormat dff = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+
+                            Calendar calendar = new GregorianCalendar();
+                            calendar.setTime(theDate);
+                            calendar.add(Calendar.DATE, 1);
+                            theDate = calendar.getTime();
+
                             value = dff.format(theDate);
                         } else {
                             //为数值赋值，避免大数据变成科学表达式
@@ -231,7 +234,7 @@ public class ExcelHelper {
     private static Sheet filterBlankLine(Sheet sheet, int rowsnum) {
 
         boolean flag = false;
-        for (int i = rowsnum; i <= sheet.getLastRowNum();) {
+        for (int i = rowsnum; i <= sheet.getLastRowNum(); ) {
             Row r = sheet.getRow(i);
             if (r == null) {
                 // 如果是空行（即没有任何数据、格式），直接把它以下的数据往上移动

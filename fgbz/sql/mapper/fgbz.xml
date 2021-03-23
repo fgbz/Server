@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
-<mapper namespace="phalaenopsis.fgbz.dao.LawstandardDao" >
+<mapper namespace="phalaenopsis.fgbz.dao.LawstandardDao">
 
     <select id="testCount" resultType="int">
-        SELECT count(1) from m_bs_lawstandard
+        SELECT count(1) from fgbz.m_bs_lawstandard
     </select>
 
     <!--查询法规标准类别 -->
@@ -20,58 +20,68 @@
         SELECT
             count(1)
         FROM
-            m_bs_lawstandard_type link
+            fgbz.m_bs_lawstandard_type link
         WHERE
             link.LAWSTYPEID = t.id) = 0 then 1 else 0 end as candelete
         FROM
-            m_bs_lawstandardtype t order by t.itemlevel,t.itemlevelcode
+            fgbz.m_bs_lawstandardtype t order by t.itemlevel,t.itemlevelcode
     </select>
 
     <!--删除法规标准类别-->
     <delete id="DeleteLawstandardType" parameterType="LawstandardType">
-        DELETE from m_bs_lawstandardtype where id = #{id}
+        DELETE from fgbz.m_bs_lawstandardtype where id = #{id}
     </delete>
 
     <!--获取最新的结构层级-->
     <select id="getLastItemLevelcode" parameterType="String" resultType="int">
-        select IF(ISNULL(max(t.ITEMLEVELCODE)),0,max(t.ITEMLEVELCODE)+1) from m_bs_lawstandardtype t where t.PARENTID= #{id}
+        select IF(ISNULL(max(t.ITEMLEVELCODE)),0,max(t.ITEMLEVELCODE)+1) from fgbz.m_bs_lawstandardtype t where t.PARENTID= #{id}
     </select>
 
     <!--处理上移和下移-->
     <update id="handTreeLevel" parameterType="LawstandardType">
         <if test="handletype == 'moveUp'.toString()">
-            update m_bs_lawstandardtype t set t.ITEMLEVELCODE = (t.ITEMLEVELCODE+1) where t.PARENTID =#{parentid}  and t.ITEMLEVELCODE=(#{itemlevelcode}-1)
+            update fgbz.m_bs_lawstandardtype t set t.ITEMLEVELCODE = (t.ITEMLEVELCODE+1) where t.PARENTID =#{parentid}
+            and
+            t.ITEMLEVELCODE=(#{itemlevelcode}-1)
         </if>
         <if test="handletype == 'moveDown'.toString()">
-            update m_bs_lawstandardtype t set t.ITEMLEVELCODE = (t.ITEMLEVELCODE-1) where t.PARENTID =#{parentid}  and t.ITEMLEVELCODE=(#{itemlevelcode}+1)
+            update fgbz.m_bs_lawstandardtype t set t.ITEMLEVELCODE = (t.ITEMLEVELCODE-1) where t.PARENTID =#{parentid}
+            and
+            t.ITEMLEVELCODE=(#{itemlevelcode}+1)
         </if>
         <if test="handletype == 'delete'.toString()">
-            update m_bs_lawstandardtype t set t.ITEMLEVELCODE = (t.ITEMLEVELCODE-1) where t.PARENTID =#{parentid}  and t.ITEMLEVELCODE>#{itemlevelcode}
+            update fgbz.m_bs_lawstandardtype t set t.ITEMLEVELCODE = (t.ITEMLEVELCODE-1) where t.PARENTID =#{parentid}
+            and
+            t.ITEMLEVELCODE>#{itemlevelcode}
         </if>
     </update>
 
     <!--新增或修改法规标准类别-->
     <insert id="AddOrUpdateLawstandardType" parameterType="LawstandardType">
         <selectKey keyProperty="count" resultType="int" order="BEFORE">
-            select count(1) from m_bs_lawstandardtype t where t.ID=#{id}
+            select count(1) from fgbz.m_bs_lawstandardtype t where t.ID=#{id}
         </selectKey>
 
         <if test="count==0">
-            INSERT into m_bs_lawstandardtype  (ID,TYPENAME, PARENTID,INPUTUSERID,INPUTDATE,MODIFYDATE,itemlevel,itemlevelcode,LAWCOUNT )
-            VALUES (#{id},#{typename},#{parentid},#{inputuserid,jdbcType=VARCHAR},now(),now(),#{itemlevel,jdbcType=INTEGER},#{itemlevelcode,jdbcType=INTEGER},0);
+            INSERT into fgbz.m_bs_lawstandardtype (ID,TYPENAME,
+            PARENTID,INPUTUSERID,INPUTDATE,MODIFYDATE,itemlevel,itemlevelcode,LAWCOUNT )
+            VALUES
+            (#{id},#{typename},#{parentid},#{inputuserid,jdbcType=VARCHAR},now(),now(),#{itemlevel,jdbcType=INTEGER},#{itemlevelcode,jdbcType=INTEGER},0);
         </if>
         <if test="count==1">
-            UPDATE  m_bs_lawstandardtype t  SET t.TYPENAME = #{typename,jdbcType=VARCHAR},t.MODIFYUSERID=#{modifyuserid,jdbcType=VARCHAR},t.MODIFYDATE = now(),t.itemlevelcode = #{itemlevelcode,jdbcType=INTEGER}
+            UPDATE fgbz.m_bs_lawstandardtype t SET t.TYPENAME =
+            #{typename,jdbcType=VARCHAR},t.MODIFYUSERID=#{modifyuserid,jdbcType=VARCHAR},t.MODIFYDATE =
+            now(),t.itemlevelcode = #{itemlevelcode,jdbcType=INTEGER}
             where t.ID = #{id}
         </if>
     </insert>
 
     <select id="getChildNode" parameterType="String" resultType="LawstandardType">
-        select t.id,t.TYPENAME,t.PARENTID, t.LAWCOUNT from m_bs_lawstandardtype t where t.PARENTID=#{id} order by t.ITEMLEVELCODE
+        select t.id,t.TYPENAME,t.PARENTID, t.LAWCOUNT from fgbz.m_bs_lawstandardtype t where t.PARENTID=#{id} order by t.ITEMLEVELCODE
     </select>
 
     <select id="getHomeChildNode" parameterType="String" resultType="LawstandardType">
-        select t.id,t.TYPENAME,t.PARENTID, t.LAWCOUNT from m_bs_lawstandardtype t where t.PARENTID=#{id} order by t.ITEMLEVELCODE
+        select t.id,t.TYPENAME,t.PARENTID, t.LAWCOUNT from fgbz.m_bs_lawstandardtype t where t.PARENTID=#{id} order by t.ITEMLEVELCODE
     </select>
 
     <!--获取父级法规标准类别-->
@@ -82,13 +92,13 @@ SELECT
 	m.PARENTID,
 	m.LAWCOUNT
 FROM
-	m_bs_lawstandardtype m
+	fgbz.m_bs_lawstandardtype m
 WHERE
 	m.ID = (
 		SELECT
 			t.PARENTID
 		FROM
-			m_bs_lawstandardtype t
+			fgbz.m_bs_lawstandardtype t
 		WHERE
 			t.ID = #{id}
 	)
@@ -96,73 +106,76 @@ WHERE
 
     <!--改变类别法规数量-->
     <update id="changeLawstandardCount" parameterType="map">
-       UPDATE m_bs_lawstandardtype t
-SET
-    <if test="type == 'add'.toString()">
-        t.LAWCOUNT =
-        IF (
-        ISNULL(t.LAWCOUNT),
-        0,
-        t.LAWCOUNT
-        ) + 1
-    </if>
-    <if test="type == 'delete'.toString()">
+        UPDATE fgbz.m_bs_lawstandardtype t
+        SET
+        <if test="type == 'add'.toString()">
+            t.LAWCOUNT =
+            IF (
+            ISNULL(t.LAWCOUNT),
+            0,
+            t.LAWCOUNT
+            ) + 1
+        </if>
+        <if test="type == 'delete'.toString()">
             t.LAWCOUNT =
             IF (
             ISNULL(t.LAWCOUNT),
             0,
             t.LAWCOUNT
             ) - 1
-    </if>
+        </if>
 
-WHERE
-	t.ID IN
+        WHERE
+        t.ID IN
         <foreach collection="TreeValue" item="item" open="(" close=")" separator=",">
-        #{item.id}
+            #{item.id}
         </foreach>
 
     </update>
 
     <!--查询法律标准列表-->
     <select id="getLawstandardList" parameterType="map" resultType="Lawstandard">
-        select t.ID,t.`CODE`,t.CHINESENAME,t.APPROVESTATUS,sta.STATUSNAME,t.RELEASEDATE ,t.IMPDATE,n.TYPENAME,t.CLICKCOUNT , t.MEMO,
+        select t.ID,t.CODE,t.CHINESENAME,t.APPROVESTATUS,sta.STATUSNAME,t.RELEASEDATE
+        ,t.IMPDATE,n.TYPENAME,t.CLICKCOUNT , t.MEMO,
         t.SUMMARYINFO,t.ENGLISHNAME, t.KEYWORDS,t.IsBatch,t.INPUTDATE,t.MODIFYDATE,
         t.USERREALNAME as inputusername, mp.PUBDEPNAME,par.TYPENAME as parenttypename,
-        case when (select count(1) from m_bs_lawstandard_approve app where app.LawstandardID = t.id)>0 then 1 else 0 end as isapprove
+        case when (select count(1) from fgbz.m_bs_lawstandard_approve app where app.LawstandardID = t.id)>0 then 1 else
+        0 end as isapprove
         from
-        ( SELECT t1.*,ur.USERREALNAME from m_bs_lawstandard t1
-        left join m_sa_user ur on ur.ID = t1.INPUTUSERID
-        where t1.APPROVESTATUS <![CDATA[  != ]]> 4
+        ( SELECT t1.*,ur.USERREALNAME from fgbz.m_bs_lawstandard t1
+        left join fgbz.m_sa_user ur on ur.ID = t1.INPUTUSERID
+        where t1.APPROVESTATUS != 4
         <include refid="queryLawstandard"></include>
-        order by  ${Ordertype1}
+        order by ${Ordertype1}
         LIMIT #{startRow},#{endRow})
         t
-        left join m_sa_lawstandardstatus sta on t.`STATUS` = sta.ID
-        left join (select pub.SID , GROUP_CONCAT(dep.PUBDEPNAME) as PUBDEPNAME  from m_bs_lawstandard_pubdep pub
-        left join m_sa_publishdep dep on pub.PUBDEPID = dep.ID
+        left join fgbz.m_sa_lawstandardstatus sta on t.STATUS = sta.ID
+        left join (select pub.SID , WM_CONCAT(dep.PUBDEPNAME) as PUBDEPNAME from fgbz.m_bs_lawstandard_pubdep pub
+        left join fgbz.m_sa_publishdep dep on pub.PUBDEPID = dep.ID
         GROUP BY pub.SID) mp on t.id = mp.SID
 
-        left join m_bs_lawstandard_type m on m.SID = t.id
-        left join m_bs_lawstandardtype n on n.id = m.LAWSTYPEID
-        left join m_bs_lawstandardtype par on n.PARENTID = par.ID
-        order by  ${Ordertype}
+        left join fgbz.m_bs_lawstandard_type m on m.SID = t.id
+        left join fgbz.m_bs_lawstandardtype n on n.id = m.LAWSTYPEID
+        left join fgbz.m_bs_lawstandardtype par on n.PARENTID = par.ID
+        order by ${Ordertype}
     </select>
 
     <!-- 查询列表的总数 -->
     <select id="getLawstandardListCount" resultType="int">
-        select count(1) from m_bs_lawstandard t1
-        left join m_sa_user ur on ur.ID = t1.INPUTUSERID
-        where t1.APPROVESTATUS <![CDATA[  != ]]> 4
+        select count(1) from fgbz.m_bs_lawstandard t1
+        left join fgbz.m_sa_user ur on ur.ID = t1.INPUTUSERID
+        where t1.APPROVESTATUS != 4
         <include refid="queryLawstandard"></include>
     </select>
 
 
     <select id="getUptodateLawstandardList" parameterType="map" resultType="Lawstandard">
-        SELECT t.ID,t.`CODE`,t.CHINESENAME,t.APPROVESTATUS,  mp.PUBDEPNAME,t.CLICKCOUNT,t.RELEASEDATE ,t.IMPDATE,ur.USERREALNAME as inputusername,t.INPUTDATE,t.MODIFYDATE from
+        SELECT t.ID,t.CODE,t.CHINESENAME,t.APPROVESTATUS, mp.PUBDEPNAME,t.CLICKCOUNT,t.RELEASEDATE
+        ,t.IMPDATE,ur.USERREALNAME as inputusername,t.INPUTDATE,t.MODIFYDATE from
 
-        ( SELECT  *from m_bs_lawstandard m where 1=1
-        <if test="TreeValue !=null and TreeValue!=''" >
-            and m.id in (select lt.SID from m_bs_lawstandard_type lt where lt.LAWSTYPEID in
+        ( SELECT * from fgbz.m_bs_lawstandard m where 1=1
+        <if test="TreeValue !=null and TreeValue!=''">
+            and m.id in (select lt.SID from fgbz.m_bs_lawstandard_type lt where lt.LAWSTYPEID in
             <foreach collection="TreeValue" item="item" open="(" close=")" separator=",">
                 #{item.id}
             </foreach>
@@ -174,35 +187,35 @@ WHERE
         order by m.INPUTDATE DESC
         LIMIT #{startRow},#{endRow}
         )t
-        left join (select temp.sid,max(temp.PUBDEPID) as PUBDEPID from `m_bs_lawstandard_pubdep` temp group by temp.sid) pub on t.id = pub.SID
-        left join (select pub.SID , GROUP_CONCAT(dep.PUBDEPNAME) as PUBDEPNAME  from m_bs_lawstandard_pubdep pub
-        left join m_sa_publishdep dep on pub.PUBDEPID = dep.ID
+        left join (select temp.sid,max(temp.PUBDEPID) as PUBDEPID from fgbz.m_bs_lawstandard_pubdep temp group by
+        temp.sid) pub on t.id = pub.SID
+        left join (select pub.SID , WM_CONCAT(dep.PUBDEPNAME) as PUBDEPNAME from fgbz.m_bs_lawstandard_pubdep pub
+        left join fgbz.m_sa_publishdep dep on pub.PUBDEPID = dep.ID
         GROUP BY pub.SID) mp on t.id = mp.SID
-        left join m_sa_user ur on ur.ID = t.INPUTUSERID
+        left join fgbz.m_sa_user ur on ur.ID = t.INPUTUSERID
         order by t.MODIFYDATE DESC
-
     </select>
 
     <!--获取引用和替代关系列表-->
     <select id="getReplaceLawstandardList" parameterType="map" resultType="Lawstandard">
-SELECT
-	t.`CODE`,
-	t.CHINESENAME,
-	t.ID,
-	t.APPROVESTATUS,
+        SELECT
+        t.CODE,
+        t.CHINESENAME,
+        t.ID,
+        t.APPROVESTATUS,
         t.inputuserid,
-CASE
-
-	WHEN (
-	( SELECT count( 1 ) FROM m_bs_lsrelatedrelation relate WHERE relate.RelatedID = t.id ) + ( SELECT count( 1 ) FROM m_bs_lsreplacerelation replacelaw WHERE replacelaw.SID = t.id )
-	) > 0 THEN
-		0 ELSE 1
-	END AS canDelete
-FROM
-m_bs_lawstandard t
-where t.APPROVESTATUS in ('3','4')
+        CASE
+        WHEN (
+        ( SELECT count( 1 ) FROM fgbz.m_bs_lsrelatedrelation relate WHERE relate.RelatedID = t.id ) + ( SELECT count( 1
+        ) FROM fgbz.m_bs_lsreplacerelation replacelaw WHERE replacelaw.SID = t.id )
+        ) > 0 THEN
+        0 ELSE 1
+        END AS canDelete
+        FROM
+        fgbz.m_bs_lawstandard t
+        where t.APPROVESTATUS in ('3','4')
         <include refid="queryReplaceLawstandard"></include>
-ORDER BY t.MODIFYDATE desc
+        ORDER BY t.MODIFYDATE desc
         LIMIT #{startRow},#{endRow}
     </select>
 
@@ -218,16 +231,16 @@ ORDER BY t.MODIFYDATE desc
         </if>
         <!--引用文件不查自己-->
         <if test="ReplaceOrRefenceid != null and ReplaceOrRefenceid != ''">
-            and t.id <![CDATA[  != ]]> #{ReplaceOrRefenceid}
+            and t.id != #{ReplaceOrRefenceid}
         </if>
     </sql>
 
     <!--获取引用和替代关系列表总数-->
     <select id="getReplaceLawstandardCount" parameterType="map" resultType="int">
         SELECT
-      count(1)
+        count(1)
         FROM
-        m_bs_lawstandard t
+        fgbz.m_bs_lawstandard t
         where t.APPROVESTATUS in ('3','4')
         <include refid="queryReplaceLawstandard"></include>
     </select>
@@ -261,9 +274,12 @@ ORDER BY t.MODIFYDATE desc
             OR instr(
             (
             SELECT
-            group_concat(file.Content)
+            LISTAGG(file.CONTENT, ',') WITHIN GROUP (
+                        order by
+                            id
+                    )
             FROM
-            m_sa_fileinfo file
+            fgbz.m_sa_fileinfo file
             WHERE
             file.REFID = t1.id
             ),
@@ -274,7 +290,7 @@ ORDER BY t.MODIFYDATE desc
             SELECT
             stu.STATUSNAME
             FROM
-            m_sa_lawstandardstatus stu
+            fgbz.m_sa_lawstandardstatus stu
             WHERE
             stu.id = t1. STATUS
             ),
@@ -285,8 +301,8 @@ ORDER BY t.MODIFYDATE desc
             SELECT
             dep.PUBDEPNAME
             FROM
-            m_sa_publishdep dep
-            LEFT JOIN m_bs_lawstandard_pubdep pub ON dep.ID = pub.PUBDEPID
+            fgbz.m_sa_publishdep dep
+            LEFT JOIN fgbz.m_bs_lawstandard_pubdep pub ON dep.ID = pub.PUBDEPID
             WHERE
             pub.sid = t1.id
             ),
@@ -297,17 +313,17 @@ ORDER BY t.MODIFYDATE desc
     </sql>
     <!--获取全文检索-->
     <select id="getSolrList" parameterType="map" resultType="Lawstandard">
-		SELECT
+        SELECT
         t1.CHINESENAME,
         t1.ENGLISHNAME,
         t1.SUMMARYINFO,
-        t1.`CODE`,
+        t1.CODE,
         t1.id,
         t1.CLICKCOUNT,
         t1.KEYWORDS
-		FROM
-        m_bs_solr solr
-        left join m_bs_lawstandard t1 on solr.lawstandardid = t1.id where
+        FROM
+        fgbz.m_bs_solr solr
+        left join fgbz.m_bs_lawstandard t1 on solr.lawstandardid = t1.id where
         (
         <foreach collection="Solr" index="index" item="item" open="" close="" separator="or">
             INSTR(solr.SOLRTEXT,#{item})>0
@@ -320,10 +336,10 @@ ORDER BY t.MODIFYDATE desc
     <!--获取全文检索-->
     <select id="getSolrListCount" parameterType="map" resultType="int">
         SELECT
-      count(1)
+        count(1)
         FROM
-        m_bs_solr solr
-        left join m_bs_lawstandard t1 on solr.lawstandardid = t1.id where
+        fgbz.m_bs_solr solr
+        left join fgbz.m_bs_lawstandard t1 on solr.lawstandardid = t1.id where
         (
         <foreach collection="Solr" index="index" item="item" open="" close="" separator="or">
             INSTR(solr.SOLRTEXT,#{item})>0
@@ -340,25 +356,25 @@ ORDER BY t.MODIFYDATE desc
             and instr(t1.CHINESENAME,#{Title})> 0
         </if>
         <if test="FiledTimeStart != null and FiledTimeStart != ''">
-            and Date(t1.INPUTDATE) <![CDATA[  >=  ]]> #{FiledTimeStart}
+            and cast(t1.INPUTDATE as Date) <![CDATA[  >=  ]]> #{FiledTimeStart}
         </if>
         <if test="FiledTimeEnd != null and FiledTimeEnd != ''">
-            and Date(t1.INPUTDATE) <![CDATA[  <=  ]]> #{FiledTimeEnd}
+            and cast(t1.INPUTDATE as Date) <![CDATA[  <=  ]]> #{FiledTimeEnd}
         </if>
         <if test="State != null and State != ''">
-            and t1.`STATUS` = #{State}
+            and t1.STATUS = #{State}
         </if>
         <if test="organization != null and organization != ''">
-            and  #{organization} in	(SELECT n.PUBDEPID from m_bs_lawstandard_pubdep n where n.sid =t1.ID)
+            and #{organization} in (SELECT n.PUBDEPID from fgbz.m_bs_lawstandard_pubdep n where n.sid =t1.ID)
         </if>
         <if test="MaterialTmeStart != null and MaterialTmeStart != ''">
-            and Date(t1.IMPDATE) <![CDATA[  >=  ]]> #{MaterialTmeStart}
+            and cast(t1.IMPDATE as Date) <![CDATA[  >=  ]]> #{MaterialTmeStart}
         </if>
         <if test="MaterialTmeEnd != null and MaterialTmeEnd != ''">
-            and Date(t1.IMPDATE) <![CDATA[  <=  ]]> #{MaterialTmeEnd}
+            and cast(t1.IMPDATE as Date) <![CDATA[  <=  ]]> #{MaterialTmeEnd}
         </if>
-        <if test="TreeValue !=null and TreeValue!=''" >
-            and t1.id in (select lt.SID from m_bs_lawstandard_type lt where lt.LAWSTYPEID in
+        <if test="TreeValue !=null and TreeValue!=''">
+            and t1.id in (select lt.SID from fgbz.m_bs_lawstandard_type lt where lt.LAWSTYPEID in
             <foreach collection="TreeValue" item="item" open="(" close=")" separator=",">
                 #{item.id}
             </foreach>
@@ -379,17 +395,19 @@ ORDER BY t.MODIFYDATE desc
 
         <!--全文检索-->
         <!--<if test="Solr != null and Solr != ''">-->
-            <!--and (-->
-            <!--<foreach collection="Solr" index="index" item="item" open="" close="" separator="or">-->
-                  <!--instr((SELECT solr.solrtext from solrview solr where solr.id=t1.id),#{item} )>0-->
-            <!--</foreach>-->
-            <!--)-->
+        <!--and (-->
+        <!--<foreach collection="Solr" index="index" item="item" open="" close="" separator="or">-->
+        <!--instr((SELECT solr.solrtext from solrview solr where solr.id=t1.id),#{item} )>0-->
+        <!--</foreach>-->
+        <!--)-->
         <!--</if>-->
 
         <!--模糊匹配多个关键字-->
         <if test="KeyWords != null and KeyWords != ''">
-            and (instr(t1.CODE,#{KeyWords})> 0 or instr(t1.CHINESENAME,#{KeyWords})> 0 or instr(t1.ENGLISHNAME,#{KeyWords})> 0
-             or instr(t1.KEYWORDS,#{KeyWords})> 0 or instr(t1.MEMO,#{KeyWords})> 0 or instr(t1.SUMMARYINFO,#{KeyWords})> 0 )
+            and (instr(t1.CODE,#{KeyWords})> 0 or instr(t1.CHINESENAME,#{KeyWords})> 0 or
+            instr(t1.ENGLISHNAME,#{KeyWords})> 0
+            or instr(t1.KEYWORDS,#{KeyWords})> 0 or instr(t1.MEMO,#{KeyWords})> 0 or instr(t1.SUMMARYINFO,#{KeyWords})>
+            0 )
         </if>
         <if test="ApproveStatus != null and ApproveStatus != ''">
             and t1.APPROVESTATUS = #{ApproveStatus}
@@ -397,22 +415,22 @@ ORDER BY t.MODIFYDATE desc
 
         <!--引用文件不查自己-->
         <if test="ReplaceOrRefenceid != null and ReplaceOrRefenceid != ''">
-            and t1.id <![CDATA[  != ]]> #{ReplaceOrRefenceid}
+            and t1.id != #{ReplaceOrRefenceid}
         </if>
         <!--是否批量导入-->
         <if test="IsBatch != null and IsBatch != '' and IsBatch == 1 ">
-        and t1.IsBatch = 1
-       </if>
+            and t1.IsBatch = 1
+        </if>
         <if test="IsBatch != null and IsBatch != '' and IsBatch == 0 ">
             and t1.IsBatch is NULL
         </if>
         <!--不能审核自己-->
         <if test="Userid != null and Userid != '' ">
-            and t1.INPUTUSERID  <![CDATA[  != ]]>  #{Userid}
+            and t1.INPUTUSERID  !=  #{Userid}
         </if>
         <!--草稿和审核状态只能自己看见-->
         <if test="LawInputuserid != null and LawInputuserid !='' ">
-            and (t1.INPUTUSERID = #{LawInputuserid}  or (t1.APPROVESTATUS =3 and ur.ORGID in
+            and (t1.INPUTUSERID = #{LawInputuserid} or (t1.APPROVESTATUS =3 and ur.ORGID in
             <foreach collection="OrgList" item="item" open="(" close=")" separator=",">
                 #{item.id}
             </foreach>
@@ -432,7 +450,7 @@ ORDER BY t.MODIFYDATE desc
         </if>
 
         <if test="ApproveOrg != null and ApproveOrg != ''">
-            and  ur.ORGID in
+            and ur.ORGID in
             <foreach collection="ApproveOrg" item="item" open="(" close=")" separator=",">
                 #{item.id}
             </foreach>
@@ -440,39 +458,39 @@ ORDER BY t.MODIFYDATE desc
     </sql>
 
     <delete id="deleteLawstandardById" parameterType="String">
-        DELETE from m_bs_lawstandard WHERE  ID = #{id}
+        DELETE from fgbz.m_bs_lawstandard WHERE  ID = #{id}
     </delete>
 
     <!--判断法规编号是否重复-->
     <select id="checklawCode" parameterType="Lawstandard" resultType="int">
-        select count(1) from m_bs_lawstandard t where t.CHECKCODE = #{checkcode}
-        and t.id <![CDATA[  != ]]> #{id} and t.APPROVESTATUS <![CDATA[  != ]]> 4
+        select count(1) from fgbz.m_bs_lawstandard t where t.CHECKCODE = #{checkcode}
+        and t.id != #{id} and t.APPROVESTATUS != 4
     </select>
 
     <select id="checklawTempCode" parameterType="Lawstandard" resultType="int">
-        select count(1) from m_bs_lawstandard t where t.CHECKCODE = #{checkcode}
-        and t.id <![CDATA[  != ]]> #{id}
+        select count(1) from fgbz.m_bs_lawstandard t where t.CHECKCODE = #{checkcode}
+        and t.id != #{id}
     </select>
 
     <!--获取发布部门-->
     <select id="getPublishDep" resultType="FgbzDictory">
-        SELECT t.ID,t.PUBDEPNAME as name  from m_sa_publishdep t
+        SELECT t.ID,t.PUBDEPNAME as name  from fgbz.m_sa_publishdep t
     </select>
 
     <!--获取法规状态-->
     <select id="getLawstandardState" resultType="FgbzDictory">
-        SELECT t.id,t.STATUSNAME as name  from m_sa_lawstandardstatus t
+        SELECT t.id,t.STATUSNAME as name  from fgbz.m_sa_lawstandardstatus t
     </select>
 
     <!--新增或编辑法规标准-->
     <insert id="SaveOrUpdateLawstandard" parameterType="Lawstandard">
 
         <selectKey keyProperty="count" resultType="int" order="BEFORE">
-            select count(1) from m_bs_lawstandard t where t.ID=#{id}
+            select count(1) from fgbz.m_bs_lawstandard t where t.ID=#{id}
         </selectKey>
 
         <if test="count == 0">
-            insert into m_bs_lawstandard
+            insert into fgbz.m_bs_lawstandard
             <trim prefix="(" suffix=")" suffixOverrides=",">
                 <if test="id != null">
                     ID,
@@ -501,11 +519,11 @@ ORDER BY t.MODIFYDATE desc
                 <if test="inputuserid != null">
                     INPUTUSERID,
                 </if>
-                    INPUTDATE,
+                INPUTDATE,
                 <if test="modifyuserid != null">
                     MODIFYUSERID,
                 </if>
-                    MODIFYDATE,
+                MODIFYDATE,
                 <if test="clickcount != null">
                     CLICKCOUNT,
                 </if>
@@ -565,12 +583,12 @@ ORDER BY t.MODIFYDATE desc
                 <if test="inputuserid != null">
                     #{inputuserid,jdbcType=VARCHAR},
                 </if>
-                  now(),
+                now(),
                 <if test="modifyuserid != null">
                     #{modifyuserid,jdbcType=VARCHAR},
                 </if>
 
-                   now(),
+                now(),
 
                 <if test="clickcount != null">
                     #{clickcount,jdbcType=INTEGER},
@@ -606,7 +624,7 @@ ORDER BY t.MODIFYDATE desc
 
         </if>
         <if test="count>0">
-            update  m_bs_lawstandard set
+            update fgbz.m_bs_lawstandard set
             <trim prefix="" suffix="" suffixOverrides=",">
 
                 <if test="code != null">
@@ -628,13 +646,13 @@ ORDER BY t.MODIFYDATE desc
                     KEYWORDS=#{keywords,jdbcType=VARCHAR},
                 </if>
                 <if test="isbatch != null">
-                    ISBATCH=   #{isbatch,jdbcType=INTEGER},
+                    ISBATCH= #{isbatch,jdbcType=INTEGER},
                 </if>
 
                 <if test="modifyuserid != null">
                     MODIFYUSERID= #{modifyuserid,jdbcType=VARCHAR},
                 </if>
-                    MODIFYDATE= now(),
+                MODIFYDATE= now(),
 
                 <if test="clickcount != null">
                     CLICKCOUNT= #{clickcount,jdbcType=INTEGER},
@@ -674,7 +692,7 @@ ORDER BY t.MODIFYDATE desc
     <select id="getLawstandardById" parameterType="String" resultType="Lawstandard">
         SELECT
         t.ID,
-        t.`CODE`,
+        t.CODE,
         t.CHINESENAME,
         t.ENGLISHNAME,
         t.RELEASEDATE,
@@ -682,7 +700,7 @@ ORDER BY t.MODIFYDATE desc
         t.KEYWORDS,
         t.MEMO,
         t.SUMMARYINFO,
-        t.`STATUS`,
+        t.STATUS,
         t.APPROVESTATUS ,
         t.CLICKCOUNT,
         t.istop,
@@ -696,26 +714,26 @@ ORDER BY t.MODIFYDATE desc
 				ur.USERREALNAME as inputusername,
 				org.ORGNAME as inputorgname,
 				t.INPUTDATE,urmo.USERREALNAME as modifyusername,t.MODIFYDATE,
-			case when (select count(1) from m_bs_lawstandard_favorite fav where fav.sid = t.id)>0
+			case when (select count(1) from fgbz.m_bs_lawstandard_favorite fav where fav.sid = t.id)>0
 			then 1 ELSE 0 END  as iscollect
         FROM
-        `m_bs_lawstandard` t
-        left join m_sa_lawstandardstatus sta on t.`STATUS` = sta.ID
-        left join m_bs_lawstandard_pubdep pub on t.id = pub.SID
-        left join m_sa_publishdep dep on dep.ID = pub.PUBDEPID
-        left join m_bs_lawstandard_type m on m.SID = t.id
-        left join m_bs_lawstandardtype n on n.id = m.LAWSTYPEID
-        left join m_bs_lawstandardtype par on n.PARENTID = par.ID
-				left join m_sa_user ur on ur.ID = t.INPUTUSERID
-				left join m_sa_user urmo on urmo.ID = t.MODIFYUSERID
-				left join m_sa_organization org on org.ID = ur.ORGID
+        fgbz.m_bs_lawstandard t
+        left join fgbz.m_sa_lawstandardstatus sta on t.STATUS = sta.ID
+        left join fgbz.m_bs_lawstandard_pubdep pub on t.id = pub.SID
+        left join fgbz.m_sa_publishdep dep on dep.ID = pub.PUBDEPID
+        left join fgbz.m_bs_lawstandard_type m on m.SID = t.id
+        left join fgbz.m_bs_lawstandardtype n on n.id = m.LAWSTYPEID
+        left join fgbz.m_bs_lawstandardtype par on n.PARENTID = par.ID
+				left join fgbz.m_sa_user ur on ur.ID = t.INPUTUSERID
+				left join fgbz.m_sa_user urmo on urmo.ID = t.MODIFYUSERID
+				left join fgbz.m_sa_organization org on org.ID = ur.ORGID
 				where t.id=#{id} LIMIT 0,1
 
     </select>
 
     <!--更新附件与法规的关系-->
     <update id="SaveFileLink" parameterType="Lawstandard">
-        update m_sa_fileinfo t set t.REFID = #{id} where t.id IN
+        update fgbz.m_sa_fileinfo t set t.REFID = #{id} where t.id IN
         <foreach collection="fileids" item="item" open="(" close=")" separator=",">
             #{item}
         </foreach>
@@ -723,14 +741,14 @@ ORDER BY t.MODIFYDATE desc
 
     <!--选择替代关系，更新状态-->
     <update id="updateRleplaceStaus" parameterType="String">
-        UPDATE m_bs_lawstandard set STATUS=4 where id=#{id}
+        UPDATE fgbz.m_bs_lawstandard set STATUS=4 where id=#{id}
     </update>
 
     <!--获取引用关系-->
     <select id="getRefenceList" parameterType="String" resultType="Lawstandard">
         SELECT
         t.ID,
-        t.`CODE`,
+        t.CODE,
         t.CHINESENAME,
         t.ENGLISHNAME,
         t.RELEASEDATE,
@@ -738,13 +756,13 @@ ORDER BY t.MODIFYDATE desc
         t.KEYWORDS,
         t.MEMO,
         t.SUMMARYINFO,
-        t.`STATUS`,
+        t.STATUS,
         t.APPROVESTATUS,
         sta.STATUSNAME
         FROM
-        m_bs_lsrelatedrelation re
-        left join m_bs_lawstandard t on re.RelatedID = t.ID
-        left join m_sa_lawstandardstatus sta on sta.id= t.`STATUS`
+        fgbz.m_bs_lsrelatedrelation re
+        left join fgbz.m_bs_lawstandard t on re.RelatedID = t.ID
+        left join fgbz.m_sa_lawstandardstatus sta on sta.id= t.STATUS
         where re.SID =#{id}
         ORDER BY t.RELEASEDATE desc
     </select>
@@ -753,7 +771,7 @@ ORDER BY t.MODIFYDATE desc
     <select id="getDetailReplaceList" parameterType="String" resultType="Lawstandard">
         SELECT
         t.ID,
-        t.`CODE`,
+        t.CODE,
         t.CHINESENAME,
         t.ENGLISHNAME,
         t.RELEASEDATE,
@@ -761,17 +779,17 @@ ORDER BY t.MODIFYDATE desc
         t.KEYWORDS,
         t.MEMO,
         t.SUMMARYINFO,
-        t.`STATUS`,
+        t.STATUS,
         t.APPROVESTATUS ,
         sta.STATUSNAME,
         n.TYPENAME
 
         FROM
-        m_bs_lsreplacerelation re
-        left join m_bs_lawstandard t on ((re.PID = t.ID and  re.SID = #{id}) or (re.SID = t.ID and  re.PID = #{id}))
-        left join m_sa_lawstandardstatus sta on sta.id= t.`STATUS`
-        left join m_bs_lawstandard_type m on m.SID = t.id
-        left join m_bs_lawstandardtype n on n.id = m.LAWSTYPEID
+        fgbz.m_bs_lsreplacerelation re
+        left join fgbz.m_bs_lawstandard t on ((re.PID = t.ID and  re.SID = #{id}) or (re.SID = t.ID and  re.PID = #{id}))
+        left join fgbz.m_sa_lawstandardstatus sta on sta.id= t.STATUS
+        left join fgbz.m_bs_lawstandard_type m on m.SID = t.id
+        left join fgbz.m_bs_lawstandardtype n on n.id = m.LAWSTYPEID
         where t.id is not null
         ORDER BY t.RELEASEDATE desc
 
@@ -781,7 +799,7 @@ ORDER BY t.MODIFYDATE desc
     <select id="getReplaceList" parameterType="String" resultType="Lawstandard">
         SELECT
         t.ID,
-        t.`CODE`,
+        t.CODE,
         t.CHINESENAME,
         t.ENGLISHNAME,
         t.RELEASEDATE,
@@ -789,17 +807,17 @@ ORDER BY t.MODIFYDATE desc
         t.KEYWORDS,
         t.MEMO,
         t.SUMMARYINFO,
-        t.`STATUS`,
+        t.STATUS,
         t.APPROVESTATUS ,
         sta.STATUSNAME,
         n.TYPENAME
 
         FROM
-        m_bs_lsreplacerelation re
-        left join m_bs_lawstandard t on re.SID = t.ID
-        left join m_sa_lawstandardstatus sta on sta.id= t.`STATUS`
-        left join m_bs_lawstandard_type m on m.SID = t.id
-        left join m_bs_lawstandardtype n on n.id = m.LAWSTYPEID
+        fgbz.m_bs_lsreplacerelation re
+        left join fgbz.m_bs_lawstandard t on re.SID = t.ID
+        left join fgbz.m_sa_lawstandardstatus sta on sta.id= t.STATUS
+        left join fgbz.m_bs_lawstandard_type m on m.SID = t.id
+        left join fgbz.m_bs_lawstandardtype n on n.id = m.LAWSTYPEID
         where t.id is not null and  re.PID = #{id}
         ORDER BY t.RELEASEDATE desc
 
@@ -807,48 +825,48 @@ ORDER BY t.MODIFYDATE desc
 
     <!--删除引用关系-->
     <delete id="deleteRefence" parameterType="String">
-        delete from m_bs_lsrelatedrelation  where SID = #{id}
+        delete from fgbz.m_bs_lsrelatedrelation  where SID = #{id}
     </delete>
 
     <!--删除引用关系和被引用关系-->
     <delete id="deleteRefenceAll" parameterType="String">
-        delete from m_bs_lsrelatedrelation  where (SID = #{id} or RelatedID = #{id})
+        delete from fgbz.m_bs_lsrelatedrelation  where (SID = #{id} or RelatedID = #{id})
     </delete>
 
     <!--删除替代关系-->
     <delete id="deleteReplace" parameterType="String">
-        delete from m_bs_lsreplacerelation  where PID = #{id}
+        delete from fgbz.m_bs_lsreplacerelation  where PID = #{id}
     </delete>
 
     <!--删除替代关系和被替代关系-->
     <delete id="deleteReplaceAll" parameterType="String">
-        delete from m_bs_lsreplacerelation  where (PID = #{id} or SID = #{id})
+        delete from fgbz.m_bs_lsreplacerelation  where (PID = #{id} or SID = #{id})
     </delete>
 
     <!-- 插入引用关系 -->
     <insert id="addRefence" parameterType="RefenceOrReplace">
-        insert  into m_bs_lsrelatedrelation (ID,SID,RelatedID) values
+        insert  into fgbz.m_bs_lsrelatedrelation (ID,SID,RelatedID) values
         (#{id,jdbcType=VARCHAR},#{sid,jdbcType=VARCHAR},#{relatedid,jdbcType=VARCHAR})
     </insert>
 
     <!-- 插入引用关系 -->
-    <insert id="addReplace" parameterType="RefenceOrReplace" >
-        insert  into m_bs_lsreplacerelation (ID,SID,PID) values
+    <insert id="addReplace" parameterType="RefenceOrReplace">
+        insert  into fgbz.m_bs_lsreplacerelation (ID,SID,PID) values
         (#{id,jdbcType=VARCHAR},#{sid,jdbcType=VARCHAR},#{relatedid,jdbcType=VARCHAR})
     </insert>
 
     <!--建立类别与法规文件关联-->
     <insert id="SaveOrUpdateLawAndType" parameterType="Lawstandard">
         <selectKey keyProperty="count" resultType="int" order="BEFORE">
-            select count(1) from m_bs_lawstandard_type t where t.SID=#{id}
+            select count(1) from fgbz.m_bs_lawstandard_type t where t.SID=#{id}
         </selectKey>
 
         <if test="count == 0">
-            insert into m_bs_lawstandard_type  (ID,SID,LAWSTYPEID) VALUES
-            (uuid(),#{id},#{lawtype,jdbcType=VARCHAR})
+            insert into fgbz.m_bs_lawstandard_type (ID,SID,LAWSTYPEID) VALUES
+            (guid(),#{id},#{lawtype,jdbcType=VARCHAR})
         </if>
-        <if test="count>0" >
-            UPDATE m_bs_lawstandard_type t set t.LAWSTYPEID = #{lawtype,jdbcType=VARCHAR}
+        <if test="count>0">
+            UPDATE fgbz.m_bs_lawstandard_type t set t.LAWSTYPEID = #{lawtype,jdbcType=VARCHAR}
             where t.sid = #{id}
         </if>
 
@@ -856,57 +874,57 @@ ORDER BY t.MODIFYDATE desc
 
     <!--删除类别与法规文件关联-->
     <delete id="DeleteLawAndType" parameterType="String">
-        delete from m_bs_lawstandard_type  where SID= #{id}
+        delete from fgbz.m_bs_lawstandard_type  where SID= #{id}
     </delete>
 
     <insert id="SaveOrUpdateLawAndPublish" parameterType="Lawstandard">
 
-            insert into m_bs_lawstandard_pubdep  (ID,SID,PUBDEPID) VALUES
-            (uuid(),#{id},#{organization,jdbcType=VARCHAR})
+            insert into fgbz.m_bs_lawstandard_pubdep  (ID,SID,PUBDEPID) VALUES
+            (guid(),#{id},#{organization,jdbcType=VARCHAR})
 
 
     </insert>
 
     <select id="GetPubOrgList" parameterType="String" resultType="String">
-        SELECT pub.PUBDEPID from m_bs_lawstandard_pubdep pub where pub.sid=#{id}
+        SELECT pub.PUBDEPID from fgbz.m_bs_lawstandard_pubdep pub where pub.sid=#{id}
     </select>
 
     <select id="GetpubOrgListName" parameterType="map" resultType="String">
-        SELECT group_concat(t.PUBDEPNAME) from m_sa_publishdep t where t.id in
+        SELECT WM_CONCAT(t.PUBDEPNAME) from fgbz.m_sa_publishdep t where t.id in
         <foreach collection="ids" item="item" open="(" close=")" separator=",">
             #{item}
         </foreach>
     </select>
 
     <delete id="deletePubByLaw" parameterType="String">
-        delete from m_bs_lawstandard_pubdep where SID=#{id}
+        delete from fgbz.m_bs_lawstandard_pubdep where SID=#{id}
     </delete>
 
     <!--点击次数加一-->
     <update id="AddLawstandardCount" parameterType="Lawstandard">
-        update m_bs_lawstandard t set t.CLICKCOUNT = #{clickcount}
+        update fgbz.m_bs_lawstandard t set t.CLICKCOUNT = #{clickcount}
         where t.id = #{id}
     </update>
 
     <!--获取点击次数-->
     <select id="getLawStandardClickCount" parameterType="Lawstandard" resultType="String">
-        SELECT t.CLICKCOUNT FROM m_bs_lawstandard t WHERE t.id = #{id}
+        SELECT t.CLICKCOUNT FROM fgbz.m_bs_lawstandard t WHERE t.id = #{id}
     </select>
 
     <!--置顶-->
     <update id="LawstandardIsTop" parameterType="Lawstandard">
-        update m_bs_lawstandard t set t.istop = #{istop}
+        update fgbz.m_bs_lawstandard t set t.istop = #{istop}
         where t.id = #{id}
     </update>
 
     <!--更新法规状态-->
     <update id="updateLawstandardStatus" parameterType="map">
-        update m_bs_lawstandard t set t.APPROVESTATUS = #{status} , MODIFYDATE = now() where t.id = #{id}
+        update fgbz.m_bs_lawstandard t set t.APPROVESTATUS = #{status} , MODIFYDATE = now() where t.id = #{id}
     </update>
 
     <!--更新所有待审核的法规-->
     <update id="updateAllCheckingLawstandard">
-        update m_bs_lawstandard t set t.APPROVESTATUS = 3 , MODIFYDATE = now() where t.APPROVESTATUS=2
+        update fgbz.m_bs_lawstandard t set t.APPROVESTATUS = 3 , MODIFYDATE = now() where t.APPROVESTATUS=2
     </update>
 
     <!--上传前十统计-->
@@ -923,13 +941,13 @@ FROM
 SELECT
 	law.INPUTUSERID
 FROM
-	m_bs_lawstandard law
+	fgbz.m_bs_lawstandard law
 WHERE
 	law.APPROVESTATUS = 3
 	) t
-	LEFT JOIN m_sa_user us ON t.INPUTUSERID = us.ID
+	LEFT JOIN fgbz.m_sa_user us ON t.INPUTUSERID = us.ID
 WHERE
-	us.USERREALNAME <![CDATA[  != ]]> 'System'
+	us.USERREALNAME != 'System'
 GROUP BY
 	t.INPUTUSERID
 	) m
@@ -952,14 +970,14 @@ FROM
 SELECT
 	law.INPUTUSERID
 FROM
-	m_bs_lawstandard law
+	fgbz.m_bs_lawstandard law
 WHERE
 	law.APPROVESTATUS = 3
 	) t
-	LEFT JOIN m_sa_user us ON t.INPUTUSERID = us.ID
-	LEFT JOIN m_sa_organization org ON us.ORGID = org.ID
+	LEFT JOIN fgbz.m_sa_user us ON t.INPUTUSERID = us.ID
+	LEFT JOIN fgbz.m_sa_organization org ON us.ORGID = org.ID
 WHERE
-	us.USERREALNAME <![CDATA[  != ]]> 'System'
+	us.USERREALNAME != 'System'
 GROUP BY
 	org.ID
 	) m
@@ -970,28 +988,19 @@ ORDER BY
     </select>
     <!--上传分类统计-->
     <select id="getUploadType" resultType="ChartInfo">
-SELECT
-	*
-FROM
-	(
-		SELECT
-			ty.TYPENAME AS NAME,
-			count(1) as count
-		FROM
-		m_bs_lawstandard law
-		 left join m_bs_lawstandard_type link ON law.ID = link.SID
-		LEFT JOIN m_bs_lawstandardtype ty ON ty.ID = link.LAWSTYPEID
-			LEFT JOIN m_sa_user us ON law.INPUTUSERID = us.ID
-		WHERE
-			law.APPROVESTATUS = 3 and us.USERREALNAME <![CDATA[  != ]]> 'System'
-		GROUP BY
-			link.LAWSTYPEID
-	) t
-ORDER BY
-	t.count DESC
-LIMIT 0,
- 10
-
+SELECT *
+FROM (
+	SELECT ty.TYPENAME AS NAME, COUNT(1) AS count, link.LAWSTYPEID
+	FROM fgbz.m_bs_lawstandard law
+		LEFT JOIN fgbz.m_bs_lawstandard_type link ON law.ID = link.SID
+		LEFT JOIN fgbz.m_bs_lawstandardtype ty ON ty.ID = link.LAWSTYPEID
+		LEFT JOIN fgbz.m_sa_user us ON law.INPUTUSERID = us.ID
+	WHERE law.APPROVESTATUS = 3
+		AND us.USERREALNAME != 'System'
+	GROUP BY link.LAWSTYPEID, ty.TYPENAME
+) t
+ORDER BY t.count DESC
+LIMIT 0, 10;
     </select>
 
     <!--获取首页类别导航-->
@@ -1002,30 +1011,30 @@ LIMIT 0,
 	t.PARENTID,
 	t.LAWCOUNT
 FROM
-	`m_bs_lawstandardtype` t
+	fgbz.m_bs_lawstandardtype t
 WHERE
-	t.PARENTID = ( SELECT m.ID FROM m_bs_lawstandardtype m WHERE m.PARENTID IS NULL )
+	t.PARENTID = ( SELECT m.ID FROM fgbz.m_bs_lawstandardtype m WHERE m.PARENTID IS NULL )
 	order by t.ITEMLEVELCODE
     </select>
 
     <!--通过名字获取法规类别-->
     <select id="getLawTypeByName" parameterType="String" resultType="String">
-          select t.id from m_bs_lawstandardtype t where  t.TYPENAME = #{name} LIMIT 0,1
+          select t.id from fgbz.m_bs_lawstandardtype t where  t.TYPENAME = #{name} LIMIT 0,1
     </select>
 
     <!--通过名称获取发布部门id-->
     <select id="getPubOrgnameByName" parameterType="String" resultType="String">
-          select t.id from m_sa_publishdep t where  t.PUBDEPNAME = #{name} LIMIT 0,1
+          select t.id from fgbz.m_sa_publishdep t where  t.PUBDEPNAME = #{name} LIMIT 0,1
     </select>
 
     <!--获取状态id-->
     <select id="getStatusIdByName" parameterType="String" resultType="String">
-          select t.id from m_sa_lawstandardstatus t where  t.STATUSNAME = #{name} LIMIT 0,1
+          select t.id from fgbz.m_sa_lawstandardstatus t where  t.STATUSNAME = #{name} LIMIT 0,1
     </select>
 
     <select id="getHomePageLawCount" parameterType="map" resultType="int">
-        SELECT  count(1) from m_bs_lawstandard t where t.APPROVESTATUS = 3
-        and  t.id in (select lt.SID from m_bs_lawstandard_type lt where lt.LAWSTYPEID in
+        SELECT count(1) from fgbz.m_bs_lawstandard t where t.APPROVESTATUS = 3
+        and t.id in (select lt.SID from fgbz.m_bs_lawstandard_type lt where lt.LAWSTYPEID in
         <foreach collection="TreeValue" item="item" open="(" close=")" separator=",">
             #{item.id}
         </foreach>
@@ -1036,126 +1045,102 @@ WHERE
     <select id="getLawByFileId" parameterType="String" resultType="Lawstandard">
        SELECT
     t.id,
-	t.`CODE`,
+	t.CODE,
 	t.CHINESENAME
 FROM
-	m_bs_lawstandard t
-LEFT JOIN m_sa_fileinfo files ON t.ID = files.REFID
+	fgbz.m_bs_lawstandard t
+LEFT JOIN fgbz.m_sa_fileinfo files ON t.ID = files.REFID
 WHERE
 	files.ID =#{id}
     </select>
 
     <!--获取所有的法规-->
     <select id="getAllLawstandard" resultType="Lawstandard">
-        SELECT t.id,t.code from m_bs_lawstandard t
+        SELECT t.id,t.code from fgbz.m_bs_lawstandard t
     </select>
 
     <update id="updateLawCheckCode" parameterType="Lawstandard">
-        UPDATE m_bs_lawstandard t set t.CHECKCODE=#{checkcode} where t.id = #{id}
+        UPDATE fgbz.m_bs_lawstandard t set t.CHECKCODE=#{checkcode} where t.id = #{id}
     </update>
 
     <!--删除索引-->
     <delete id="DeleteSolrTextById" parameterType="String">
-        DELETE from m_bs_solr where LAWSTANDARDID = #{id}
+        DELETE from fgbz.m_bs_solr where LAWSTANDARDID = #{id}
     </delete>
 
     <!--更新索引-->
     <insert id="SaveSolrTextById" parameterType="String">
-        INSERT INTO m_bs_solr (LAWSTANDARDID, SOLRTEXT) SELECT
-	`m`.`id` AS LAWSTANDARDID,
-	concat(
-		`m`.`CODE`,
-		';',
-		`m`.`CHINESENAME`,
-		';',
-		`m`.`ENGLISHNAME`,
-		';',
-		`m`.`KEYWORDS`,
-		';',
-		`m`.`MEMO`,
-		';',
-		`m`.`SUMMARYINFO`,
-		';',
-		`m`.`STATUSNAME`,
-		';',
-		`m`.`PUBDEPNAME`,
-		';',
-		`m`.`TYPENAME`,
-		';',
-
-	IF (
-		isnull(`m`.`filecontent`),
-		'',
-		`m`.`filecontent`
-	)
-	) AS SOLRTEXT
+        INSERT INTO fgbz.m_bs_solr (LAWSTANDARDID, SOLRTEXT) SELECT
+    m.id AS LAWSTANDARDID,
+    concat(
+        m.CODE,
+        ';',
+        m.CHINESENAME,
+        ';',
+        m.ENGLISHNAME,
+        ';',
+        m.KEYWORDS,
+        ';',
+        m.MEMO,
+        ';',
+        m.SUMMARYINFO,
+        ';',
+        m.STATUSNAME,
+        ';',
+        m.PUBDEPNAME,
+        ';',
+        m.TYPENAME,
+        ';',
+        ifnull(m.filecontent, '')
+    ) AS SOLRTEXT
 FROM
-	(
-		SELECT
-			`t`.`ID` AS `id`,
-			`t`.`CODE` AS `CODE`,
-			`t`.`CHINESENAME` AS `CHINESENAME`,
+    (
+        SELECT
+            t.ID AS id,
+            t.CODE AS CODE,
+            t.CHINESENAME AS CHINESENAME,
+            ifnull(t.ENGLISHNAME, '') AS ENGLISHNAME,
+            ifnull(t.KEYWORDS, '') AS KEYWORDS,
+            ifnull(t.MEMO, '') AS MEMO,
+            ifnull(t.SUMMARYINFO, '') AS SUMMARYINFO,
+            ifnull(sta.STATUSNAME, '') AS STATUSNAME,
+            ifnull(dep.PUBDEPNAME, '') AS PUBDEPNAME,
 
-		IF (
-			isnull(`t`.`ENGLISHNAME`),
-			'',
-			`t`.`ENGLISHNAME`
-		) AS `ENGLISHNAME`,
-
-	IF (
-		isnull(`t`.`KEYWORDS`),
-		'',
-		`t`.`KEYWORDS`
-	) AS `KEYWORDS`,
-
-IF (
-	isnull(`t`.`MEMO`),
-	'',
-	`t`.`MEMO`
-) AS `MEMO`,
-
-IF (
-	isnull(`t`.`SUMMARYINFO`),
-	'',
-	`t`.`SUMMARYINFO`
-) AS `SUMMARYINFO`,
-
-IF (
-	isnull(`sta`.`STATUSNAME`),
-	'',
-	`sta`.`STATUSNAME`
-) AS `STATUSNAME`,
-
-IF (
-	isnull(`dep`.`PUBDEPNAME`),
-	'',
-	`dep`.`PUBDEPNAME`
-) AS `PUBDEPNAME`,
- `n`.`TYPENAME` AS `TYPENAME`,
- (
-	SELECT
-		group_concat(
-			`file`.`CONTENT` SEPARATOR ','
-		)
-	FROM
-		`m_sa_fileinfo` `file`
-	WHERE
-		`file`.`REFID` = #{id}
-) AS `filecontent`
-FROM
-	`m_bs_lawstandard` `t`
-LEFT JOIN `m_sa_lawstandardstatus` `sta` ON `t`.`STATUS` = `sta`.`ID`
-LEFT JOIN (select temp.sid,max(temp.PUBDEPID) as PUBDEPID from `m_bs_lawstandard_pubdep` temp group by temp.sid) `pub` ON `t`.`ID` = `pub`.`SID`
-LEFT JOIN `m_sa_publishdep` `dep` ON `dep`.`ID` = `pub`.`PUBDEPID`
-LEFT JOIN m_bs_lawstandard_type `m` ON `m`.`SID` = `t`.`ID`
-LEFT JOIN m_bs_lawstandardtype `n` ON `n`.`ID` = `m`.`LAWSTYPEID`
- 	 WHERE `t`.`ID` = #{id}
-	) `m`
+            n.TYPENAME AS TYPENAME,
+            (
+                SELECT
+                    LISTAGG(file.CONTENT ， ',') WITHIN GROUP (
+                        order by
+                            id
+                    )
+                FROM
+                    fgbz.m_sa_fileinfo file
+                WHERE
+                    file.REFID = #{id}
+            ) AS filecontent
+        FROM
+            fgbz.m_bs_lawstandard t
+            LEFT JOIN fgbz.m_sa_lawstandardstatus sta ON t.STATUS = sta.ID
+            LEFT JOIN (
+                select
+                    temp.sid,
+                    max(temp.PUBDEPID) as PUBDEPID
+                from
+                    fgbz.m_bs_lawstandard_pubdep temp
+                group by
+                    temp.sid
+            ) pub ON t.ID = pub.SID
+            LEFT JOIN fgbz.m_sa_publishdep dep ON dep.ID = pub.PUBDEPID
+            LEFT JOIN fgbz.m_bs_lawstandard_type m ON m.SID = t.ID
+            LEFT JOIN fgbz.m_bs_lawstandardtype n ON n.ID = m.LAWSTYPEID
+        WHERE
+            t.ID = #{id}
+    ) m;
     </insert>
 
     <!--通过法规状态获取所有的法规-->
     <select id="getLawsByStaus" parameterType="String" resultType="Lawstandard">
-          SELECT t.ID from m_bs_lawstandard t where t.`STATUS`=#{id}
+          SELECT t.ID from fgbz.m_bs_lawstandard t where t.STATUS=#{id}
     </select>
 
     <!--通过发布部门获取所有的法规-->
@@ -1163,9 +1148,9 @@ LEFT JOIN m_bs_lawstandardtype `n` ON `n`.`ID` = `m`.`LAWSTYPEID`
 SELECT
 	law.id
 FROM
-	m_sa_publishdep pub
-INNER JOIN m_bs_lawstandard_pubdep dep ON dep.PUBDEPID = pub.id
-INNER JOIN m_bs_lawstandard law ON dep.SID = law.ID
+	fgbz.m_sa_publishdep pub
+INNER JOIN fgbz.m_bs_lawstandard_pubdep dep ON dep.PUBDEPID = pub.id
+INNER JOIN fgbz.m_bs_lawstandard law ON dep.SID = law.ID
 where pub.id=#{id}
     </select>
 
@@ -1174,140 +1159,107 @@ where pub.id=#{id}
       SELECT
 	law.ID
 FROM
-	m_bs_lawstandard_type lawtype
-INNER JOIN m_bs_lawstandard law ON lawtype.SID = law.ID
+	fgbz.m_bs_lawstandard_type lawtype
+INNER JOIN fgbz.m_bs_lawstandard law ON lawtype.SID = law.ID
 where lawtype.LAWSTYPEID= #{id}
     </select>
 
     <!--获取历史法规-->
     <select id="getHistroyLaws" resultType="Lawstandard">
-          SELECT t1.`CODE`,
-        t1.id,t1.oldid FROM `m_bs_lawstandard` t1
+          SELECT t1.CODE,
+        t1.id,t1.oldid FROM fgbz.m_bs_lawstandard t1
     </select>
 
     <!--更新历史发布部门-->
     <update id="updatePublishByOldID" parameterType="Lawstandard">
-        UPDATE m_bs_lawstandard_pubdep set SID = #{id} where sid = #{oldid}
+        UPDATE fgbz.m_bs_lawstandard_pubdep set SID = #{id} where sid = #{oldid}
     </update>
 
     <!--更新替代关系-->
     <update id="updateReplaceSidByOldID" parameterType="Lawstandard">
-        UPDATE m_bs_lsreplacerelation set SID = #{id} where sid = #{oldid}
+        UPDATE fgbz.m_bs_lsreplacerelation set SID = #{id} where sid = #{oldid}
     </update>
 
     <!--更新替代关系-->
     <update id="updateReplacePidByOldID" parameterType="Lawstandard">
-        UPDATE m_bs_lsreplacerelation set PID = #{id} where PID = #{oldid}
+        UPDATE fgbz.m_bs_lsreplacerelation set PID = #{id} where PID = #{oldid}
     </update>
 
     <!--更新录入人-->
     <update id="updateLawUser" parameterType="Lawstandard">
-        UPDATE m_bs_lawstandard t set t.INPUTUSERID = #{inputuserid} where t.id=#{id}
+        UPDATE fgbz.m_bs_lawstandard t set t.INPUTUSERID = #{inputuserid} where t.id=#{id}
     </update>
 
     <!--更新引用关系-->
     <update id="updateRefenceByOldID" parameterType="Lawstandard">
-      UPDATE m_bs_lsrelatedrelation t set t.RelatedID = #{id} where t.RelatedID=#{oldid}
+      UPDATE fgbz.m_bs_lsrelatedrelation t set t.RelatedID = #{id} where t.RelatedID=#{oldid}
     </update>
 
     <!--更新索引-->
     <update id="updateLawsolr">
-               INSERT INTO m_bs_solr (LAWSTANDARDID, SOLRTEXT) SELECT
-	`m`.`id` AS LAWSTANDARDID,
-	concat(
-		`m`.`CODE`,
-		';',
-		`m`.`CHINESENAME`,
-		';',
-		`m`.`ENGLISHNAME`,
-		';',
-		`m`.`KEYWORDS`,
-		';',
-		`m`.`MEMO`,
-		';',
-		`m`.`SUMMARYINFO`,
-		';',
-		`m`.`STATUSNAME`,
-		';',
-		`m`.`PUBDEPNAME`,
-		';',
-		`m`.`TYPENAME`,
-		';',
-
-	IF (
-		isnull(`m`.`filecontent`),
-		'',
-		`m`.`filecontent`
-	)
-	) AS SOLRTEXT
+               INSERT INTO fgbz.m_bs_solr (LAWSTANDARDID, SOLRTEXT)
+    SELECT
+    m.id AS LAWSTANDARDID,
+    concat(
+        m.CODE,
+        ';',
+        m.CHINESENAME,
+        ';',
+        m.ENGLISHNAME,
+        ';',
+        m.KEYWORDS,
+        ';',
+        m.MEMO,
+        ';',
+        m.SUMMARYINFO,
+        ';',
+        m.STATUSNAME,
+        ';',
+        m.PUBDEPNAME,
+        ';',
+        m.TYPENAME,
+        ';',
+        ifnull(m.filecontent, '')
+    ) AS SOLRTEXT
 FROM
-	(
-		SELECT
-			`t`.`ID` AS `id`,
-			`t`.`CODE` AS `CODE`,
-			`t`.`CHINESENAME` AS `CHINESENAME`,
-
-		IF (
-			isnull(`t`.`ENGLISHNAME`),
-			'',
-			`t`.`ENGLISHNAME`
-		) AS `ENGLISHNAME`,
-
-	IF (
-		isnull(`t`.`KEYWORDS`),
-		'',
-		`t`.`KEYWORDS`
-	) AS `KEYWORDS`,
-
-IF (
-	isnull(`t`.`MEMO`),
-	'',
-	`t`.`MEMO`
-) AS `MEMO`,
-
-IF (
-	isnull(`t`.`SUMMARYINFO`),
-	'',
-	`t`.`SUMMARYINFO`
-) AS `SUMMARYINFO`,
-
-IF (
-	isnull(`sta`.`STATUSNAME`),
-	'',
-	`sta`.`STATUSNAME`
-) AS `STATUSNAME`,
-
-IF (
-	isnull(`dep`.`PUBDEPNAME`),
-	'',
-	`dep`.`PUBDEPNAME`
-) AS `PUBDEPNAME`,
- `n`.`TYPENAME` AS `TYPENAME`,
- (
-	SELECT
-		group_concat(
-			`file`.`CONTENT` SEPARATOR ','
-		)
-	FROM
-		`m_sa_fileinfo` `file`
-	WHERE
-		`file`.`REFID` = `t`.`ID`
-	GROUP BY
-		`t`.`ID`
-) AS `filecontent`
-FROM
-	`m_bs_lawstandard` `t`
-LEFT JOIN `m_sa_lawstandardstatus` `sta` ON `t`.`STATUS` = `sta`.`ID`
-LEFT JOIN `m_bs_lawstandard_pubdep` `pub` ON `t`.`ID` = `pub`.`SID`
-LEFT JOIN `m_sa_publishdep` `dep` ON `dep`.`ID` = `pub`.`PUBDEPID`
-LEFT JOIN m_bs_lawstandard_type `m` ON `m`.`SID` = `t`.`ID`
-LEFT JOIN m_bs_lawstandardtype `n` ON `n`.`ID` = `m`.`LAWSTYPEID`
-	) `m`
+    (
+        SELECT
+            t.ID AS id,
+            t.CODE AS CODE,
+            t.CHINESENAME AS CHINESENAME,
+            ifnull(t.ENGLISHNAME, '') AS ENGLISHNAME,
+            ifnull(t.KEYWORDS, '') AS KEYWORDS,
+            ifnull(t.MEMO, '') AS MEMO,
+            ifnull(t.SUMMARYINFO, '') AS SUMMARYINFO,
+            ifnull(sta.STATUSNAME, '') AS STATUSNAME,
+            ifnull(dep.PUBDEPNAME, '') AS PUBDEPNAME,
+            n.TYPENAME AS TYPENAME,
+            (
+                SELECT
+                    LISTAGG(file.CONTENT, ',') WITHIN GROUP (
+                        order by
+                            id
+                    )
+                FROM
+                    fgbz.m_sa_fileinfo file
+                WHERE
+                    file.REFID = t.ID
+                GROUP BY
+                    t.ID
+            ) AS filecontent
+        FROM
+            fgbz.m_bs_lawstandard t
+            LEFT JOIN fgbz.m_sa_lawstandardstatus sta ON t.STATUS = sta.ID
+            LEFT JOIN fgbz.m_bs_lawstandard_pubdep pub ON t.ID = pub.SID
+            LEFT JOIN fgbz.m_sa_publishdep dep ON dep.ID = pub.PUBDEPID
+            LEFT JOIN fgbz.m_bs_lawstandard_type m ON m.SID = t.ID
+            LEFT JOIN fgbz.m_bs_lawstandardtype n ON n.ID = m.LAWSTYPEID
+    ) m
     </update>
 
     <!--获取临时法规-->
     <select id="getTempLaw" parameterType="String" resultType="Lawstandard">
-        SELECT t.id FROM `m_bs_lawstandard` t where t.CHECKCODE =#{code} and t.APPROVESTATUS=4
+        SELECT t.id FROM fgbz.m_bs_lawstandard t where t.CHECKCODE =#{code} and t.APPROVESTATUS=4
     </select>
 
     <!--获取需要处理类别的法规-->
@@ -1316,172 +1268,143 @@ SELECT
 	law.id,
 	law.OLDID
 FROM
-	m_bs_lawstandard_type t
-	LEFT JOIN m_bs_lawstandardtype type ON t.LAWSTYPEID = type.id
-	LEFT JOIN m_bs_lawstandard law ON t.SID = law.id
+	fgbz.m_bs_lawstandard_type t
+	LEFT JOIN fgbz.m_bs_lawstandardtype type ON t.LAWSTYPEID = type.id
+	LEFT JOIN fgbz.m_bs_lawstandard law ON t.SID = law.id
 WHERE
 	type.TYPENAME = '数据迁移'
     </select>
 
     <!--获取历史法规-->
     <select id="selectHistroyLaw" parameterType="String" resultType="HistroyLawType">
-        	SELECT *from m_bs_changetype t where t.id=#{id}
+        	SELECT * from fgbz.m_bs_changetype t where t.id=#{id}
     </select>
 
     <!--获取历史法规类别-->
     <select id="getHistroyLawType" parameterType="HistroyLawType" resultType="String">
-         SELECT t1.id from m_bs_lawstandardtype t1
- left join m_bs_lawstandardtype t2 on t1.PARENTID=t2.ID
+         SELECT t1.id from fgbz.m_bs_lawstandardtype t1
+ left join fgbz.m_bs_lawstandardtype t2 on t1.PARENTID=t2.ID
  where replace(t1.TYPENAME,' ','')= #{type} and replace(t2.TYPENAME,' ','') =#{parenttype}
 LIMIT 0,1
     </select>
 
     <!--更新编号-->
     <update id="updateLawHistroyCode" parameterType="Lawstandard">
-        UPDATE m_bs_lawstandard t set t.CHECKCODE=#{checkcode},t.CODE = #{code},t.CHINESENAME = #{chinesename} where t.id = #{id}
+        UPDATE fgbz.m_bs_lawstandard t set t.CHECKCODE=#{checkcode},t.CODE = #{code},t.CHINESENAME = #{chinesename} where t.id = #{id}
     </update>
-    
+
     <select id="getDataChangeTypeid" resultType="String">
-        SELECT t.id from m_bs_lawstandardtype t where t.TYPENAME='数据迁移'
+        SELECT t.id from fgbz.m_bs_lawstandardtype t where t.TYPENAME='数据迁移'
     </select>
 
     <!--获取有审核权限的人-->
     <select id="getCheckPeople" parameterType="String" resultType="FG_User">
-      SELECT us.id,us.EMAIL from  m_sa_user us
+      SELECT us.id,us.EMAIL from fgbz.m_sa_user us
 where '待办箱' in
-(select sm.MENUNAME from m_sa_menu sm
-inner join m_sa_role_menu rm on rm.MENUID = sm.id
-inner join m_sa_user_role ur on ur.ROLEID = rm.ROLEID
+(select sm.MENUNAME from fgbz.m_sa_menu sm
+inner join fgbz.m_sa_role_menu rm on rm.MENUID = sm.id
+inner join fgbz.m_sa_user_role ur on ur.ROLEID = rm.ROLEID
 where ur.USERID = us.id
 )
-and us.`STATUS`=0 and us.id <![CDATA[  != ]]> #{id}
+and us.STATUS=0 and us.id != #{id}
     </select>
 
     <!--获取历史的需要更新编号和名称的法规-->
     <select id="getHistroyLawToUpdateCodeAndName" resultType="Lawstandard">
-        SELECT * FROM `m_bs_lawcode`
+        SELECT * FROM fgbz.m_bs_lawcode
     </select>
 
     <select id="getSolrById" parameterType="String" resultType="Slor">
-SELECT
-	`m`.`id` ,
-	concat(
-		`m`.`CODE`,
-		';',
-		`m`.`CHINESENAME`,
-		';',
-		`m`.`ENGLISHNAME`,
-		';',
-		`m`.`KEYWORDS`,
-		';',
-		`m`.`MEMO`,
-		';',
-		`m`.`SUMMARYINFO`,
-		';',
-		`m`.`STATUSNAME`,
-		';',
-		`m`.`PUBDEPNAME`,
-		';',
-		`m`.`TYPENAME`,
-		';',
-
-	IF (
-		isnull(`m`.`filecontent`),
-		'',
-		`m`.`filecontent`
-	)
-	) AS SOLRTEXT,
-	`m`.`CHINESENAME`,
-	`m`.`KEYWORDS`,
-	`m`.`SUMMARYINFO`,
-m.RELEASEDATE,
-m.clickcount,
-m.lawtype,
-m.modifydate,
-m.code,
-	`m`.`ENGLISHNAME`,
-m.lawstatus
-FROM
-	(
-		SELECT
-			`t`.`ID` AS `id`,
-			`t`.`CODE` AS `CODE`,
-			`t`.`CHINESENAME` AS `CHINESENAME`,
-
-		IF (
-			isnull(`t`.`ENGLISHNAME`),
-			'',
-			`t`.`ENGLISHNAME`
-		) AS `ENGLISHNAME`,
-
-	IF (
-		isnull(`t`.`KEYWORDS`),
-		'',
-		`t`.`KEYWORDS`
-	) AS `KEYWORDS`,
-
-IF (
-	isnull(`t`.`MEMO`),
-	'',
-	`t`.`MEMO`
-) AS `MEMO`,
-
-IF (
-	isnull(`t`.`SUMMARYINFO`),
-	'',
-	`t`.`SUMMARYINFO`
-) AS `SUMMARYINFO`,
-
-IF (
-	isnull(`sta`.`STATUSNAME`),
-	'',
-	`sta`.`STATUSNAME`
-) AS `STATUSNAME`,
-
-IF (
-	isnull(`dep`.`PUBDEPNAME`),
-	'',
-	`dep`.`PUBDEPNAME`
-) AS `PUBDEPNAME`,
- `n`.`TYPENAME` AS `TYPENAME`,
- (
-	SELECT
-		group_concat(
-			`file`.`CONTENT` SEPARATOR ','
-		)
-	FROM
-		`m_sa_fileinfo` `file`
-	WHERE
-		`file`.`REFID` = #{id}
-) AS `filecontent`,
-	t.RELEASEDATE,
-	t.clickcount,
-	n.id as lawtype,
-IF (
-	isnull(`t`.`STATUS`),
-	'',
-`t`.`STATUS`
-) AS lawstatus,
-t.modifydate
-FROM
-	`m_bs_lawstandard` `t`
-LEFT JOIN `m_sa_lawstandardstatus` `sta` ON `t`.`STATUS` = `sta`.`ID`
-LEFT JOIN (select temp.sid,max(temp.PUBDEPID) as PUBDEPID from `m_bs_lawstandard_pubdep` temp group by temp.sid) `pub` ON `t`.`ID` = `pub`.`SID`
-LEFT JOIN `m_sa_publishdep` `dep` ON `dep`.`ID` = `pub`.`PUBDEPID`
-LEFT JOIN m_bs_lawstandard_type `m` ON `m`.`SID` = `t`.`ID`
-LEFT JOIN m_bs_lawstandardtype `n` ON `n`.`ID` = `m`.`LAWSTYPEID`
- 	 WHERE `t`.`ID` =#{id}
-	) `m`
+        SELECT
+            m.id,
+            concat(
+                m.CODE,
+                ';',
+                m.CHINESENAME,
+                ';',
+                m.ENGLISHNAME,
+                ';',
+                m.KEYWORDS,
+                ';',
+                m.MEMO,
+                ';',
+                m.SUMMARYINFO,
+                ';',
+                m.STATUSNAME,
+                ';',
+                m.PUBDEPNAME,
+                ';',
+                m.TYPENAME,
+                ';',
+                ifnull(m.filecontent, '')
+            ) AS SOLRTEXT,
+            m.CHINESENAME,
+            m.KEYWORDS,
+            m.SUMMARYINFO,
+            m.RELEASEDATE,
+            m.clickcount,
+            m.lawtype,
+            m.modifydate,
+            m.code,
+            m.ENGLISHNAME,
+            m.lawstatus
+        FROM
+            (
+                SELECT
+                    t.ID AS id,
+                    t.CODE AS CODE,
+                    t.CHINESENAME AS CHINESENAME,
+                    ifnull(t.ENGLISHNAME, '') AS ENGLISHNAME,
+                    ifnull(t.KEYWORDS, '') AS KEYWORDS,
+                    ifnull(t.MEMO, '') AS MEMO,
+                    ifnull(t.SUMMARYINFO, '') AS SUMMARYINFO,
+                    ifnull(sta.STATUSNAME, '') AS STATUSNAME,
+                    ifnull(dep.PUBDEPNAME, '') AS PUBDEPNAME,
+                    n.TYPENAME AS TYPENAME,
+                    (
+                        SELECT
+                            LISTAGG(file.CONTENT, ',') WITHIN GROUP (
+                                order by
+                                    id
+                            )
+                        FROM
+                            fgbz.m_sa_fileinfo file
+                        WHERE
+                            file.REFID = #{id}
+                    ) AS filecontent,
+                    t.RELEASEDATE,
+                    t.clickcount,
+                    n.id as lawtype,
+                    ifnull(t.STATUS, '') AS lawstatus,
+                    t.modifydate
+                FROM
+                    fgbz.m_bs_lawstandard t
+                    LEFT JOIN fgbz.m_sa_lawstandardstatus sta ON t.STATUS = sta.ID
+                    LEFT JOIN (
+                        select
+                            temp.sid,
+                            max(temp.PUBDEPID) as PUBDEPID
+                        from
+                            fgbz.m_bs_lawstandard_pubdep temp
+                        group by
+                            temp.sid
+                    ) pub ON t.ID = pub.SID
+                    LEFT JOIN fgbz.m_sa_publishdep dep ON dep.ID = pub.PUBDEPID
+                    LEFT JOIN fgbz.m_bs_lawstandard_type m ON m.SID = t.ID
+                    LEFT JOIN fgbz.m_bs_lawstandardtype n ON n.ID = m.LAWSTYPEID
+                WHERE
+                    t.ID = #{id}
+            ) m;
     </select>
 
     <!--获取所有发布的法规-->
     <select id="getAllPubLishLaw" resultType="Lawstandard">
-        SELECT t.id FROM `m_bs_lawstandard` t where t.APPROVESTATUS=3
+        SELECT t.id FROM fgbz.m_bs_lawstandard t where t.APPROVESTATUS=3
     </select>
 
     <select id="getAllPeopleEmail" resultType="FG_User">
-          SELECT us.id,us.EMAIL from  m_sa_user us
-where  us.`STATUS`=0
+          SELECT us.id,us.EMAIL from fgbz.m_sa_user us
+where  us.STATUS=0
     </select>
 
     <!--按发布部门统计-->
@@ -1491,48 +1414,47 @@ where  us.`STATUS`=0
         FROM
         (
         SELECT
-        MAX( org.ORGNAME ) AS NAME,
-        count( 1 ) AS COUNT
+        MAX(org.ORGNAME) AS NAME,
+        count(1) AS COUNT
         FROM
-        m_sa_user ur
-
-        LEFT JOIN  m_bs_lawstandard law ON law.INPUTUSERID = ur.ID
-        LEFT JOIN m_sa_organization org ON ur.ORGID = org.ID
+        fgbz.m_sa_user ur
+        LEFT JOIN fgbz.m_bs_lawstandard law ON law.INPUTUSERID = ur.ID
+        LEFT JOIN fgbz.m_sa_organization org ON ur.ORGID = org.ID
         WHERE
-          ur.USERREALNAME <![CDATA[  != ]]> 'System' and law.APPROVESTATUS = 3
+        ur.USERREALNAME != 'System'
+        and law.APPROVESTATUS = 3
         <include refid="queryStatistic"></include>
-
         GROUP BY
         org.ID
         ) m
         ORDER BY
         count DESC
-        LIMIT 0,
-        10
+        LIMIT
+        0, 10
     </select>
 
     <select id="getChartByPeopleNormal" parameterType="map" resultType="ChartInfo">
         SELECT
-	*
-FROM
-	(
-SELECT
-	MAX( ur.USERREALNAME ) AS NAME,
-	count( 1 ) AS COUNT
-FROM
-	m_bs_lawstandard law
-     left join  m_sa_user ur on law.INPUTUSERID = ur.ID
-WHERE
-	law.APPROVESTATUS = 3 and ur.USERREALNAME <![CDATA[  != ]]> 'System'
+        *
+        FROM
+        (
+        SELECT
+        MAX( ur.USERREALNAME ) AS NAME,
+        count( 1 ) AS COUNT
+        FROM
+        fgbz.m_bs_lawstandard law
+        left join fgbz.m_sa_user ur on law.INPUTUSERID = ur.ID
+        WHERE
+        law.APPROVESTATUS = 3 and ur.USERREALNAME != 'System'
 
         <include refid="queryStatistic"></include>
- GROUP BY
+        GROUP BY
         law.INPUTUSERID
-	) m
-ORDER BY
-	count DESC
-	LIMIT 0,
-	10
+        ) m
+        ORDER BY
+        count DESC
+        LIMIT 0,
+        10
     </select>
 
     <select id="getChartByPeople" parameterType="map" resultType="ChartInfo">
@@ -1544,11 +1466,11 @@ ORDER BY
         MAX( ur.USERREALNAME ) AS NAME,
         count(law.id) AS COUNT
         FROM
-        m_sa_user ur
+        fgbz.m_sa_user ur
         left join
-        m_bs_lawstandard law on law.INPUTUSERID = ur.ID and law.APPROVESTATUS = 3
+        fgbz.m_bs_lawstandard law on law.INPUTUSERID = ur.ID and law.APPROVESTATUS = 3
         WHERE
-         ur.USERREALNAME <![CDATA[  != ]]> 'System'
+        ur.USERREALNAME != 'System'
         <include refid="queryStatistic1"></include>
         GROUP BY
         ur.id
@@ -1562,44 +1484,44 @@ ORDER BY
     <!--按类别统计-->
     <select id="getChartByType" parameterType="map" resultType="ChartInfo">
         SELECT
-	*
-FROM
-	(
-		SELECT
-			ty.TYPENAME AS NAME,
-			count(1) as count
-		FROM
-        m_bs_lawstandardtype ty
-		left join m_bs_lawstandard_type link ON  ty.ID = link.LAWSTYPEID
-		LEFT JOIN  m_bs_lawstandard law ON law.ID = link.SID and law.APPROVESTATUS = 3
-        left join  m_sa_user ur on law.INPUTUSERID = ur.ID
-		WHERE
-        ur.USERREALNAME <![CDATA[  != ]]> 'System'
+        *
+        FROM
+        (
+        SELECT
+        ty.TYPENAME AS NAME,
+        count(1) as count
+        FROM
+        fgbz.m_bs_lawstandardtype ty
+        left join fgbz.m_bs_lawstandard_type link ON ty.ID = link.LAWSTYPEID
+        LEFT JOIN fgbz.m_bs_lawstandard law ON law.ID = link.SID and law.APPROVESTATUS = 3
+        left join fgbz.m_sa_user ur on law.INPUTUSERID = ur.ID
+        WHERE
+        ur.USERREALNAME != 'System'
         <include refid="queryStatistic"></include>
-		GROUP BY
-			link.LAWSTYPEID
-	) t
-ORDER BY
-	t.count DESC
-LIMIT 0,
- 10
+        GROUP BY
+        link.LAWSTYPEID,ty.TYPENAME
+        ) t
+        ORDER BY
+        t.count DESC
+        LIMIT 0,
+        10
     </select>
 
     <sql id="queryStatistic">
         <if test="FiledTimeStart != null and FiledTimeStart != ''">
-            and Date(law.INPUTDATE) <![CDATA[  >=  ]]> #{FiledTimeStart}
+            and cast(law.INPUTDATE as Date) <![CDATA[  >=  ]]> #{FiledTimeStart}
         </if>
         <if test="FiledTimeEnd != null and FiledTimeEnd != ''">
-            and Date(law.INPUTDATE) <![CDATA[  <=  ]]> #{FiledTimeEnd}
+            and cast(law.INPUTDATE as Date) <![CDATA[  <=  ]]> #{FiledTimeEnd}
         </if>
         <if test="Organization != null and Organization != ''">
-            and  ur.ORGID in
+            and ur.ORGID in
             <foreach collection="Organization" item="item" open="(" close=")" separator=",">
                 #{item.id}
             </foreach>
         </if>
-        <if test="TreeValue !=null and TreeValue!=''" >
-            and law.id in (select lt.SID from m_bs_lawstandard_type lt where lt.LAWSTYPEID in
+        <if test="TreeValue !=null and TreeValue!=''">
+            and law.id in (select lt.SID from fgbz.m_bs_lawstandard_type lt where lt.LAWSTYPEID in
             <foreach collection="TreeValue" item="item" open="(" close=")" separator=",">
                 #{item.id}
             </foreach>
@@ -1615,19 +1537,19 @@ LIMIT 0,
 
     <sql id="queryStatistic1">
         <if test="FiledTimeStart != null and FiledTimeStart != ''">
-            and Date(law.INPUTDATE) <![CDATA[  >=  ]]> #{FiledTimeStart}
+            and cast(law.INPUTDATE as Date) <![CDATA[  >=  ]]> #{FiledTimeStart}
         </if>
         <if test="FiledTimeEnd != null and FiledTimeEnd != ''">
-            and Date(law.INPUTDATE) <![CDATA[  <=  ]]> #{FiledTimeEnd}
+            and cast(law.INPUTDATE as Date) <![CDATA[  <=  ]]> #{FiledTimeEnd}
         </if>
         <if test="Organization != null and Organization != ''">
-            and  ur.ORGID in
+            and ur.ORGID in
             <foreach collection="Organization" item="item" open="(" close=")" separator=",">
                 #{item.id}
             </foreach>
         </if>
-        <if test="TreeValue !=null and TreeValue!=''" >
-            and law.id in (select lt.SID from m_bs_lawstandard_type lt where lt.LAWSTYPEID in
+        <if test="TreeValue !=null and TreeValue!=''">
+            and law.id in (select lt.SID from fgbz.m_bs_lawstandard_type lt where lt.LAWSTYPEID in
             <foreach collection="TreeValue" item="item" open="(" close=")" separator=",">
                 #{item.id}
             </foreach>
@@ -1643,31 +1565,31 @@ LIMIT 0,
 
     <!--技术文档统计-->
     <select id="getChartByPubTec" parameterType="map" resultType="ChartInfo">
-SELECT
-	*
-FROM
-	(
-SELECT
-	MAX( org.ORGNAME ) AS NAME,
-	count( 1 ) AS COUNT
-FROM
-	m_bs_tech tec
+        SELECT
+        *
+        FROM
+        (
+        SELECT
+        MAX( org.ORGNAME ) AS NAME,
+        count( 1 ) AS COUNT
+        FROM
+        fgbz.m_bs_tech tec
 
-	LEFT JOIN m_sa_user us ON tec.INPUTUSERID = us.ID
-	LEFT JOIN m_sa_organization org ON us.ORGID = org.ID
-WHERE
-	tec.APPROVESTATUS = 2 and us.USERREALNAME <![CDATA[  != ]]> 'System'
+        LEFT JOIN fgbz.m_sa_user us ON tec.INPUTUSERID = us.ID
+        LEFT JOIN fgbz.m_sa_organization org ON us.ORGID = org.ID
+        WHERE
+        tec.APPROVESTATUS = 2 and us.USERREALNAME != 'System'
         <include refid="queryStatisticTec"></include>
 
-GROUP BY
-	org.ID
-	) m
-ORDER BY
-	count DESC
-	LIMIT 0,
-	10
+        GROUP BY
+        org.ID
+        ) m
+        ORDER BY
+        count DESC
+        LIMIT 0,
+        10
     </select>
-    
+
     <select id="getChartByPeopleTec" parameterType="map" resultType="ChartInfo">
         SELECT
         *
@@ -1677,10 +1599,10 @@ ORDER BY
         MAX( us.USERREALNAME ) AS NAME,
         count( 1 ) AS COUNT
         FROM
-        m_bs_tech tec
-        left join  m_sa_user us on tec.INPUTUSERID = us.ID
+        fgbz.m_bs_tech tec
+        left join fgbz.m_sa_user us on tec.INPUTUSERID = us.ID
         WHERE
-        tec.APPROVESTATUS = 2 and us.USERREALNAME <![CDATA[  != ]]> 'System'
+        tec.APPROVESTATUS = 2 and us.USERREALNAME != 'System'
 
         <include refid="queryStatisticTec"></include>
         GROUP BY
@@ -1701,16 +1623,16 @@ ORDER BY
         ty.TYPENAME AS NAME,
         count(1) as count
         FROM
-        m_bs_tech tec
-        left join  m_sa_user us on tec.INPUTUSERID = us.ID
-        left join m_bs_tech_type link ON tec.ID = link.SID
-        LEFT JOIN m_bs_techtype ty ON ty.ID = link.LAWSTYPEID
+        fgbz.m_bs_tech tec
+        left join fgbz.m_sa_user us on tec.INPUTUSERID = us.ID
+        left join fgbz.m_bs_tech_type link ON tec.ID = link.SID
+        LEFT JOIN fgbz.m_bs_techtype ty ON ty.ID = link.LAWSTYPEID
         WHERE
         tec.APPROVESTATUS = 2
 
         <include refid="queryStatisticTec"></include>
         GROUP BY
-        link.LAWSTYPEID
+        link.LAWSTYPEID,ty.TYPENAME
         ) t
         ORDER BY
         t.count DESC
@@ -1720,19 +1642,19 @@ ORDER BY
 
     <sql id="queryStatisticTec">
         <if test="FiledTimeStart != null and FiledTimeStart != ''">
-            and Date(tec.INPUTDATE) <![CDATA[  >=  ]]> #{FiledTimeStart}
+            and cast(tec.INPUTDATE as Date) <![CDATA[  >=  ]]> #{FiledTimeStart}
         </if>
         <if test="FiledTimeEnd != null and FiledTimeEnd != ''">
-            and Date(tec.INPUTDATE) <![CDATA[  <=  ]]> #{FiledTimeEnd}
+            and cast(tec.INPUTDATE as Date) <![CDATA[  <=  ]]> #{FiledTimeEnd}
         </if>
         <if test="Organization != null and Organization != ''">
-            and  us.ORGID in
+            and us.ORGID in
             <foreach collection="Organization" item="item" open="(" close=")" separator=",">
                 #{item.id}
             </foreach>
         </if>
-        <if test="TreeValue !=null and TreeValue!=''" >
-            and tec.id in (select lt.SID from m_bs_tech_type lt where lt.LAWSTYPEID in
+        <if test="TreeValue !=null and TreeValue!=''">
+            and tec.id in (select lt.SID from fgbz.m_bs_tech_type lt where lt.LAWSTYPEID in
             <foreach collection="TreeValue" item="item" open="(" close=")" separator=",">
                 #{item.id}
             </foreach>
@@ -1746,17 +1668,17 @@ ORDER BY
         </if>
     </sql>
 
-    <update id="setLawCounEmpty" >
-         UPDATE m_bs_lawstandardtype set LAWCOUNT =0;
+    <update id="setLawCounEmpty">
+         UPDATE fgbz.m_bs_lawstandardtype set LAWCOUNT =0;
     </update>
 
     <select id="allPublshLaw" resultType="Lawstandard">
-        SELECT link.LAWSTYPEID as lawtype from m_bs_lawstandard t
-LEFT join m_bs_lawstandard_type link on t.ID = link.SID where t.APPROVESTATUS=3
+        SELECT link.LAWSTYPEID as lawtype from fgbz.m_bs_lawstandard t
+LEFT join fgbz.m_bs_lawstandard_type link on t.ID = link.SID where t.APPROVESTATUS=3
     </select>
 
     <select id="getReleasedateByLawId" resultType="String" parameterType="String">
-        SELECT  t.RELEASEDATE from m_bs_lawstandard t where t.id = #{id}
+        SELECT  t.RELEASEDATE from fgbz.m_bs_lawstandard t where t.id = #{id}
     </select>
 
 </mapper>

@@ -101,7 +101,7 @@
       distinct
     </if>
     <include refid="Base_Column_List" />
-    from m_bs_lawstandard
+    from fgbz.m_bs_lawstandard
     <if test="_parameter != null">
       <include refid="Example_Where_Clause" />
     </if>
@@ -110,13 +110,13 @@
     </if>
   </select>
   <delete id="deleteByExample" parameterType="com.kotei.pojo.MBsLawstandardExample">
-    delete from m_bs_lawstandard
+    delete from fgbz.m_bs_lawstandard
     <if test="_parameter != null">
       <include refid="Example_Where_Clause" />
     </if>
   </delete>
   <insert id="insert" parameterType="com.kotei.pojo.MBsLawstandard">
-    insert into m_bs_lawstandard (ID, CODE, CHINESENAME, 
+    insert into fgbz.m_bs_lawstandard (ID, CODE, CHINESENAME, 
       ENGLISHNAME, ISCONTROL, RELEASEDATE, 
       IMPDATE, KEYWORDS, ISBATCH, 
       INPUTUSERID, INPUTDATE, MODIFYUSERID, 
@@ -138,7 +138,7 @@
       #{sortno,jdbcType=INTEGER})
   </insert>
   <insert id="insertSelective" parameterType="com.kotei.pojo.MBsLawstandard">
-    insert into m_bs_lawstandard
+    insert into fgbz.m_bs_lawstandard
     <trim prefix="(" suffix=")" suffixOverrides=",">
       <if test="id != null">
         ID,
@@ -313,13 +313,13 @@
     </trim>
   </insert>
   <select id="countByExample" parameterType="com.kotei.pojo.MBsLawstandardExample" resultType="java.lang.Long">
-    select count(*) from m_bs_lawstandard
+    select count(*) from fgbz.m_bs_lawstandard
     <if test="_parameter != null">
       <include refid="Example_Where_Clause" />
     </if>
   </select>
   <update id="updateByExampleSelective" parameterType="map">
-    update m_bs_lawstandard
+    update fgbz.m_bs_lawstandard
     <set>
       <if test="record.id != null">
         ID = #{record.id,jdbcType=INTEGER},
@@ -411,7 +411,7 @@
     </if>
   </update>
   <update id="updateByExample" parameterType="map">
-    update m_bs_lawstandard
+    update fgbz.m_bs_lawstandard
     set ID = #{record.id,jdbcType=INTEGER},
       CODE = #{record.code,jdbcType=VARCHAR},
       CHINESENAME = #{record.chinesename,jdbcType=VARCHAR},

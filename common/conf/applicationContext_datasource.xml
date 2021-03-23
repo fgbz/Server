@@ -39,7 +39,7 @@
     <!-- modify by liulang add destroy-method -->
     <bean id="koteidb" parent="dbcpm"
           class="org.apache.commons.dbcp2.BasicDataSource" destroy-method="close">
-        <property name="driverClassName" value="com.mysql.jdbc.Driver" />
+        <property name="driverClassName" value="${jdbc.kotei.driverClassName}" />
         <property name="url" value="${jdbc.kotei.url}" />
         <property name="username" value="${jdbc.kotei.username}" />
         <property name="password" value="${jdbc.kotei.password}" />

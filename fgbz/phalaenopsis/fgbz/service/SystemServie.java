@@ -7,15 +7,12 @@ import org.apache.pdfbox.text.PDFTextStripper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.bind.annotation.RequestBody;
 import phalaenopsis.common.dao.IAttachmentDao;
 import phalaenopsis.common.entity.Attachment.Attachment;
-import phalaenopsis.common.entity.Attachment.AttachmentSource;
 import phalaenopsis.common.entity.Condition;
 import phalaenopsis.common.entity.OpResult;
 import phalaenopsis.common.entity.Page;
 import phalaenopsis.common.entity.PagingEntity;
-import phalaenopsis.common.method.Attachment.Multipart;
 import phalaenopsis.common.method.Tools.StrUtil;
 import phalaenopsis.common.method.cache.UserCache;
 import phalaenopsis.common.service.AttachmentService;
@@ -57,35 +54,35 @@ public class SystemServie {
     @Autowired
     private AttachmentService attachmentService;
 
-    private  List<FG_Organization> ids = new ArrayList<FG_Organization>();
+    private List<FG_Organization> ids = new ArrayList<FG_Organization>();
 
     private List<File> filelist = new ArrayList<>();
 
-    public  Map<String, Object> login(String accountJm, String passwordJm){
+    public Map<String, Object> login(String accountJm, String passwordJm) {
 
         Map<String, Object> map = new HashMap<String, Object>();
 
-        Map<String,Object> map1 = new HashMap<>();
+        Map<String, Object> map1 = new HashMap<>();
 
-        map1.put("account",accountJm);
-        map1.put("password",passwordJm);
+        map1.put("account", accountJm);
+        map1.put("password", passwordJm);
         FG_User user = systemDao.getUserByAccount(map1);
 
-        if(user!=null&&user.getRoles()!=null&&user.getRoles().size()>0){
+        if (user != null && user.getRoles() != null && user.getRoles().size() > 0) {
             //获取用户所有权限
             user.setMenus(systemDao.getUserMenu(user));
         }
 
-        if(user==null){
+        if (user == null) {
             map.put("LoginState", "Fail");
-        }else if(user.getStatus()==1){
+        } else if (user.getStatus() == 1) {
             map.put("LoginState", "Disconnected");
-        }else{
-            Map<String, Object> mapList =  grtUserListByOrgId(user.getOrgid());
-            user.setUserList((List<FG_User>)mapList.get("UserList"));
+        } else {
+            Map<String, Object> mapList = grtUserListByOrgId(user.getOrgid());
+            user.setUserList((List<FG_User>) mapList.get("UserList"));
             user.setOrgList((List<FG_Organization>) mapList.get("OrgList"));
 
-            user.setUserListWithOutAdmin((List<FG_User>)mapList.get("UserListWithOutAdmin"));
+            user.setUserListWithOutAdmin((List<FG_User>) mapList.get("UserListWithOutAdmin"));
             map.put("LoginState", "Success");
         }
         map.put("LoginResult", user);
@@ -99,101 +96,102 @@ public class SystemServie {
 
     /**
      * 处理邮件
+     *
      * @param map
      * @return
      */
     @Transactional
-    public int MailSetting( Map<String, String> map){
+    public int MailSetting(Map<String, String> map) {
 
         Map<String, String> map1 = new HashMap<>();
-        map1.put("key","MailServerAddress");
-        map1.put("value",map.get("MailServerAddress").toString());
+        map1.put("key", "MailServerAddress");
+        map1.put("value", map.get("MailServerAddress").toString());
         systemDao.SaveOrUpdateSettingValue(map1);
 
         Map<String, String> map2 = new HashMap<>();
-        map2.put("key","HairBoxAddress");
-        map2.put("value",map.get("HairBoxAddress").toString());
+        map2.put("key", "HairBoxAddress");
+        map2.put("value", map.get("HairBoxAddress").toString());
         systemDao.SaveOrUpdateSettingValue(map2);
 
         Map<String, String> map3 = new HashMap<>();
-        map3.put("key","Theme");
-        map3.put("value",map.get("Theme").toString());
+        map3.put("key", "Theme");
+        map3.put("value", map.get("Theme").toString());
         systemDao.SaveOrUpdateSettingValue(map3);
 
         Map<String, String> map4 = new HashMap<>();
-        map4.put("key","Text");
-        map4.put("value",map.get("Text").toString());
+        map4.put("key", "Text");
+        map4.put("value", map.get("Text").toString());
         systemDao.SaveOrUpdateSettingValue(map4);
 
         Map<String, String> map5 = new HashMap<>();
-        map5.put("key","NoPassTheme");
-        map5.put("value",map.get("NoPassTheme").toString());
+        map5.put("key", "NoPassTheme");
+        map5.put("value", map.get("NoPassTheme").toString());
         systemDao.SaveOrUpdateSettingValue(map5);
 
         Map<String, String> map6 = new HashMap<>();
-        map6.put("key","NoPassText");
-        map6.put("value",map.get("NoPassText").toString());
+        map6.put("key", "NoPassText");
+        map6.put("value", map.get("NoPassText").toString());
         systemDao.SaveOrUpdateSettingValue(map6);
 
         Map<String, String> map7 = new HashMap<>();
-        map7.put("key","PublishTheme");
-        map7.put("value",map.get("PublishTheme").toString());
+        map7.put("key", "PublishTheme");
+        map7.put("value", map.get("PublishTheme").toString());
         systemDao.SaveOrUpdateSettingValue(map7);
 
         Map<String, String> map8 = new HashMap<>();
-        map8.put("key","PublishText");
-        map8.put("value",map.get("PublishText").toString());
+        map8.put("key", "PublishText");
+        map8.put("value", map.get("PublishText").toString());
         systemDao.SaveOrUpdateSettingValue(map8);
         return OpResult.Success;
     }
 
-    public Map<String, String> getMailSetting(){
+    public Map<String, String> getMailSetting() {
         Map<String, String> map = new HashMap<>();
-        map.put("MailServerAddress",fgbzDicDao.getSettingByKey("MailServerAddress"));
-        map.put("HairBoxAddress",fgbzDicDao.getSettingByKey("HairBoxAddress"));
-        map.put("Theme",fgbzDicDao.getSettingByKey("Theme"));
-        map.put("Text",fgbzDicDao.getSettingByKey("Text"));
-        map.put("NoPassTheme",fgbzDicDao.getSettingByKey("NoPassTheme"));
-        map.put("NoPassText",fgbzDicDao.getSettingByKey("NoPassText"));
-        map.put("PublishTheme",fgbzDicDao.getSettingByKey("PublishTheme"));
-        map.put("PublishText",fgbzDicDao.getSettingByKey("PublishText"));
+        map.put("MailServerAddress", fgbzDicDao.getSettingByKey("MailServerAddress"));
+        map.put("HairBoxAddress", fgbzDicDao.getSettingByKey("HairBoxAddress"));
+        map.put("Theme", fgbzDicDao.getSettingByKey("Theme"));
+        map.put("Text", fgbzDicDao.getSettingByKey("Text"));
+        map.put("NoPassTheme", fgbzDicDao.getSettingByKey("NoPassTheme"));
+        map.put("NoPassText", fgbzDicDao.getSettingByKey("NoPassText"));
+        map.put("PublishTheme", fgbzDicDao.getSettingByKey("PublishTheme"));
+        map.put("PublishText", fgbzDicDao.getSettingByKey("PublishText"));
 
         FG_User user = getCurrentFGUser();
         List<FG_User> list = lawstandardDao.getCheckPeople(user.getId());
-        String mail="";
-        if(list!=null&&list.size()>0){
-            for (FG_User fG_User:list) {
-                if(!StrUtil.isNullOrEmpty(fG_User.getEmail())){
-                    mail+=fG_User.getEmail()+",";
+        String mail = "";
+        if (list != null && list.size() > 0) {
+            for (FG_User fG_User : list) {
+                if (!StrUtil.isNullOrEmpty(fG_User.getEmail())) {
+                    mail += fG_User.getEmail() + ",";
                 }
             }
-            if(!StrUtil.isNullOrEmpty(mail)){
-                mail = mail.substring(0,mail.length() - 1);
+            if (!StrUtil.isNullOrEmpty(mail)) {
+                mail = mail.substring(0, mail.length() - 1);
             }
 
         }
-        map.put("Email",mail);
+        map.put("Email", mail);
 
         List<FG_User> listAll = lawstandardDao.getAllPeopleEmail();
-        String allmail="";
-        if(listAll!=null&&listAll.size()>0){
-            for (FG_User fG_User1:listAll) {
-                if(!StrUtil.isNullOrEmpty(fG_User1.getEmail())){
-                    allmail+=fG_User1.getEmail()+",";
+        String allmail = "";
+        if (listAll != null && listAll.size() > 0) {
+            for (FG_User fG_User1 : listAll) {
+                if (!StrUtil.isNullOrEmpty(fG_User1.getEmail())) {
+                    allmail += fG_User1.getEmail() + ",";
                 }
             }
-            if(!StrUtil.isNullOrEmpty(allmail)){
-                allmail = allmail.substring(0,allmail.length() - 1);
+            if (!StrUtil.isNullOrEmpty(allmail)) {
+                allmail = allmail.substring(0, allmail.length() - 1);
             }
 
         }
-        map.put("AllEmail",allmail);
+        map.put("AllEmail", allmail);
 
         return map;
     }
+
     //提取中文数字和字母
-    public String filter(String character)
-    {
+    public String filter(String character) {
         character = character.replaceAll("[^a-zA-Z0-9\\u4e00-\\u9fa5]", "");
         return character;
     }
@@ -204,18 +202,18 @@ public class SystemServie {
         filelist = new ArrayList<>();
         getFileList(path);
 
-        if(filelist.size()==0){
+        if (filelist.size() == 0) {
 
-            return  OpResult.PreconditionFailed;
+            return OpResult.PreconditionFailed;
         }
         //历史法规
         List<Lawstandard> histroyLaws = lawstandardDao.getHistroyLaws();
 
         FG_User user = getCurrentFGUser();
-        if(histroyLaws!=null&&histroyLaws.size()>0) {
+        if (histroyLaws != null && histroyLaws.size() > 0) {
 
-            for (Lawstandard lawstandard:histroyLaws) {
-                List<Attachment> getAttachments =dao.getAttachments(lawstandard.getOldid());
+            for (Lawstandard lawstandard : histroyLaws) {
+                List<Attachment> getAttachments = dao.getAttachments(lawstandard.getOldid());
 
                 lawstandard.setInputuserid(user.getId());
                 lawstandard.setLawtype("0055d568-536b-4275-8e69-d5be69e3112c");
@@ -237,8 +235,8 @@ public class SystemServie {
                 lawstandardDao.updateReplacePidByOldID(lawstandard);
 
                 //处理附件
-                if(getAttachments!=null&&getAttachments.size()>0){
-                    for (Attachment attachment:getAttachments) {
+                if (getAttachments != null && getAttachments.size() > 0) {
+                    for (Attachment attachment : getAttachments) {
                         attachment.setRefid(lawstandard.getId());
                         handleFile(attachment);
                     }
@@ -248,25 +246,24 @@ public class SystemServie {
 //                lawstandardDao.SaveSolrTextById(lawstandard.getId());
 
 
-
             }
 
         }
 
-        return  OpResult.Success;
+        return OpResult.Success;
     }
 
     public void handleFile(Attachment attachment) throws IOException {
 
         FG_User user = getCurrentFGUser();
-        for(int i=0;i<filelist.size();i++){
-            if(filelist.get(i).getName().equals(attachment.getActualFile())){
+        for (int i = 0; i < filelist.size(); i++) {
+            if (filelist.get(i).getName().equals(attachment.getActualFile())) {
                 String oldid = attachment.getId();
 
                 String guid = UUID.randomUUID().toString();
                 String fileName = attachment.getActualFile();
                 String ext = FilenameUtils.getExtension(fileName); // fileName.split("\\.")[1];
-                String storeFile =guid + "." + ext;
+                String storeFile = guid + "." + ext;
 
                 // 保存文件
                 String storageFolder = Attachment.GetFileStorageFolder(guid);
@@ -282,13 +279,11 @@ public class SystemServie {
                     int size = 0;
                     byte[] buf = new byte[1024];
                     while ((size = ii.read(buf)) != -1) {
-                        oo.write(buf,0,size);
+                        oo.write(buf, 0, size);
                     }
                 } catch (FileNotFoundException e) {
                     e.printStackTrace();
-                }
-                finally
-                {
+                } finally {
                     oo.flush();
                     oo.close();
                     ii.close();
@@ -299,30 +294,27 @@ public class SystemServie {
                 attachment.setPath(storageFolder);
                 attachment.setInputuserid(user.getId());
                 //法规上传需要解析获取pdf中的文字
-                if(ext.toLowerCase().equals("pdf")){
+                if (ext.toLowerCase().equals("pdf")) {
                     try {
-                        PDDocument document=PDDocument.load(file);
+                        PDDocument document = PDDocument.load(file);
                         // 获取页码
                         int pages = document.getNumberOfPages();
 
                         // 读文本内容
-                        PDFTextStripper stripper=new PDFTextStripper();
+                        PDFTextStripper stripper = new PDFTextStripper();
                         // 设置按顺序输出
                         stripper.setSortByPosition(true);
                         stripper.setStartPage(1);
                         stripper.setEndPage(pages);
                         String content = stripper.getText(document);
                         attachment.setContent(content);
-                    }catch (Exception e){
+                    } catch (Exception e) {
 
                     }
-
-
-
                 }
-                if(isDocFile(ext)){
+                if (isDocFile(ext)) {
                     //转化office pdf
-                    office2PDF.office2PDF(storageFolder + storeFile,storageFolder+guid+".pdf");
+                    office2PDF.office2OFD(storageFolder + storeFile, storageFolder + guid + ".ofd");
                 }
                 dao.deleteFgbzfile(oldid);
                 dao.saveFgbz(attachment);
@@ -339,7 +331,7 @@ public class SystemServie {
         return result;
     }
 
-    public  void getFileList(String strPath) {
+    public void getFileList(String strPath) {
         File dir = new File(strPath);
         File[] files = dir.listFiles(); // 该文件目录下文件全部放入数组
         if (files != null) {
@@ -352,6 +344,7 @@ public class SystemServie {
             }
         }
     }
+
     /**
      * 获取组织机构
      *
@@ -364,15 +357,16 @@ public class SystemServie {
 
     /**
      * 新增或修改组织机构
+     *
      * @param organization
      * @return
      */
     @Transactional
-    @ILog(description="保存组织机构")
-    public int  AddOrUpdateOrganizationType(FG_Organization organization){
-        if(organization.getId()==null||organization.getId().equals("")){
-            UUID uuid=UUID.randomUUID();
-            String guid=uuid.toString();
+    @ILog(description = "保存组织机构")
+    public int AddOrUpdateOrganizationType(FG_Organization organization) {
+        if (organization.getId() == null || organization.getId().equals("")) {
+            UUID uuid = UUID.randomUUID();
+            String guid = uuid.toString();
             organization.setId(guid);
         }
 
@@ -381,48 +375,51 @@ public class SystemServie {
         FG_Organization handleitem = organization.getHandleitem();
 
         //处理不同的类型
-        switch(organization.getHandletype()){
+        switch (organization.getHandletype()) {
             case "addEqual":
-                itemlevelcode=  getLastItemLevelcode(handleitem.getParentid());
+                itemlevelcode = getLastItemLevelcode(handleitem.getParentid());
                 organization.setItemlevelcode(itemlevelcode);
                 break;
             case "addDown":
-                itemlevelcode=  getLastItemLevelcode(handleitem.getId());
+                itemlevelcode = getLastItemLevelcode(handleitem.getId());
                 organization.setItemlevelcode(itemlevelcode);
                 break;
             case "moveUp":
-                if(!StrUtil.isNullOrEmpty(organization.getItemlevelcode().toString())){
+                if (!StrUtil.isNullOrEmpty(organization.getItemlevelcode().toString())) {
                     handTreeLevel(organization);
-                    organization.setItemlevelcode(organization.getItemlevelcode()-1);
+                    organization.setItemlevelcode(organization.getItemlevelcode() - 1);
                 }
                 break;
             case "moveDown":
-                if(!StrUtil.isNullOrEmpty(organization.getItemlevelcode().toString())){
+                if (!StrUtil.isNullOrEmpty(organization.getItemlevelcode().toString())) {
                     handTreeLevel(organization);
-                    organization.setItemlevelcode(organization.getItemlevelcode()+1);
+                    organization.setItemlevelcode(organization.getItemlevelcode() + 1);
                 }
                 break;
         }
-         systemDao.AddOrUpdateOrganizationType(organization);
+        systemDao.AddOrUpdateOrganizationType(organization);
         return OpResult.Success;
     }
 
     /**
      * 获取当前层级最后的层级代码
+     *
      * @param id
      * @return
      */
-    public int getLastItemLevelcode(String id){
+    public int getLastItemLevelcode(String id) {
         return systemDao.getLastItemLevelcode(id);
     }
 
     /**
      * 处理上移和下移
+     *
      * @return
      */
-    public int handTreeLevel(FG_Organization organization){
-        return  systemDao.handTreeLevel(organization);
+    public int handTreeLevel(FG_Organization organization) {
+        return systemDao.handTreeLevel(organization);
     }
+
     /**
      * 删除组织机构
      *
@@ -430,49 +427,53 @@ public class SystemServie {
      * @return
      */
     @Transactional
-    @ILog(description="删除组织机构")
+    @ILog(description = "删除组织机构")
     public int DeleteOrganization(FG_Organization organization) {
         handTreeLevel(organization);
-         systemDao.DeleteOrganization(organization);
+        systemDao.DeleteOrganization(organization);
         return OpResult.Success;
     }
 
     /**
      * 获取子节点
+     *
      * @param id
      * @return
      */
-    public List<FG_Organization> getChildNode(String id){
+    public List<FG_Organization> getChildNode(String id) {
         return systemDao.getChildNode(id);
     }
 
     /**
      * 获取所有的权限菜单
+     *
      * @return
      */
-    public  List<FG_Menu>  getAllMenus(){
+    public List<FG_Menu> getAllMenus() {
         return systemDao.getAllMenus();
     }
 
     /**
      * 获取所有的角色
+     *
      * @return
      */
-    public List<FG_Role>  getAllRoles(){
+    public List<FG_Role> getAllRoles() {
         return systemDao.getAllRoles();
     }
 
     /**
      * 获取权限列表
+     *
      * @param page
      * @return
      */
-    public PagingEntity<FG_Role> getRoles(Page page){
+    public PagingEntity<FG_Role> getRoles(Page page) {
         Map<String, Object> conditions = new HashMap<String, Object>();
         // 1,根据条件一共查询到的数据条数
         int count = systemDao.getRolesCount();
 
-        if(page.getConditions()!=null) {
+        if (page.getConditions() != null) {
             //查询条件
             for (Condition condition : page.getConditions()) {
                 if (condition.getKey().equals("Name")) {
@@ -480,10 +481,10 @@ public class SystemServie {
                 }
             }
         }
-        if(page.getPageNo()==1){
-            conditions.put("startRow", 0 );
-        }else{
-            conditions.put("startRow", page.getPageSize() * (page.getPageNo() -1) );
+        if (page.getPageNo() == 1) {
+            conditions.put("startRow", 0);
+        } else {
+            conditions.put("startRow", page.getPageSize() * (page.getPageNo() - 1));
         }
         conditions.put("endRow", page.getPageSize() * page.getPageNo());
 
@@ -505,31 +506,33 @@ public class SystemServie {
 
     /**
      * 删除角色
+     *
      * @param id
      * @return
      */
-    @ILog(description="删除角色")
-    public int deleteRoleByID(String id){
-        return  systemDao.deleteRoleByID(id);
+    @ILog(description = "删除角色")
+    public int deleteRoleByID(String id) {
+        return systemDao.deleteRoleByID(id);
     }
 
     /**
      * 新增或编辑权限
+     *
      * @param role
      * @return
      */
     @Transactional
-    @ILog(description="保存权限")
-    public int SaveOrEditRole(FG_Role role){
-        if(role.getId()==null||role.getId().equals("")){
-            UUID uuid=UUID.randomUUID();
-            String guid=uuid.toString();
+    @ILog(description = "保存权限")
+    public int SaveOrEditRole(FG_Role role) {
+        if (role.getId() == null || role.getId().equals("")) {
+            UUID uuid = UUID.randomUUID();
+            String guid = uuid.toString();
             role.setId(guid);
         }
 
-        if(role.getMenus()!=null&&role.getMenus().size()>0){
-            for (FG_Menu  m:role.getMenus()
-                 ) {
+        if (role.getMenus() != null && role.getMenus().size() > 0) {
+            for (FG_Menu m : role.getMenus()
+            ) {
                 m.setTableid(UUID.randomUUID().toString());
             }
         }
@@ -538,37 +541,38 @@ public class SystemServie {
 
     /**
      * 保存或编辑用户
+     *
      * @param user
      * @return
      */
     @Transactional
-    @ILog(description="保存用户")
-    public int SaveOrUpdateUser(FG_User user){
+    @ILog(description = "保存用户")
+    public int SaveOrUpdateUser(FG_User user) {
 
         int num = systemDao.checkUserRepeat(user);
-        if(num>0){
+        if (num > 0) {
             int isWorking = 461;
             OpResult opResult = new OpResult(isWorking);
             return opResult.Code;
         }
 
-        if(user.getId()==null||user.getId().equals("")){
-            UUID uuid=UUID.randomUUID();
-            String guid=uuid.toString();
+        if (user.getId() == null || user.getId().equals("")) {
+            UUID uuid = UUID.randomUUID();
+            String guid = uuid.toString();
             user.setId(guid);
             user.setFavoriteid(UUID.randomUUID().toString());
             systemDao.SaveUserFavorite(user);
-        }else{
+        } else {
             systemDao.DeleteUserRolesByUserID(user.getId());
         }
-         systemDao.SaveOrUpdateUser(user);
+        systemDao.SaveOrUpdateUser(user);
 
-        if(user.getRoles()!=null&&user.getRoles().size()>0){
+        if (user.getRoles() != null && user.getRoles().size() > 0) {
 
-                for (FG_Role r:user.getRoles()
-                        ) {
-                    r.setTableid(UUID.randomUUID().toString());
-                }
+            for (FG_Role r : user.getRoles()
+            ) {
+                r.setTableid(UUID.randomUUID().toString());
+            }
 
             systemDao.SaveUserRoles(user);
         }
@@ -577,22 +581,22 @@ public class SystemServie {
         return OpResult.Success;
     }
 
-    public int SaveUserStatus(String id,int type){
+    public int SaveUserStatus(String id, int type) {
         Map<String, Object> map = new HashMap<>();
-        map.put("id",id);
-        map.put("status",type);
+        map.put("id", id);
+        map.put("status", type);
         systemDao.SaveUserStatus(map);
         return OpResult.Success;
     }
 
-    public  List<FG_Organization> getOrgsTree(String id){
+    public List<FG_Organization> getOrgsTree(String id) {
 
         List<FG_Organization> list = getChildNode(id);
 
-        while (list!=null&&list.size()>0){
+        while (list != null && list.size() > 0) {
             ids.addAll(list);
-            for(FG_Organization organization:list){
-                list=getOrgsTree(organization.getId());
+            for (FG_Organization organization : list) {
+                list = getOrgsTree(organization.getId());
             }
         }
         return list;
@@ -600,25 +604,26 @@ public class SystemServie {
 
     /**
      * 获取人员
+     *
      * @param page
      * @return
      */
-    public PagingEntity<FG_User> getUserList(Page page){
+    public PagingEntity<FG_User> getUserList(Page page) {
 
         Map<String, Object> conditions = new HashMap<String, Object>();
 
-        if(page.getConditions()!=null) {
+        if (page.getConditions() != null) {
             //查询条件
             for (Condition condition : page.getConditions()) {
                 if (condition.getKey().equals("Name")) {
                     conditions.put("Name", condition.getValue());
-                }  else if (condition.getKey().equals("TreeValue")) {
-                    ids =new ArrayList<>();
+                } else if (condition.getKey().equals("TreeValue")) {
+                    ids = new ArrayList<>();
                     FG_Organization orgSelf = new FG_Organization();
                     orgSelf.setId(condition.getValue());
                     ids.add(orgSelf);
                     getOrgsTree(condition.getValue());
-                    conditions.put("TreeValue",ids );
+                    conditions.put("TreeValue", ids);
                 }
 
             }
@@ -628,10 +633,10 @@ public class SystemServie {
         // 1,根据条件一共查询到的数据条数
         int count = systemDao.getUserListCount(conditions);
 
-        if(page.getPageNo()==1){
-            conditions.put("startRow", 0 );
-        }else{
-            conditions.put("startRow", page.getPageSize() * (page.getPageNo() - 1) );
+        if (page.getPageNo() == 1) {
+            conditions.put("startRow", 0);
+        } else {
+            conditions.put("startRow", page.getPageSize() * (page.getPageNo() - 1));
         }
         conditions.put("endRow", page.getPageSize());
 
@@ -653,31 +658,32 @@ public class SystemServie {
 
     /**
      * 获取组织机构下的人员以及组织信息
+     *
      * @return
      */
-    public Map<String, Object> grtUserListByOrgId(String orgid){
+    public Map<String, Object> grtUserListByOrgId(String orgid) {
 
         Map<String, Object> conditions = new HashMap<String, Object>();
-        ids =new ArrayList<>();
+        ids = new ArrayList<>();
         FG_Organization orgSelf = new FG_Organization();
         orgSelf.setId(orgid);
         ids.add(orgSelf);
         getOrgsTree(orgid);
-        conditions.put("TreeValue",ids );
+        conditions.put("TreeValue", ids);
 
-        List<FG_User> list= systemDao.getUserListByOrgId(conditions);
+        List<FG_User> list = systemDao.getUserListByOrgId(conditions);
         List<FG_User> listWithOutAdmin = systemDao.getUserListByOrgIdWithOutAdmin(conditions);
         //结果集
         Map<String, Object> result = new HashMap<String, Object>();
-        result.put("OrgList",ids);
-        result.put("UserList",list);
-        result.put("UserListWithOutAdmin",listWithOutAdmin);
+        result.put("OrgList", ids);
+        result.put("UserList", list);
+        result.put("UserListWithOutAdmin", listWithOutAdmin);
         return result;
     }
 
     @Transactional
-    @ILog(description="删除用户")
-    public int deleteUserByID(FG_User user){
+    @ILog(description = "删除用户")
+    public int deleteUserByID(FG_User user) {
         systemDao.deleteUserFav(user.getFavoriteid());
         systemDao.DeleteUserRolesByUserID(user.getId());
         systemDao.deleteUser(user.getId());
@@ -686,95 +692,101 @@ public class SystemServie {
 
     /**
      * 获取审核设置
+     *
      * @return
      */
-   public int getApproveSetting(){
-       String str =  systemDao.getApproveSetting();
-       if(str!=null){
-           return Integer.parseInt(str);
-       }
-       else{
-           return 1;
-       }
-   }
+    public int getApproveSetting() {
+        String str = systemDao.getApproveSetting();
+        if (str != null) {
+            return Integer.parseInt(str);
+        } else {
+            return 1;
+        }
+    }
 
     /**
      * 获取邮件设置
+     *
      * @return
      */
-   public int getSendMailSetting(){
-       String str =  fgbzDicDao.getSettingByKey("isSendMail");
-       if(str!=null){
-           return Integer.parseInt(str);
-       }
-       else{
-           return 1;
-       }
-   }
+    public int getSendMailSetting() {
+        String str = fgbzDicDao.getSettingByKey("isSendMail");
+        if (str != null) {
+            return Integer.parseInt(str);
+        } else {
+            return 1;
+        }
+    }
 
     /**
      * 保存设置
+     *
      * @return
      */
-    public int SaveOrUpdateSettingValue(Map<String,String> map){
+    public int SaveOrUpdateSettingValue(Map<String, String> map) {
         systemDao.SaveOrUpdateSettingValue(map);
         return OpResult.Success;
     }
 
     /**
      * 保存审核设置
+     *
      * @return
      */
     @Transactional
-    @ILog(description="修改审核设置")
-    public Map<String,Object> SaveOrUpdateApproveSetting(int status){
+    @ILog(description = "修改审核设置")
+    public Map<String, Object> SaveOrUpdateApproveSetting(int status) {
 
-        int num =0;
+        int num = 0;
         //查询待审核的数量
-        if(status==0){
-            num= systemDao.getNeedCheckLawCount();
+        if (status == 0) {
+            num = systemDao.getNeedCheckLawCount();
         }
         Map<String, Object> map = new HashMap<>();
-        map.put("key","isApprove");
-        map.put("value",status);
-        map.put("count",0);
-        Map<String,Object> result = new HashMap<>();
-        if(num==0){
+        map.put("key", "isApprove");
+        map.put("value", status);
+        map.put("count", 0);
+        Map<String, Object> result = new HashMap<>();
+        if (num == 0) {
             systemDao.SaveOrUpdateApproveSetting(map);
         }
-        result.put("count",num);
-        result.put("Result",OpResult.Success);
+        result.put("count", num);
+        result.put("Result", OpResult.Success);
         return result;
     }
 
-    @ILog(description="修改邮件设置")
-    public int SaveOrUpdateMailSetting(int status){
-        Map<String,String> map = new HashMap<>();
-        map.put("key","isSendMail");
-        map.put("value",Integer.toString(status));
+    @ILog(description = "修改邮件设置")
+    public int SaveOrUpdateMailSetting(int status) {
+        Map<String, String> map = new HashMap<>();
+        map.put("key", "isSendMail");
+        map.put("value", Integer.toString(status));
         systemDao.SaveOrUpdateSettingValue(map);
         return OpResult.Success;
     }
 
     /**
      * 获取日志
+     *
      * @param page
      * @return
      */
-    public PagingEntity<Fg_Log> getLogList(Page page){
+    public PagingEntity<Fg_Log> getLogList(Page page) {
 
         Map<String, Object> conditions = new HashMap<String, Object>();
 
-        if(page.getConditions()!=null) {
+        if (page.getConditions() != null) {
             //查询条件
             for (Condition condition : page.getConditions()) {
                 if (condition.getKey().equals("OperationName")) {
                     conditions.put("OperationName", condition.getValue());
-                }   if (condition.getKey().equals("Userid")) {
+                }
+                if (condition.getKey().equals("Userid")) {
                     conditions.put("Userid", condition.getValue());
-                }  if (condition.getKey().equals("FiledTimeStart")) {
+                }
+                if (condition.getKey().equals("FiledTimeStart")) {
                     conditions.put("FiledTimeStart", condition.getValue());
-                }  if (condition.getKey().equals("FiledTimeEnd")) {
+                }
+                if (condition.getKey().equals("FiledTimeEnd")) {
                     conditions.put("FiledTimeEnd", condition.getValue());
                 }
 
@@ -785,10 +797,10 @@ public class SystemServie {
         // 1,根据条件一共查询到的数据条数
         int count = systemDao.SelectLogCount(conditions);
 
-        if(page.getPageNo()==1){
-            conditions.put("startRow", 0 );
-        }else{
-            conditions.put("startRow", page.getPageSize() * (page.getPageNo() - 1) );
+        if (page.getPageNo() == 1) {
+            conditions.put("startRow", 0);
+        } else {
+            conditions.put("startRow", page.getPageSize() * (page.getPageNo() - 1));
         }
         conditions.put("endRow", page.getPageSize());
 
@@ -810,38 +822,41 @@ public class SystemServie {
 
     /**
      * 通过id获取邮件
+     *
      * @param id
      * @return
      */
-    public Map<String,String> getUserMailById(String id){
-        Map<String,String> map =new HashMap<>();
-        map.put("mail",systemDao.getUserMailById(id));
+    public Map<String, String> getUserMailById(String id) {
+        Map<String, String> map = new HashMap<>();
+        map.put("mail", systemDao.getUserMailById(id));
         return map;
     }
 
     /**
      * 生成授权文件
+     *
      * @param start
      * @param end
      * @param response
      */
-    public void makeLicense(String start,String end ,HttpServletResponse response){
+    public void makeLicense(String start, String end, HttpServletResponse response) {
 
-      Map<String,String> map = new HashMap<String,String>();
-      map.put("Start",start);
-      map.put("End",end);
+        Map<String, String> map = new HashMap<String, String>();
+        map.put("Start", start);
+        map.put("End", end);
 
-      String str = JSON.serialize(map);
+        String str = JSON.serialize(map);
 
-        byte[] bytes =  LiceneEncrypt.getAESEncoded(str);
+        byte[] bytes = LiceneEncrypt.getAESEncoded(str);
 
         try {
             response.setHeader("content-disposition", "attachment;filename=" + URLEncoder.encode("licene", "utf-8") + ".lic");
 
-        OutputStream out = response.getOutputStream();
-        ByteArrayOutputStream stream = new ByteArrayOutputStream();
-        out.write(bytes);
-        out.close();
+            OutputStream out = response.getOutputStream();
+
+            ByteArrayOutputStream stream = new ByteArrayOutputStream();
+            out.write(bytes);
+            out.close();
         } catch (UnsupportedEncodingException e) {
             e.printStackTrace();
         } catch (IOException e) {
@@ -849,11 +864,11 @@ public class SystemServie {
         }
     }
 
-    public List<Fg_Log> getLastMonthLog(){
+    public List<Fg_Log> getLastMonthLog() {
         return systemDao.getLastMonthLog();
     }
 
-    public void deleteLastMonthLog(){
+    public void deleteLastMonthLog() {
         systemDao.deleteLastMonthLog();
     }
 }

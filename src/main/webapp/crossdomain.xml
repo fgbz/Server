@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<cross-domain-policy> 
+	<allow-access-from domain="localhost"  to-ports="8080"/>
+	<allow-access-from domain="127.0.0.1"  to-ports="8080"/>
+</cross-domain-policy>

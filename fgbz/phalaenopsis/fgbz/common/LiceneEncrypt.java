@@ -1,6 +1,6 @@
 package phalaenopsis.fgbz.common;
 
-import com.sun.org.glassfish.external.statistics.Statistic;
+//import com.sun.org.glassfish.external.statistics.Statistic;
 
 import java.io.BufferedReader;
 import java.io.IOException;

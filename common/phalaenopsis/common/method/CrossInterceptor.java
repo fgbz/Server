@@ -81,7 +81,7 @@ public class CrossInterceptor extends HandlerInterceptorAdapter {
                 //授权验证
                 InputStream inputStream = this.getClass().getClassLoader().getResourceAsStream("conf/licene.lic");
 
-                if(inputStream==null){
+                if (inputStream == null) {
                     response.setStatus(405);
                     return false;
                 }
@@ -91,9 +91,9 @@ public class CrossInterceptor extends HandlerInterceptorAdapter {
                 inputStream.read(byt);
 
                 //解密
-                String licene =LiceneEncrypt.getAESdecoded(byt);
+                String licene = LiceneEncrypt.getAESdecoded(byt);
 
-                Map<String,String> map = (Map<java.lang.String, java.lang.String>) JSON.parse(licene);
+                Map<String, String> map = (Map<java.lang.String, java.lang.String>) JSON.parse(licene);
 
                 Date d = new Date();
                 SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
@@ -102,14 +102,13 @@ public class CrossInterceptor extends HandlerInterceptorAdapter {
 
                 Date endtime = sdf.parse(map.get("End"));
 
-                if(d.getTime()>endtime.getTime()){
+                if (d.getTime() > endtime.getTime()) {
                     response.setStatus(405);
                     return false;
                 }
-            }catch (Exception e){
+            } catch (Exception e) {
 
             }
-
 
 
         }

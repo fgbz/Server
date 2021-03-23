@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
-<mapper namespace="phalaenopsis.fgbz.dao.SystemDao" >
+<mapper namespace="phalaenopsis.fgbz.dao.SystemDao">
 
     <!--获取部门-->
     <select id="getOrganizationList" resultType="FG_Organization">
@@ -11,71 +11,79 @@
         SELECT
         count(1)
         FROM
-       m_sa_user link
+        fgbz.m_sa_user link
         WHERE
-        link.ORGID = t.id) = 0 then 1 else 0 end as candelete from m_sa_organization t order by t.itemlevel,t.itemlevelcode
+        link.ORGID = t.id) = 0 then 1 else 0 end as candelete from fgbz.m_sa_organization t order by t.itemlevel,t.itemlevelcode
     </select>
 
     <!--删除技术标准类别-->
     <delete id="DeleteOrganization" parameterType="FG_Organization">
-        DELETE from m_sa_organization where id = #{id}
+        DELETE from fgbz.m_sa_organization where id = #{id}
     </delete>
 
     <!--新增或修改法规标准类别-->
     <insert id="AddOrUpdateOrganizationType" parameterType="FG_Organization">
         <selectKey keyProperty="count" resultType="int" order="BEFORE">
-            select count(1) from m_sa_organization t where t.ID=#{id}
+            select count(1) from fgbz.m_sa_organization t where t.ID=#{id}
         </selectKey>
 
         <if test="count==0">
-            INSERT into m_sa_organization  (ID,ORGNAME, PARENTID,INPUTUSERID,INPUTDATE,MODIFYDATE,itemlevel,itemlevelcode )
-            VALUES (#{id},#{orgname},#{parentid},#{inputuserid,jdbcType=VARCHAR},now(),now(),#{itemlevel,jdbcType=INTEGER},#{itemlevelcode,jdbcType=INTEGER});
+            INSERT into fgbz.m_sa_organization (ID,ORGNAME,
+            PARENTID,INPUTUSERID,INPUTDATE,MODIFYDATE,itemlevel,itemlevelcode
+            )
+            VALUES
+            (#{id},#{orgname},#{parentid},#{inputuserid,jdbcType=VARCHAR},now(),now(),#{itemlevel,jdbcType=INTEGER},#{itemlevelcode,jdbcType=INTEGER});
         </if>
         <if test="count==1">
-            UPDATE  m_sa_organization t  SET t.ORGNAME = #{orgname,jdbcType=VARCHAR},t.MODIFYUSERID=#{modifyuserid,jdbcType=VARCHAR},t.MODIFYDATE = now(),t.itemlevelcode = #{itemlevelcode,jdbcType=INTEGER}
+            UPDATE fgbz.m_sa_organization t SET t.ORGNAME =
+            #{orgname,jdbcType=VARCHAR},t.MODIFYUSERID=#{modifyuserid,jdbcType=VARCHAR},t.MODIFYDATE =
+            now(),t.itemlevelcode = #{itemlevelcode,jdbcType=INTEGER}
             where t.ID = #{id}
         </if>
     </insert>
 
     <!--获取最新的结构层级-->
     <select id="getLastItemLevelcode" parameterType="String" resultType="int">
-        select IF(ISNULL(max(t.ITEMLEVELCODE)),0,max(t.ITEMLEVELCODE)+1) from m_sa_organization t where t.PARENTID= #{id}
+        select IF(ISNULL(max(t.ITEMLEVELCODE)),0,max(t.ITEMLEVELCODE)+1) from fgbz.m_sa_organization t where t.PARENTID= #{id}
     </select>
 
     <!--处理上移和下移-->
     <update id="handTreeLevel" parameterType="FG_Organization">
         <if test="handletype == 'moveUp'.toString()">
-            update m_sa_organization t set t.ITEMLEVELCODE = (t.ITEMLEVELCODE+1) where t.PARENTID =#{parentid}  and t.ITEMLEVELCODE=(#{itemlevelcode}-1)
+            update fgbz.m_sa_organization t set t.ITEMLEVELCODE = (t.ITEMLEVELCODE+1) where t.PARENTID =#{parentid} and
+            t.ITEMLEVELCODE=(#{itemlevelcode}-1)
         </if>
         <if test="handletype == 'moveDown'.toString()">
-            update m_sa_organization t set t.ITEMLEVELCODE = (t.ITEMLEVELCODE-1) where t.PARENTID =#{parentid}  and t.ITEMLEVELCODE=(#{itemlevelcode}+1)
+            update fgbz.m_sa_organization t set t.ITEMLEVELCODE = (t.ITEMLEVELCODE-1) where t.PARENTID =#{parentid} and
+            t.ITEMLEVELCODE=(#{itemlevelcode}+1)
         </if>
         <if test="handletype == 'delete'.toString()">
-            update m_sa_organization t set t.ITEMLEVELCODE = (t.ITEMLEVELCODE-1) where t.PARENTID =#{parentid}  and t.ITEMLEVELCODE>#{itemlevelcode}
+            update fgbz.m_sa_organization t set t.ITEMLEVELCODE = (t.ITEMLEVELCODE-1) where t.PARENTID =#{parentid} and
+            t.ITEMLEVELCODE>#{itemlevelcode}
         </if>
     </update>
 
     <!--获取子节点-->
     <select id="getChildNode" parameterType="String" resultType="FG_Organization">
-        select t.ID,t.ORGNAME,t.PARENTID from m_sa_organization t where t.PARENTID=#{id}
+        select t.ID,t.ORGNAME,t.PARENTID from fgbz.m_sa_organization t where t.PARENTID=#{id}
     </select>
 
     <!--获取所有的菜单权限-->
     <select id="getAllMenus" resultType="FG_Menu">
-        SELECT t.id,t.MENUNAME,t.parentid from m_sa_menu t
+        SELECT t.id,t.MENUNAME,t.parentid from fgbz.m_sa_menu t
     </select>
 
     <!--获取所有的角色-->
     <select id="getAllRoles" resultType="FG_Role">
-        select t.id ,t.ROLENAME from m_sa_role t where t.ROLENAME <![CDATA[  != ]]> 'admin'
+        select t.id ,t.ROLENAME from fgbz.m_sa_role t where t.ROLENAME <![CDATA[  != ]]> 'admin'
     </select>
 
     <resultMap type="FG_Role" id="RoleListMap">
-        <id column="id" property="id" />
+        <id column="id" property="id"/>
         <result column="ROLENAME" property="rolename"></result>
         <result column="candelete" property="candelete"></result>
         <collection property="menus" column="menuid" ofType="FG_Menu">
-            <id column="menuid" property="id" />
+            <id column="menuid" property="id"/>
             <result column="MENUNAME" property="menuname"></result>
         </collection>
     </resultMap>
@@ -83,24 +91,25 @@
     <!--获取角色列表-->
     <select id="getRoles" parameterType="map" resultMap="RoleListMap">
         SELECT
-	t.ID,
-	t.ROLENAME,
-	men.ID AS menuid,
-	men.MENUNAME,
-	case when (select count(1) from m_sa_user_role link where link.ROLEID = t.id)>0 THEN 0 else 1 end as candelete
-FROM
-    (SELECT  *from
-	m_sa_role where 1=1 and ROLENAME <![CDATA[  != ]]> 'admin'
-       <include refid="queryRole"></include>
-	 order by MODIFYDATE   desc
-	LIMIT #{startRow},#{endRow}) t
-	LEFT JOIN m_sa_role_menu m ON t.id = m.ROLEID
-	LEFT JOIN m_sa_menu men ON men.id = m.MENUID
-        order by t.MODIFYDATE   desc
+        t.ID,
+        t.ROLENAME,
+        men.ID AS menuid,
+        men.MENUNAME,
+        case when (select count(1) from fgbz.m_sa_user_role link where link.ROLEID = t.id)>0 THEN 0 else 1 end as
+        candelete
+        FROM
+        (SELECT *from
+        fgbz.m_sa_role where 1=1 and ROLENAME <![CDATA[  != ]]> 'admin'
+        <include refid="queryRole"></include>
+        order by MODIFYDATE desc
+        LIMIT #{startRow},#{endRow}) t
+        LEFT JOIN fgbz.m_sa_role_menu m ON t.id = m.ROLEID
+        LEFT JOIN fgbz.m_sa_menu men ON men.id = m.MENUID
+        order by t.MODIFYDATE desc
     </select>
 
     <select id="getRolesCount" resultType="int">
-        SELECT count(1) FROM m_sa_role t where 1=1 and ROLENAME <![CDATA[  != ]]> 'admin'
+        SELECT count(1) FROM fgbz.m_sa_role t where 1=1 and ROLENAME <![CDATA[  != ]]> 'admin'
         <include refid="queryRole"></include>
     </select>
 
@@ -112,32 +121,32 @@ FROM
 
     <!--删除权限-->
     <delete id="deleteRoleByID" parameterType="String">
-		DELETE  from m_sa_role where id=#{id};
-		DELETE  from m_sa_role_menu where ROLEID=#{id};
+		DELETE  from fgbz.m_sa_role where id=#{id};
+		DELETE  from fgbz.m_sa_role_menu where ROLEID=#{id};
     </delete>
 
     <!--新增或编辑角色-->
     <insert id="SaveOrEditRole" parameterType="FG_Role">
 
         <selectKey keyProperty="count" resultType="int" order="BEFORE">
-            select count(1) from m_sa_role t where t.id=#{id}
+            select count(1) from fgbz.m_sa_role t where t.id=#{id}
         </selectKey>
 
         <if test="count == 0">
 
-            insert into m_sa_role  (ID,ROLENAME,INPUTUSERID,INPUTDATE,MODIFYDATE) VALUES
+            insert into fgbz.m_sa_role (ID,ROLENAME,INPUTUSERID,INPUTDATE,MODIFYDATE) VALUES
             (#{id},#{rolename,jdbcType=VARCHAR},#{inputuserid,jdbcType=VARCHAR},now(),now());
 
         </if>
         <if test="count > 0">
-            UPDATE m_sa_role set ROLENAME = #{rolename,jdbcType=VARCHAR},
+            UPDATE fgbz.m_sa_role set ROLENAME = #{rolename,jdbcType=VARCHAR},
             MODIFYUSERID = #{modifyuserid,jdbcType=VARCHAR},MODIFYDATE =now() where id=#{id};
         </if>
 
-        DELETE  from m_sa_role_menu where ROLEID=#{id};
+        DELETE from fgbz.m_sa_role_menu where ROLEID=#{id};
 
         <if test="menus !=null and menus.size()>0">
-            insert into m_sa_role_menu  (ID,ROLEID,MENUID,INPUTUSERID,INPUTDATE) VALUES
+            insert into fgbz.m_sa_role_menu (ID,ROLEID,MENUID,INPUTUSERID,INPUTDATE) VALUES
             <foreach collection="menus" item="item" open="" close="" separator=",">
                 (#{item.tableid},#{id},#{item.id},#{inputuserid,jdbcType=VARCHAR},now())
             </foreach>
@@ -150,11 +159,11 @@ FROM
     <insert id="SaveOrUpdateUser" parameterType="FG_User">
 
         <selectKey keyProperty="count" resultType="int" order="BEFORE">
-            select count(1) from m_sa_user t where t.id=#{id}
+            select count(1) from fgbz.m_sa_user t where t.id=#{id}
         </selectKey>
 
         <if test="count == 0">
-            insert into m_sa_user
+            insert into fgbz.m_sa_user
             <trim prefix="(" suffix=")" suffixOverrides=",">
                 <if test="id != null">
                     ID,
@@ -180,15 +189,15 @@ FROM
                 <if test="inputuserid != null">
                     inputuserid,
                 </if>
-                    INPUTDATE,
-                    MODIFYDATE,
+                INPUTDATE,
+                MODIFYDATE,
                 <if test="favoriteid != null">
                     FAVORITEID,
                 </if>
                 <if test="duty != null">
                     DUTY,
                 </if>
-                    status,
+                status,
 
             </trim>
             <trim prefix="values (" suffix=")" suffixOverrides=",">
@@ -216,7 +225,7 @@ FROM
                 <if test="inputuserid != null">
                     #{inputuserid,jdbcType=VARCHAR},
                 </if>
-                   now(),
+                now(),
                 now(),
                 <if test="favoriteid != null">
                     #{favoriteid,jdbcType=VARCHAR},
@@ -229,14 +238,14 @@ FROM
 
         </if>
         <if test="count>0">
-            update  m_sa_user set
+            update fgbz.m_sa_user set
             <trim prefix="" suffix="" suffixOverrides=",">
 
                 <if test="username != null">
-                    username =  #{username,jdbcType=VARCHAR},
+                    username = #{username,jdbcType=VARCHAR},
                 </if>
                 <if test="password != null">
-                    password =  #{password,jdbcType=VARCHAR},
+                    password = #{password,jdbcType=VARCHAR},
                 </if>
                 <if test="userrealname != null">
                     userrealname =#{userrealname,jdbcType=VARCHAR},
@@ -248,41 +257,38 @@ FROM
                     mobile= #{mobile,jdbcType=VARCHAR},
                 </if>
                 <if test="orgid != null">
-                    orgid=  #{orgid,jdbcType=VARCHAR},
+                    orgid= #{orgid,jdbcType=VARCHAR},
                 </if>
 
                 <if test="favoriteid != null">
-                    favoriteid=   #{favoriteid,jdbcType=VARCHAR},
+                    favoriteid= #{favoriteid,jdbcType=VARCHAR},
                 </if>
                 <if test="lastmodifyuserid != null">
-                lastmodifyuserid = #{lastmodifyuserid,jdbcType=VARCHAR},
-                 </if>
-                    modifydate = now(),
+                    lastmodifyuserid = #{lastmodifyuserid,jdbcType=VARCHAR},
+                </if>
+                modifydate = now(),
                 <if test="duty != null">
                     duty = #{duty,jdbcType=INTEGER},
                 </if>
 
             </trim>
             where ID=#{id}
-
-
         </if>
-
     </insert>
 
     <!--创建用户收藏夹-->
     <insert id="SaveUserFavorite" parameterType="FG_User">
-        INSERT into m_bs_favorite (ID,NAME,PARENTID,INPUTUSERID,INPUTDATE,ITEMLEVEL,ITEMLEVELCODE) VALUES (#{favoriteid},'我的收藏夹',NULL ,#{inputuserid,jdbcType=VARCHAR},now(),0,0)
+        INSERT into fgbz.m_bs_favorite (ID,NAME,PARENTID,INPUTUSERID,INPUTDATE,ITEMLEVEL,ITEMLEVELCODE) VALUES (#{favoriteid},'我的收藏夹',NULL ,#{inputuserid,jdbcType=VARCHAR},now(),0,0)
     </insert>
 
     <!--删除用户角色-->
     <delete id="DeleteUserRolesByUserID" parameterType="String">
-        delete from m_sa_user_role where USERID=#{id}
+        delete from fgbz.m_sa_user_role where USERID=#{id}
     </delete>
 
     <!--保存用户角色-->
     <insert id="SaveUserRoles" parameterType="FG_User">
-        insert into m_sa_user_role  (ID,USERID,ROLEID,INPUTUSERID,INPUTDATE) VALUES
+        insert into fgbz.m_sa_user_role (ID,USERID,ROLEID,INPUTUSERID,INPUTDATE) VALUES
         <foreach collection="roles" item="item" open="" close="" separator=",">
             (#{item.tableid},#{id},#{item.id},#{inputuserid,jdbcType=VARCHAR},now())
         </foreach>
@@ -290,21 +296,20 @@ FROM
 
     <!--获取所有权限-->
     <select id="getUserMenu" parameterType="FG_User" resultType="FG_Menu">
-        select DISTINCT  t.id ,t.MENUNAME from m_sa_menu t
-         LEFT JOIN m_sa_role_menu m ON t.id = m.MENUID
-	     where m.ROLEID in
+        select DISTINCT t.id ,t.MENUNAME from fgbz.m_sa_menu t
+        LEFT JOIN fgbz.m_sa_role_menu m ON t.id = m.MENUID
+        where m.ROLEID in
         <foreach collection="roles" item="item" open="(" close=")" separator=",">
-           #{item.id}
+            #{item.id}
         </foreach>
 
     </select>
 
 
     <resultMap type="FG_User" id="usermap">
-        <id column="id" property="id" />
+        <id column="id" property="id"/>
         <result column="USERNAME" property="username"></result>
         <result column="PASSWORD" property="password"></result>
-
         <result column="USERREALNAME" property="userrealname"></result>
         <result column="EMAIL" property="email"></result>
         <result column="MOBILE" property="mobile"></result>
@@ -314,7 +319,7 @@ FROM
         <result column="duty" property="duty"></result>
         <result column="STATUS" property="status"></result>
         <collection property="roles" column="roleid" ofType="FG_Role">
-            <id column="roleid" property="id" />
+            <id column="roleid" property="id"/>
             <result column="ROLENAME" property="rolename"></result>
         </collection>
     </resultMap>
@@ -324,7 +329,7 @@ FROM
         SELECT
         t.id,
         t.USERNAME,
-        t.`PASSWORD`,
+        t.PASSWORD,
         t.USERREALNAME,
         t.EMAIL,
         t.MOBILE,
@@ -337,51 +342,49 @@ FROM
         role.ID as roleid,
         role.ROLENAME
         FROM
-        m_sa_user t
-        LEFT JOIN m_sa_organization org ON t.ORGID = org.ID
-        left join m_sa_user_role link on link.USERID = t.ID
-        left join m_sa_role role on link.ROLEID = role.ID
+        fgbz.m_sa_user t
+        LEFT JOIN fgbz.m_sa_organization org ON t.ORGID = org.ID
+        left join fgbz.m_sa_user_role link on link.USERID = t.ID
+        left join fgbz.m_sa_role role on link.ROLEID = role.ID
         where t.USERNAME = #{account} and t.PASSWORD = #{password}
 
     </select>
 
     <update id="SaveUserStatus" parameterType="map">
-        UPDATE  m_sa_user t set t.status=#{status} where t.id=#{id}
+        UPDATE fgbz.m_sa_user t set t.status=#{status} where t.id=#{id}
     </update>
 
     <!--获取用户列表-->
     <select id="getUsersList" parameterType="map" resultMap="usermap">
-SELECT
-	t.id,
-	t.USERNAME,
-	t.`PASSWORD`,
-	t.USERREALNAME,
-	t.EMAIL,
-	t.MOBILE,
-	t.ORGID,
-    t.favoriteid,
+        SELECT
+        t.id,
+        t.USERNAME,
+        t.PASSWORD,
+        t.USERREALNAME,
+        t.EMAIL,
+        t.MOBILE,
+        t.ORGID,
+        t.favoriteid,
         t.duty,
         t.status,
-	org.ORGNAME ,
-	role.ID as roleid,
-	role.ROLENAME
-FROM
-        (SELECT  *from
-	m_sa_user where 1=1 and  USERNAME <![CDATA[  != ]]> 'admin'
+        org.ORGNAME ,
+        role.ID as roleid,
+        role.ROLENAME
+        FROM
+        (SELECT * from
+        fgbz.m_sa_user where 1=1 and USERNAME <![CDATA[  != ]]> 'admin'
         <include refid="queryUser"></include>
-	order by modifydate desc
+        order by modifydate desc
         LIMIT #{startRow},#{endRow}) t
-	LEFT JOIN m_sa_organization org ON t.ORGID = org.ID
-	left join m_sa_user_role link on link.USERID = t.ID
-	left join m_sa_role role on link.ROLEID = role.ID
+        LEFT JOIN fgbz.m_sa_organization org ON t.ORGID = org.ID
+        left join fgbz.m_sa_user_role link on link.USERID = t.ID
+        left join fgbz.m_sa_role role on link.ROLEID = role.ID
         order by t.modifydate desc
-
-
     </select>
 
     <!--查询列表总数-->
     <select id="getUserListCount" parameterType="map" resultType="int">
-        select count(1) from m_sa_user t where 1=1 and  t.USERNAME <![CDATA[  != ]]> 'admin'
+        select count(1) from fgbz.m_sa_user t where 1=1 and t.USERNAME <![CDATA[  != ]]> 'admin'
         <include refid="queryUser"></include>
     </select>
 
@@ -390,8 +393,8 @@ FROM
             and instr(USERREALNAME,#{Name})> 0
         </if>
 
-        <if test="TreeValue !=null and TreeValue!=''" >
-            and ORGID  in
+        <if test="TreeValue !=null and TreeValue!=''">
+            and ORGID in
             <foreach collection="TreeValue" item="item" open="(" close=")" separator=",">
                 #{item.id}
             </foreach>
@@ -401,61 +404,61 @@ FROM
 
     <!--删除用户-->
     <delete id="deleteUser" parameterType="String">
-        delete from m_sa_user where id=#{id}
+        delete from fgbz.m_sa_user where id=#{id}
     </delete>
 
     <!--删除收藏夹-->
     <delete id="deleteUserFav" parameterType="String">
-        delete from m_bs_favorite where id=#{id}
+        delete from fgbz.m_bs_favorite where id=#{id}
     </delete>
 
     <!--验证是否重复-->
     <select id="checkUserRepeat" parameterType="FG_User" resultType="int">
-          SELECT  count(1) from  m_sa_user t where t.USERNAME = #{username}
-          <if test="id !=null and id !=''">
-              and t.id <![CDATA[  != ]]> #{id}
-          </if>
+        SELECT count(1) from fgbz.m_sa_user t where t.USERNAME = #{username}
+        <if test="id !=null and id !=''">
+            and t.id <![CDATA[  != ]]> #{id}
+        </if>
     </select>
 
     <!--获取审核状态-->
     <select id="getApproveSetting" resultType="String">
-        SELECT t.VALUE from m_sa_setting t where t.KEY='isApprove'
+        SELECT t.VALUE from fgbz.m_sa_setting t where t.KEY='isApprove'
     </select>
 
     <!--保存或修改审核状态-->
     <insert id="SaveOrUpdateApproveSetting" parameterType="map">
         <selectKey keyProperty="count" resultType="int" order="BEFORE">
-            select count(1) from m_sa_setting t where t.KEY='isApprove'
+            select count(1) from fgbz.m_sa_setting t where t.KEY='isApprove'
         </selectKey>
 
         <if test="count==0">
-            insert into m_sa_setting t (t.id,t.KEY,t.VALUE) VALUES (uuid(),'isApprove',#{value})
+            insert into fgbz.m_sa_setting t (t.id,t.KEY,t.VALUE) VALUES (guid(),'isApprove',#{value})
         </if>
         <if test="count>0">
-            UPDATE m_sa_setting t set t.VALUE = #{value} where t.KEY = 'isApprove'
+            UPDATE fgbz.m_sa_setting t set t.VALUE = #{value} where t.KEY = 'isApprove'
         </if>
 
     </insert>
 
     <!--更新设置-->
-    <update id="SaveOrUpdateSettingValue" parameterType="map" >
-        UPDATE m_sa_setting t set t.`VALUE`=#{value} WHERE  t.`KEY`=#{key}
+    <update id="SaveOrUpdateSettingValue" parameterType="map">
+        UPDATE fgbz.m_sa_setting t set t.VALUE=#{value} WHERE  t.KEY=#{key}
     </update>
 
     <!--待审核的数量-->
     <select id="getNeedCheckLawCount" resultType="int">
-        SELECT count(1) FROM m_bs_lawstandard t where t.APPROVESTATUS =2
+        SELECT count(1) FROM fgbz.m_bs_lawstandard t where t.APPROVESTATUS =2
     </select>
 
     <!--获取组织下的人员-->
     <select id="getUserListByOrgId" parameterType="map" resultType="FG_User">
         SELECT
-	t.id,
-	t.USERREALNAME
-FROM
-	m_sa_user t
-WHERE
-	t.ORGID IN
+        t.id,
+        t.USERREALNAME
+        FROM
+        fgbz.m_sa_user t
+        WHERE
+        t.ORGID IN
         <foreach collection="TreeValue" item="item" open="(" close=")" separator=",">
             #{item.id}
         </foreach>
@@ -468,9 +471,9 @@ WHERE
         t.id,
         t.USERREALNAME
         FROM
-        m_sa_user t
+        fgbz.m_sa_user t
         WHERE
-        t.USERREALNAME <![CDATA[  !=  ]]> 'admin' and  t.USERREALNAME <![CDATA[  !=  ]]> 'System' and
+        t.USERREALNAME <![CDATA[  !=  ]]> 'admin' and t.USERREALNAME <![CDATA[  !=  ]]> 'System' and
         t.ORGID IN
         <foreach collection="TreeValue" item="item" open="(" close=")" separator=",">
             #{item.id}
@@ -479,9 +482,9 @@ WHERE
     </select>
 
     <!--保存日志-->
-   <insert id="SaveFgLog" parameterType="Fg_Log">
-        insert into m_bs_log (ID,OperationName,Userid,UserName,OperationTime,OrganizationName,OrganizationID)
-        VALUES (uuid(),
+    <insert id="SaveFgLog" parameterType="Fg_Log">
+        insert into fgbz.m_bs_log (ID,OperationName,Userid,UserName,OperationTime,OrganizationName,OrganizationID)
+        VALUES (guid(),
         #{operationname,jdbcType=VARCHAR},
         #{userid,jdbcType=VARCHAR},
         #{username,jdbcType=VARCHAR},
@@ -492,7 +495,7 @@ WHERE
 
     <!--查询日志-->
     <select id="SelectLog" parameterType="map" resultType="Fg_Log">
-        SELECT ID,OperationName,Userid,UserName,OperationTime,OrganizationName,OrganizationID from m_bs_log
+        SELECT ID,OperationName,Userid,UserName,OperationTime,OrganizationName,OrganizationID from fgbz.m_bs_log
         where 1=1
         <include refid="queryLog"></include>
         ORDER by OperationTime desc
@@ -507,32 +510,32 @@ WHERE
             and Userid = #{Userid}
         </if>
         <if test="FiledTimeStart != null and FiledTimeStart != ''">
-            and Date(OperationTime) <![CDATA[  >=  ]]> #{FiledTimeStart}
+            and cast(OperationTime as Date) <![CDATA[  >=  ]]> #{FiledTimeStart}
         </if>
         <if test="FiledTimeEnd != null and FiledTimeEnd != ''">
-            and Date(OperationTime) <![CDATA[  <=  ]]> #{FiledTimeEnd}
+            and cast(OperationTime as Date) <![CDATA[  <=  ]]> #{FiledTimeEnd}
         </if>
     </sql>
 
     <select id="SelectLogCount" parameterType="map" resultType="int">
-        SELECT count(1) from m_bs_log
+        SELECT count(1) from fgbz.m_bs_log
         where 1=1
         <include refid="queryLog"></include>
     </select>
 
     <select id="getUserMailById" parameterType="String" resultType="String">
-          SELECT us.EMAIL from  m_sa_user us
+          SELECT us.EMAIL from fgbz.m_sa_user us
 where us.id=#{id}
     </select>
 
     <!--获取一个月之前的日志-->
     <select id="getLastMonthLog" resultType="Fg_Log">
-        SELECT t.* from m_bs_log t where (to_days(NOW())-to_days(t.OperationTime))>30 ORDER BY t.OperationTime desc
+        SELECT t.* from fgbz.m_bs_log t where (to_days(NOW())-to_days(t.OperationTime))>30 ORDER BY t.OperationTime desc
     </select>
 
     <!--删除一个月之前的日志-->
     <delete id="deleteLastMonthLog">
-        DELETE  from m_bs_log where (to_days(NOW())-to_days(OperationTime))>30
+        DELETE  from fgbz.m_bs_log where (to_days(NOW())-to_days(OperationTime))>30
     </delete>
 
 </mapper>
